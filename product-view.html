@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product — City Shop Ghana</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+  <style>
+    .pv-layout {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 20px 80px;
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 36px;
+      align-items: start;
+    }
+
+    .pv-img-wrap {
+      position: relative;
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--glass-border);
+      aspect-ratio: 1/1;
+      cursor: zoom-in;
+    }
+
+    .pv-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+
+    .pv-img-wrap:hover img {
+      transform: scale(1.04);
+    }
+
+    .pv-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 28px;
+    }
+
+    .pv-price-final {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .pv-price-base {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      text-decoration: line-through;
+    }
+
+    .pv-markup-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: rgba(139, 92, 246, 0.15);
+      color: #c4b5fd;
+      border: 1px solid rgba(139, 92, 246, 0.25);
+    }
+
+    .delivery-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .delivery-row:last-child {
+      border-bottom: none;
+    }
+
+    .trust-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.80rem;
+      color: var(--text-muted);
+      padding: 6px 0;
+    }
+
+    /* Order modal */
+    .order-step {
+      display: none;
+    }
+
+    .order-step.active {
+      display: block;
+    }
+
+    .step-indicator {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .step-dot {
+      flex: 1;
+      height: 3px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      transition: var(--transition);
+    }
+
+    .step-dot.done {
+      background: var(--red);
+    }
+
+    /* Reviews */
+    .star-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.6rem;
+      padding: 2px;
+      transition: transform 0.1s;
+      line-height: 1;
+    }
+
+    .star-btn:hover {
+      transform: scale(1.2);
+    }
+
+    .review-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 18px 20px;
+      margin-bottom: 12px;
+    }
+
+    .review-stars {
+      color: #fbbf24;
+      letter-spacing: 2px;
+      font-size: 0.95rem;
+    }
+
+    .verified-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      background: rgba(34, 197, 94, 0.15);
+      color: #4ade80;
+      border: 1px solid rgba(34, 197, 94, 0.25);
+    }
+
+    .reply-bubble {
+      background: rgba(239, 68, 68, 0.07);
+      border: 1px solid rgba(239, 68, 68, 0.15);
+      border-radius: var(--radius-xs);
+      padding: 10px 14px;
+      margin-top: 10px;
+      font-size: 0.82rem;
+    }
+
+    /* Activity toast */
+    .activity-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 18px;
+      font-size: 0.82rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      animation: slideUp 0.4s ease;
+      z-index: 999;
+      white-space: nowrap;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateX(-50%) translateY(20px);
+        opacity: 0
+      }
+
+      to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1
+      }
+    }
+
+    @media(max-width:820px) {
+      .pv-layout {
+        grid-template-columns: 1fr;
+        padding: 20px 16px 80px;
+      }
+    }
+
+    select {
+      color-scheme: dark;
+    }
+
+    select option {
+      background: #1e1b3a;
+      color: #ffffff;
+    }
+  </style>
+  <meta name="description" content="Shop quality products from verified sellers across Ghana. Pay with MoMo or Card." />
+  <meta property="og:site_name" content="City Shop Ghana" />
+  <meta property="og:type" content="product" />
+  <meta id="ogTitle" property="og:title" content="Product — City Shop Ghana" />
+  <meta id="ogDesc" property="og:description" content="Shop quality products from verified sellers across Ghana." />
+  <meta id="ogImage" property="og:image" content="" />
+  <meta id="ogUrl" property="og:url" content="" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta id="twTitle" name="twitter:title" content="Product — City Shop Ghana" />
+  <meta id="twImage" name="twitter:image" content="" />
+</head>
+
+<body>
+  <div class="loading-overlay" id="pageLoader">
+    <div class="spinner"></div>
+  </div>
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a class="navbar-brand" href="index.html" style="text-decoration:none;">
+      <div class="brand-logo">C</div>
+      <span class="brand-name">City<span>Shop</span></span>
+    </a>
+    <div class="navbar-actions">
+      <a id="backToStore" href="stores.html" class="btn btn-glass btn-sm">
+        <i data-lucide="arrow-left" style="width:15px;height:15px;"></i> Back to Store
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main layout -->
+  <div class="pv-layout" id="pvLayout" style="display:none;">
+
+    <!-- Left — Image -->
+    <div>
+      <div class="pv-img-wrap" id="imgWrap" onclick="openFullscreen()">
+        <img id="pvImage" src="" alt=""
+          onerror="this.parentElement.innerHTML='<div style=height:100%;display:grid;place-items:center;><i data-lucide=package style=width:60px;height:60px;color:rgba(255,255,255,0.15);></i></div>'" />
+        <div
+          style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.5);border-radius:8px;padding:6px 8px;cursor:pointer;">
+          <i data-lucide="maximize-2" style="width:16px;height:16px;color:#fff;"></i>
+        </div>
+      </div>
+
+      <!-- Store info card -->
+      <div class="glass" style="padding:16px 18px;margin-top:16px;display:flex;align-items:center;gap:14px;">
+        <div id="storeLogo"
+          style="width:44px;height:44px;border-radius:var(--radius-xs);background:linear-gradient(135deg,var(--red),var(--red-dark));display:grid;place-items:center;font-weight:800;color:#fff;font-size:1.1rem;flex-shrink:0;overflow:hidden;">
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span id="storeNameEl" style="font-weight:600;font-size:0.92rem;"></span>
+            <span
+              style="padding:2px 7px;border-radius:999px;font-size:0.65rem;font-weight:700;background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.25);">✓
+              Verified</span>
+          </div>
+          <a id="storeLinkEl" href="#" style="font-size:0.75rem;color:var(--text-muted);">View full store →</a>
+        </div>
+      </div>
+
+      <!-- Trust badges -->
+      <div class="glass" style="padding:14px 18px;margin-top:12px;">
+        <div class="trust-row"><i data-lucide="shield-check" style="width:15px;height:15px;color:#4ade80;"></i> Secure
+          Payment via Paystack</div>
+        <div class="trust-row"><i data-lucide="refresh-cw" style="width:15px;height:15px;color:#60a5fa;"></i> 7-Day
+          Return Policy</div>
+        <div class="trust-row"><i data-lucide="zap" style="width:15px;height:15px;color:#fbbf24;"></i> Express Delivery
+          Available</div>
+        <div class="trust-row"><i data-lucide="message-circle" style="width:15px;height:15px;color:#4ade80;"></i> Order
+          via WhatsApp — Zero Friction</div>
+      </div>
+    </div>
+
+    <!-- Right — Product info + order -->
+    <div class="pv-card">
+      <div id="pvCategory"
+        style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--red);margin-bottom:8px;">
+      </div>
+      <h1 id="pvName" style="font-size:1.5rem;font-weight:800;line-height:1.2;margin-bottom:12px;"></h1>
+
+      <!-- Pricing -->
+      <div style="margin-bottom:20px;">
+        <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
+          <span class="pv-price-final" id="pvPriceFinal">GH₵ 0</span>
+          <span class="pv-price-base" id="pvPriceBase" style="display:none;"></span>
+          <span class="pv-markup-tag" id="pvMarkupTag" style="display:none;">
+            <i data-lucide="tag" style="width:11px;height:11px;"></i> Includes Promoter Fee
+          </span>
+        </div>
+        <div id="pvStock" style="margin-top:8px;font-size:0.80rem;"></div>
+        <div id="wholesaleBadge"
+          style="display:none;margin-top:6px;font-size:0.78rem;font-weight:600;color:#4ade80;background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.25);border-radius:99px;padding:3px 10px;width:fit-content;">
+        </div>
+      </div>
+
+      <p id="pvDesc" style="font-size:0.88rem;color:var(--text-muted);line-height:1.7;margin-bottom:20px;"></p>
+
+      <!-- Delivery estimator -->
+      <div style="margin-bottom:20px;">
+        <label style="font-size:0.82rem;font-weight:600;display:block;margin-bottom:8px;">
+          <i data-lucide="map-pin" style="width:14px;height:14px;display:inline;margin-right:4px;"></i>
+          Select your city for delivery estimate
+        </label>
+        <select id="deliveryCity" onchange="updateDelivery()"
+          style="width:100%;padding:10px 14px;border-radius:var(--radius-sm);background:#1e1b3a;border:1px solid var(--glass-border);color:#ffffff;font-family:'Inter',sans-serif;font-size:0.88rem;outline:none;cursor:pointer;">
+          <option value="" style="background:#1e1b3a;color:#fff;">Choose city…</option>
+          <option value="Accra:15" style="background:#1e1b3a;color:#fff;">Accra — GH₵ 15</option>
+          <option value="Tema:18" style="background:#1e1b3a;color:#fff;">Tema — GH₵ 18</option>
+          <option value="Kumasi:35" style="background:#1e1b3a;color:#fff;">Kumasi — GH₵ 35</option>
+          <option value="Takoradi:40" style="background:#1e1b3a;color:#fff;">Takoradi — GH₵ 40</option>
+          <option value="Cape Coast:38" style="background:#1e1b3a;color:#fff;">Cape Coast — GH₵ 38</option>
+          <option value="Tamale:55" style="background:#1e1b3a;color:#fff;">Tamale — GH₵ 55</option>
+          <option value="Sunyani:45" style="background:#1e1b3a;color:#fff;">Sunyani — GH₵ 45</option>
+          <option value="Ho:42" style="background:#1e1b3a;color:#fff;">Ho — GH₵ 42</option>
+          <option value="Koforidua:28" style="background:#1e1b3a;color:#fff;">Koforidua — GH₵ 28</option>
+          <option value="Pickup:0" style="background:#1e1b3a;color:#fff;">Self Pickup — Free</option>
+        </select>
+        <div id="deliverySummary" style="margin-top:10px;font-size:0.82rem;color:var(--text-muted);"></div>
+      </div>
+
+      <!-- Order total -->
+      <div class="glass-sm" style="padding:14px 16px;margin-bottom:20px;border-radius:var(--radius-sm);">
+        <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:6px;">
+          <span style="color:var(--text-muted);">Product</span>
+          <span id="summaryProduct">GH₵ 0</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:6px;">
+          <span style="color:var(--text-muted);">Delivery</span>
+          <span id="summaryDelivery">GH₵ 0</span>
+        </div>
+        <div style="height:1px;background:var(--glass-border);margin:8px 0;"></div>
+        <div style="display:flex;justify-content:space-between;font-weight:700;font-size:1rem;">
+          <span>Total</span>
+          <span id="summaryTotal" style="color:var(--red);">GH₵ 0</span>
+        </div>
+      </div>
+
+      <!-- CTA buttons -->
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button class="btn btn-primary w-full" onclick="openOrderModal('paystack')" id="btnPayNow">
+          <i data-lucide="credit-card" style="width:16px;height:16px;"></i> Buy Now — Pay with MoMo/Card
+        </button>
+        <button class="btn btn-glass w-full" onclick="openOrderModal('whatsapp')"
+          style="border-color:rgba(37,211,102,0.40);color:#4ade80;">
+          <i data-lucide="message-circle" style="width:16px;height:16px;"></i> Order via WhatsApp
+        </button>
+      </div>
+
+      <!-- Activity -->
+      <div id="activityNote" style="margin-top:14px;text-align:center;font-size:0.75rem;color:var(--text-muted);"></div>
+    </div>
+  </div>
+
+  <!-- ── Reviews Section ── -->
+  <div id="reviewsSection" style="max-width:1100px;margin:0 auto;padding:0 20px 80px;display:none;">
+    <div style="height:1px;background:var(--glass-border);margin-bottom:40px;"></div>
+
+    <div style="display:grid;grid-template-columns:1fr 360px;gap:36px;align-items:start;" class="reviews-layout">
+
+      <!-- Left: reviews list -->
+      <div>
+        <div
+          style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+          <div>
+            <h2 style="font-size:1.3rem;font-weight:800;">Customer Reviews</h2>
+            <div id="reviewSummaryLine" style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;"></div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openReviewForm()">
+            <i data-lucide="star" style="width:14px;height:14px;"></i> Write a Review
+          </button>
+        </div>
+
+        <!-- Rating breakdown -->
+        <div id="ratingBreakdown" class="glass" style="padding:18px 20px;margin-bottom:20px;display:none;">
+          <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+            <div style="text-align:center;">
+              <div id="avgRatingBig" style="font-size:3rem;font-weight:900;line-height:1;color:var(--text-primary);">
+              </div>
+              <div id="avgStarsDisplay" style="color:#fbbf24;font-size:1.2rem;margin:4px 0;"></div>
+              <div id="totalReviewCount" style="font-size:0.75rem;color:var(--text-muted);"></div>
+            </div>
+            <div style="flex:1;min-width:160px;" id="barBreakdown"></div>
+          </div>
+        </div>
+
+        <div id="reviewsList"></div>
+      </div>
+
+      <!-- Right: write review form (collapsible) -->
+      <div id="reviewFormCard" class="glass" style="padding:24px;display:none;position:sticky;top:88px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <h3 style="font-size:1rem;font-weight:700;">Leave a Review</h3>
+          <button onclick="closeReviewForm()"
+            style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.1rem;">✕</button>
+        </div>
+
+        <!-- Star picker -->
+        <div style="margin-bottom:14px;">
+          <label style="font-size:0.82rem;font-weight:600;display:block;margin-bottom:6px;">Your Rating *</label>
+          <div id="starPicker" style="display:flex;gap:2px;">
+            <button class="star-btn" data-val="1" onclick="setRating(1)">☆</button>
+            <button class="star-btn" data-val="2" onclick="setRating(2)">☆</button>
+            <button class="star-btn" data-val="3" onclick="setRating(3)">☆</button>
+            <button class="star-btn" data-val="4" onclick="setRating(4)">☆</button>
+            <button class="star-btn" data-val="5" onclick="setRating(5)">☆</button>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:14px;">
+          <label>Your Name *</label>
+          <input type="text" id="rvName" placeholder="e.g. Kwame M." />
+        </div>
+
+        <div class="form-group" style="margin-bottom:14px;">
+          <label>Your Review</label>
+          <textarea id="rvBody" rows="4" placeholder="Share your experience with this product…"
+            style="width:100%;background:rgba(255,255,255,0.07);border:1px solid var(--glass-border);border-radius:var(--radius-xs);padding:10px 14px;color:var(--text-primary);font-family:'Inter',sans-serif;font-size:0.88rem;outline:none;resize:vertical;"></textarea>
+        </div>
+
+        <div id="rvError" class="hidden" style="margin-bottom:12px;"></div>
+
+        <button class="btn btn-primary w-full" id="btnSubmitReview" onclick="submitReviewForm()">
+          <i data-lucide="send" style="width:15px;height:15px;"></i>
+          <span id="btnReviewTxt">Submit Review</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile review form (shown below list on small screens) -->
+  <style>
+    @media(max-width:820px) {
+      .reviews-layout {
+        grid-template-columns: 1fr !important;
+      }
+
+      #reviewFormCard {
+        position: static !important;
+      }
+    }
+  </style>
+
+  <!-- Fullscreen image overlay -->
+  <div id="fsOverlay"
+    style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.92);display:none;align-items:center;justify-content:center;"
+    onclick="closeFullscreen()">
+    <img id="fsImg" style="max-width:92vw;max-height:92vh;border-radius:var(--radius);object-fit:contain;" />
+    <button onclick="closeFullscreen()"
+      style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.1);border:none;border-radius:50%;width:40px;height:40px;color:#fff;font-size:1.2rem;cursor:pointer;">✕</button>
+  </div>
+
+  <!-- ── Order Modal ── -->
+  <div class="modal-overlay" id="orderModal">
+    <div class="modal" style="max-width:480px;">
+      <div class="modal-header">
+        <h3 id="orderModalTitle">Place Your Order</h3>
+        <button class="btn btn-glass btn-icon" onclick="closeOrderModal()">
+          <i data-lucide="x" style="width:18px;height:18px;"></i>
+        </button>
+      </div>
+
+      <!-- Step indicators -->
+      <div class="step-indicator">
+        <div class="step-dot done" id="dot1"></div>
+        <div class="step-dot" id="dot2"></div>
+        <div class="step-dot" id="dot3"></div>
+      </div>
+
+      <!-- Step 1: Buyer details -->
+      <div class="order-step active" id="step1">
+        <h4 style="margin-bottom:16px;">Your Details</h4>
+        <div class="flex-col gap-14">
+          <div class="form-group">
+            <label>Full Name *</label>
+            <input type="text" id="oName" placeholder="e.g. Kwame Mensah" />
+          </div>
+          <div class="form-group">
+            <label>Phone Number *</label>
+            <input type="tel" id="oPhone" placeholder="e.g. 0241234567" />
+          </div>
+          <div class="form-group">
+            <label>Delivery Address</label>
+            <input type="text" id="oAddress" placeholder="House / street address" />
+          </div>
+          <div class="form-group">
+            <label>Quantity</label>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <button type="button" class="btn btn-glass btn-icon" onclick="changeQty(-1)"><i data-lucide="minus"
+                  style="width:14px;height:14px;"></i></button>
+              <span id="qtyDisplay" style="font-size:1.1rem;font-weight:700;min-width:30px;text-align:center;">1</span>
+              <button type="button" class="btn btn-glass btn-icon" onclick="changeQty(1)"><i data-lucide="plus"
+                  style="width:14px;height:14px;"></i></button>
+            </div>
+          </div>
+          <div id="step1Error" class="hidden"></div>
+          <button class="btn btn-primary w-full" onclick="goStep(2)">
+            Continue <i data-lucide="arrow-right" style="width:15px;height:15px;"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: Review order -->
+      <div class="order-step" id="step2">
+        <h4 style="margin-bottom:16px;">Review Order</h4>
+        <div id="orderReview" class="glass-sm"
+          style="padding:16px;border-radius:var(--radius-sm);margin-bottom:16px;font-size:0.88rem;line-height:2;"></div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-glass" style="flex:1;" onclick="goStep(1)">
+            <i data-lucide="arrow-left" style="width:14px;height:14px;"></i> Back
+          </button>
+          <button class="btn btn-primary" style="flex:2;" id="btnConfirmOrder" onclick="confirmOrder()">
+            <i data-lucide="check" style="width:15px;height:15px;"></i> Confirm &amp; Proceed
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 3: Confirmation -->
+      <div class="order-step" id="step3">
+        <div style="text-align:center;padding:16px 0 12px;">
+          <div
+            style="width:56px;height:56px;border-radius:50%;background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.30);display:grid;place-items:center;margin:0 auto 10px;">
+            <i data-lucide="check-circle" style="width:28px;height:28px;color:#4ade80;"></i>
+          </div>
+          <h3 style="margin-bottom:2px;font-size:1.1rem;">Order Placed!</h3>
+          <p style="font-size:0.8rem;color:var(--text-muted);">Save this receipt for your records</p>
+        </div>
+        <div id="receiptCard"
+          style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);border-radius:14px;padding:18px;margin-bottom:14px;font-size:0.85rem;">
+          <div
+            style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:12px;border-bottom:1px dashed rgba(255,255,255,0.12);">
+            <div>
+              <div style="font-weight:700;font-size:1rem;color:var(--red);">City Shop</div>
+              <div style="font-size:0.75rem;color:var(--text-muted);">Official Receipt</div>
+            </div>
+            <div style="text-align:right;">
+              <div id="rcRef" style="font-weight:700;font-size:0.82rem;letter-spacing:0.04em;"></div>
+              <div id="rcDate" style="font-size:0.72rem;color:var(--text-muted);"></div>
+            </div>
+          </div>
+          <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px dashed rgba(255,255,255,0.12);">
+            <div
+              style="font-size:0.72rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em;">
+              Sold by</div>
+            <div id="rcStore" style="font-weight:600;"></div>
+            <div id="rcStorePhone" style="font-size:0.78rem;color:var(--text-muted);"></div>
+          </div>
+          <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px dashed rgba(255,255,255,0.12);">
+            <div
+              style="font-size:0.72rem;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em;">
+              Items</div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+              <div id="rcProduct" style="font-weight:600;flex:1;padding-right:8px;"></div>
+              <div id="rcProductPrice" style="white-space:nowrap;"></div>
+            </div>
+            <div id="rcMarkupRow"
+              style="display:none;justify-content:space-between;font-size:0.78rem;color:var(--text-muted);">
+              <div>Promoter fee</div>
+              <div id="rcMarkup"></div>
+            </div>
+            <div id="rcWholesaleRow" style="display:none;font-size:0.75rem;color:#4ade80;margin-top:2px;">Wholesale rate
+              applied</div>
+          </div>
+          <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px dashed rgba(255,255,255,0.12);">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.82rem;">
+              <div style="color:var(--text-muted);">Subtotal</div>
+              <div id="rcSubtotal"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:0.82rem;">
+              <div style="color:var(--text-muted);">Delivery (<span id="rcCity"></span>)</div>
+              <div id="rcDelivery"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-weight:700;font-size:1rem;">
+              <div>Total</div>
+              <div id="rcTotal" style="color:var(--red);"></div>
+            </div>
+          </div>
+          <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px dashed rgba(255,255,255,0.12);">
+            <div
+              style="font-size:0.72rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em;">
+              Buyer</div>
+            <div id="rcBuyer" style="font-weight:600;"></div>
+            <div id="rcPhone" style="font-size:0.78rem;color:var(--text-muted);"></div>
+            <div id="rcAddress" style="font-size:0.78rem;color:var(--text-muted);"></div>
+            <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:0.78rem;">
+              <span id="rcFulfillment" style="color:var(--text-muted);"></span>
+              <span id="rcPayment" style="color:var(--text-muted);"></span>
+            </div>
+          </div>
+          <div style="text-align:center;font-size:0.72rem;color:var(--text-muted);">
+            <div id="rcPaystackRef" style="display:none;margin-bottom:4px;color:#4ade80;font-weight:600;"></div>
+            Thank you for shopping on City Shop Ghana 🇬🇭
+          </div>
+        </div>
+        <button id="btnWhatsAppConfirm" class="btn w-full"
+          style="background:#25D366;color:#fff;border:none;margin-bottom:8px;">
+          <i data-lucide="message-circle" style="width:15px;height:15px;"></i> Send Receipt to WhatsApp
+        </button>
+        <button class="btn btn-glass w-full" onclick="screenshotReceipt()" style="margin-bottom:8px;">
+          <i data-lucide="download" style="width:15px;height:15px;"></i> Save Receipt
+        </button>
+        <button class="btn btn-glass w-full" onclick="closeOrderModal()">Done</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module">
+    import { supabase, placeOrder, submitReview, getReviewsByProduct, trackClick } from './db.js';
+
+    // ── Parse URL params ─────────────────────────────────────────
+    const params = new URLSearchParams(location.search);
+    const productId = params.get('product');
+    const storeSlug = params.get('slug');
+    const promoterId = params.get('ref') || null;
+    const markupParam = parseFloat(params.get('markup') || '0');
+
+    const PAYSTACK_KEY = 'pk_test_d557518624671e9c092c882ae61d279908fce02e'; // ⚠ Replace
+
+    let product, storeData;
+    let selectedCity = ''; let deliveryFee = 0; let fulfillment = 'delivery';
+    let qty = 1;
+    let orderMethod = 'whatsapp';
+    let placedOrder = null;
+    let selectedRating = 0;
+    let allReviews = [];
+
+    // ── Load product ──────────────────────────────────────────────
+
+    async function loadProduct() {
+      if (!productId) {
+        document.getElementById('pageLoader').style.display = 'none';
+        document.body.innerHTML = '<div style="text-align:center;padding:80px;color:#fff;"><h2>No product specified</h2></div>';
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*, stores(*)')
+          .eq('id', productId)
+          .single();
+
+        if (error || !data) throw error || new Error('Product not found');
+
+        product = data;
+        storeData = Array.isArray(data.stores) ? data.stores[0] : data.stores;
+
+        if (storeData?.slug) {
+          document.getElementById('backToStore').href = `store.html?slug=${storeData.slug}`;
+        }
+        renderProduct();
+        showActivityNote();
+        try {
+          allReviews = await getReviewsByProduct(productId);
+        } catch (e) {
+          console.warn('Reviews not available:', e.message);
+          allReviews = [];
+        }
+        renderReviews();
+        document.getElementById('reviewsSection').style.display = 'block';
+
+        document.getElementById('pageLoader').style.display = 'none';
+        document.getElementById('pvLayout').style.display = 'grid';
+        lucide.createIcons();
+
+      } catch (e) {
+        console.error('loadProduct error:', e);
+        document.getElementById('pageLoader').style.display = 'none';
+        document.body.innerHTML = `<div style="text-align:center;padding:80px;color:#fff;">
+        <h2 style="color:#ef4444;">Error Loading Product</h2>
+        <p style="color:rgba(255,255,255,0.6);margin-top:12px;font-family:monospace;">${e?.message || String(e)}</p>
+        <a href="stores.html" style="color:#ef4444;margin-top:20px;display:inline-block;">← Back to Stores</a>
+      </div>`;
+      }
+    }
+
+
+    function renderProduct() {
+      const base = Number(product.price);
+      const markup = markupParam;
+      const final = base + markup;
+
+      document.title = `${product.name} — City Shop`;
+      // Update OG/Twitter meta tags for WhatsApp/social share previews
+      const ogTitle = `${product.name} — GH₵${Number(product.price).toFixed(2)} | City Shop Ghana`;
+      const ogDesc = product.description || `Buy ${product.name} from ${storeData?.name || 'a verified seller'} on City Shop Ghana.`;
+      const ogImg = product.image_url || '';
+      const ogUrl = location.href;
+      document.getElementById('ogTitle')?.setAttribute('content', ogTitle);
+      document.getElementById('ogDesc')?.setAttribute('content', ogDesc);
+      document.getElementById('ogImage')?.setAttribute('content', ogImg);
+      document.getElementById('ogUrl')?.setAttribute('content', ogUrl);
+      document.getElementById('twTitle')?.setAttribute('content', ogTitle);
+      document.getElementById('twImage')?.setAttribute('content', ogImg);
+      const pvName = document.getElementById('pvName');
+      const pvDesc = document.getElementById('pvDesc');
+      const pvCategory = document.getElementById('pvCategory');
+      const pvImage = document.getElementById('pvImage');
+      const fsImg = document.getElementById('fsImg');
+      if (pvName) pvName.textContent = product.name;
+      if (pvDesc) pvDesc.textContent = product.description || '';
+      if (pvCategory) pvCategory.textContent = product.category || '';
+      if (pvImage) { pvImage.src = product.image_url || ''; pvImage.alt = product.name; }
+      if (fsImg) fsImg.src = product.image_url || '';
+
+      // Pricing
+      document.getElementById('pvPriceFinal').textContent = `GH₵ ${final.toFixed(2)}`;
+      if (markup > 0) {
+        document.getElementById('pvPriceBase').textContent = `GH₵ ${base.toFixed(2)}`;
+        document.getElementById('pvPriceBase').style.display = 'inline';
+        document.getElementById('pvMarkupTag').style.display = 'inline-flex';
+      }
+
+      // Stock
+      const stockEl = document.getElementById('pvStock');
+      stockEl.innerHTML = product.in_stock
+        ? `<span style="color:#4ade80;font-weight:600;">✓ In Stock</span>`
+        : `<span style="color:#f87171;font-weight:600;">✗ Out of Stock</span>`;
+
+      // Store info
+      const logoEl = document.getElementById('storeLogo');
+      if (storeData?.logo_url) {
+        logoEl.innerHTML = `<img src="${storeData.logo_url}" style="width:100%;height:100%;object-fit:cover;" />`;
+      } else {
+        logoEl.textContent = storeData?.name?.[0]?.toUpperCase() || 'S';
+      }
+      document.getElementById('storeNameEl').textContent = storeData?.name || '';
+      document.getElementById('storeLinkEl').href = `store.html?slug=${storeData?.slug}`;
+
+      updateSummary();
+    }
+
+    // ── Delivery ──────────────────────────────────────────────────
+    window.updateDelivery = () => {
+      const val = document.getElementById('deliveryCity').value;
+      if (!val) { deliveryFee = 0; selectedCity = ''; fulfillment = 'delivery'; updateSummary(); return; }
+      const [city, fee] = val.split(':');
+      selectedCity = city; deliveryFee = Number(fee);
+      fulfillment = city === 'Pickup' ? 'pickup' : 'delivery';
+      const eta = { Accra: '1-2 days', Tema: '1-2 days', Kumasi: '2-3 days', Takoradi: '3-4 days', 'Cape Coast': '2-3 days', Tamale: '4-5 days', Sunyani: '3-4 days', Ho: '3-4 days', Koforidua: '2-3 days', Pickup: 'Ready same day' };
+      document.getElementById('deliverySummary').innerHTML =
+        `<span style="color:#4ade80;">✓ Est. delivery: ${eta[city] || '2-4 days'}</span>`;
+      updateSummary();
+    };
+
+    function updateSummary() {
+      const regularPrice = Number(product?.price || 0) + markupParam;
+      const wholesalePrice = product?.wholesale_price ? Number(product.wholesale_price) + markupParam : null;
+      const base = (wholesalePrice && qty >= 5) ? wholesalePrice : regularPrice;
+      const total = (base * qty) + deliveryFee;
+
+      // Show wholesale badge when active
+      const wsBadge = document.getElementById('wholesaleBadge');
+      if (wsBadge) {
+        if (wholesalePrice && qty >= 5) {
+          wsBadge.style.display = 'inline-flex';
+          wsBadge.textContent = `Wholesale: GH₵ ${wholesalePrice.toFixed(2)}/item (5+ units)`;
+        } else if (wholesalePrice) {
+          wsBadge.style.display = 'inline-flex';
+          wsBadge.textContent = `Buy 5+ for GH₵ ${wholesalePrice.toFixed(2)}/item`;
+        } else {
+          wsBadge.style.display = 'none';
+        }
+      }
+
+      document.getElementById('summaryProduct').textContent = `GH₵ ${(base * qty).toFixed(2)}`;
+      document.getElementById('summaryDelivery').textContent = `GH₵ ${deliveryFee.toFixed(2)}`;
+      document.getElementById('summaryTotal').textContent = `GH₵ ${total.toFixed(2)}`;
+    }
+
+    // ── Quantity ──────────────────────────────────────────────────
+    window.changeQty = (delta) => {
+      qty = Math.max(1, qty + delta);
+      document.getElementById('qtyDisplay').textContent = qty;
+      updateSummary();
+    };
+
+    // ── Order modal ───────────────────────────────────────────────
+    window.openOrderModal = (method) => {
+      if (!product.in_stock) { showToast('Sorry, this product is out of stock.', 'error'); return; }
+      orderMethod = method;
+      document.getElementById('orderModalTitle').textContent = method === 'paystack' ? 'Buy Now — Pay Online' : 'Order via WhatsApp';
+      goStep(1);
+      document.getElementById('orderModal').classList.add('active');
+      lucide.createIcons();
+    };
+
+    window.closeOrderModal = () => {
+      document.getElementById('orderModal').classList.remove('active');
+      goStep(1);
+      placedOrder = null;
+    };
+
+    window.goStep = (n) => {
+      if (n === 2) {
+        const name = document.getElementById('oName').value.trim();
+        const phone = document.getElementById('oPhone').value.trim();
+        if (!name || !phone) {
+          const err = document.getElementById('step1Error');
+          err.className = 'alert alert-error';
+          err.innerHTML = '<i data-lucide="alert-circle" style="width:15px;height:15px;flex-shrink:0;"></i> Please enter your name and phone number.';
+          lucide.createIcons(); return;
+        }
+        document.getElementById('step1Error').className = 'hidden';
+        buildReview();
+      }
+      [1, 2, 3].forEach(i => {
+        document.getElementById(`step${i}`).classList.toggle('active', i === n);
+        document.getElementById(`dot${i}`).classList.toggle('done', i <= n);
+      });
+    };
+
+    function buildReview() {
+      const base = Number(product.price) + markupParam;
+      const total = (base * qty) + deliveryFee;
+      document.getElementById('orderReview').innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <div><b>Product:</b> ${product.name}</div>
+        <div><b>Qty:</b> ${qty}</div>
+        <div><b>Name:</b> ${document.getElementById('oName').value.trim()}</div>
+        <div><b>Phone:</b> ${document.getElementById('oPhone').value.trim()}</div>
+        ${document.getElementById('oAddress').value.trim() ? `<div><b>Address:</b> ${document.getElementById('oAddress').value.trim()}</div>` : ''}
+        <div><b>City:</b> ${selectedCity || '(not selected)'}</div>
+        <div><b>Fulfillment:</b> ${fulfillment}</div>
+        <div><b>Delivery:</b> GH₵ ${deliveryFee.toFixed(2)}</div>
+        <div style="margin-top:6px;font-size:1rem;font-weight:700;color:var(--red);"><b>Total: GH₵ ${total.toFixed(2)}</b></div>
+        <div><b>Payment:</b> ${orderMethod === 'paystack' ? 'Pay Online (MoMo/Card)' : 'WhatsApp Order'}</div>
+      </div>`;
+    }
+
+    window.confirmOrder = async () => {
+      const btn = document.getElementById('btnConfirmOrder');
+      btn.disabled = true;
+      btn.innerHTML = '<i data-lucide="loader-2" style="width:15px;height:15px;animation:spin 1s linear infinite;"></i> Processing…';
+
+      try {
+        const base = Number(product.price);
+        const total = (base + markupParam) * qty + deliveryFee;
+
+        placedOrder = await placeOrder({
+          storeId: storeData.id,
+          productId: product.id,
+          promoterId: promoterId,
+          buyerName: document.getElementById('oName').value.trim(),
+          buyerPhone: document.getElementById('oPhone').value.trim(),
+          buyerAddress: document.getElementById('oAddress').value.trim(),
+          buyerCity: selectedCity,
+          quantity: qty,
+          basePrice: base,
+          markup: markupParam,
+          deliveryFee,
+          total,
+          fulfillment,
+          paymentMethod: orderMethod === 'paystack' ? 'paystack' : 'whatsapp',
+        });
+
+        if (orderMethod === 'paystack') {
+          launchPaystack(placedOrder, total);
+        } else {
+          goStep(3);
+          showConfirmation(placedOrder);
+        }
+      } catch (e) {
+        showToast(e.message || 'Failed to place order. Try again.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="check" style="width:15px;height:15px;"></i> Confirm & Proceed';
+        lucide.createIcons();
+      }
+    };
+
+    // ── Paystack ──────────────────────────────────────────────────
+    function launchPaystack(order, total) {
+      const handler = PaystackPop.setup({
+        key: PAYSTACK_KEY,
+        email: `${order.buyer_phone}@cityshop.gh`,
+        amount: Math.round(total * 100),
+        currency: 'GHS',
+        ref: order.ref,
+        metadata: { order_id: order.id, product: product.name },
+        callback: (response) => {
+          goStep(3);
+          showConfirmation(order, response.reference);
+        },
+        onClose: () => { showToast('Payment cancelled.', 'error'); },
+      });
+      handler.openIframe();
+    }
+
+    // ── Confirmation ──────────────────────────────────────────────
+    function showConfirmation(order, paystackRef) {
+      // ── Populate receipt fields ──────────────────────────────────
+      const base = Number(product.price || 0);
+      const markup = Number(order.markup || 0);
+      const unitPrice = base + markup;
+      const subtotal = unitPrice * qty;
+      const delFee = Number(order.delivery_fee || 0);
+      const total = Number(order.total || subtotal + delFee);
+      const wsActive = product.wholesale_price && qty >= 5;
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('en-GH', { day: 'numeric', month: 'short', year: 'numeric' });
+      const timeStr = now.toLocaleTimeString('en-GH', { hour: '2-digit', minute: '2-digit' });
+
+      const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+      const show = (id, flex) => { const el = document.getElementById(id); if (el) el.style.display = flex ? 'flex' : 'block'; };
+
+      set('rcRef', order.ref);
+      set('rcDate', `${dateStr} ${timeStr}`);
+      set('rcStore', storeData?.name || 'City Shop Store');
+      set('rcStorePhone', storeData?.phone || storeData?.whatsapp || '');
+      set('rcProduct', `${product.name} × ${qty}`);
+      set('rcProductPrice', `GH₵ ${(unitPrice * qty).toFixed(2)}`);
+      set('rcSubtotal', `GH₵ ${subtotal.toFixed(2)}`);
+      set('rcDelivery', delFee > 0 ? `GH₵ ${delFee.toFixed(2)}` : 'Free');
+      set('rcCity', order.buyer_city || selectedCity || 'Local');
+      set('rcTotal', `GH₵ ${total.toFixed(2)}`);
+      set('rcBuyer', order.buyer_name || '');
+      set('rcPhone', order.buyer_phone || '');
+      set('rcAddress', order.buyer_address || '');
+      set('rcFulfillment', `🚚 ${order.fulfillment === 'pickup' ? 'Store Pickup' : 'Delivery'}`);
+      set('rcPayment', `💳 ${order.payment_method === 'paystack' ? 'Paid Online' : 'WhatsApp Order'}`);
+
+      if (markup > 0) {
+        set('rcMarkup', `+GH₵ ${markup.toFixed(2)}`);
+        show('rcMarkupRow', true);
+      }
+      if (wsActive) show('rcWholesaleRow', false);
+
+      if (paystackRef) {
+        set('rcPaystackRef', `✅ Paystack Ref: ${paystackRef}`);
+        show('rcPaystackRef', false);
+      }
+
+      // ── WhatsApp receipt message ──────────────────────────────────
+      const waMsg = [
+        `🛍️ *City Shop Order Receipt*`,
+        `━━━━━━━━━━━━━━━━━━━━`,
+        `🆔 *Ref:* ${order.ref}`,
+        `📅 *Date:* ${dateStr} ${timeStr}`,
+        ``,
+        `🏪 *Store:* ${storeData?.name || 'City Shop'}`,
+        `📦 *Item:* ${product.name} × ${qty}`,
+        `💰 *Unit Price:* GH₵ ${unitPrice.toFixed(2)}`,
+        markup > 0 ? `   ↳ Includes GH₵ ${markup.toFixed(2)} promoter fee` : '',
+        wsActive ? `   ↳ Wholesale rate applied` : '',
+        ``,
+        `📊 *Subtotal:* GH₵ ${subtotal.toFixed(2)}`,
+        `🚚 *Delivery:* ${delFee > 0 ? `GH₵ ${delFee.toFixed(2)}` : 'Free'} (${order.buyer_city || 'Local'})`,
+        `━━━━━━━━━━━━━━━━━━━━`,
+        `💵 *TOTAL: GH₵ ${total.toFixed(2)}*`,
+        `━━━━━━━━━━━━━━━━━━━━`,
+        ``,
+        `👤 *Buyer:* ${order.buyer_name}`,
+        `📞 *Phone:* ${order.buyer_phone}`,
+        order.buyer_address ? `📍 *Address:* ${order.buyer_address}` : '',
+        `🚚 *Fulfillment:* ${order.fulfillment === 'pickup' ? 'Store Pickup' : 'Delivery'}`,
+        paystackRef ? `✅ *Paid via Paystack:* ${paystackRef}` : `💬 *Payment:* WhatsApp / On Delivery`,
+        ``,
+        `_Thank you for shopping on City Shop Ghana_ 🇬🇭`,
+      ].filter(Boolean).join('\n');
+
+      const waNum = storeData?.whatsapp?.replace(/[^0-9]/g, '') || '';
+      const waUrl = waNum
+        ? `https://wa.me/${waNum}?text=${encodeURIComponent(waMsg)}`
+        : `https://wa.me/?text=${encodeURIComponent(waMsg)}`;
+
+      document.getElementById('btnWhatsAppConfirm').onclick = () => window.open(waUrl, '_blank');
+      lucide.createIcons();
+    }
+
+    // ── Save receipt as screenshot hint ───────────────────────────
+    window.screenshotReceipt = () => {
+      showToast('📸 Take a screenshot to save your receipt!', 'success');
+    };
+
+    // ── Activity note ─────────────────────────────────────────────
+    function showActivityNote() {
+      const count = Math.floor(Math.random() * 5) + 2;
+      document.getElementById('activityNote').innerHTML =
+        `🔥 <b>${count} people</b> bought this in the last 24 hours`;
+    }
+
+    // ── Fullscreen ────────────────────────────────────────────────
+    window.openFullscreen = () => { document.getElementById('fsOverlay').style.display = 'flex'; };
+    window.closeFullscreen = () => { document.getElementById('fsOverlay').style.display = 'none'; };
+
+    // ── Toast ─────────────────────────────────────────────────────
+    window.showToast = (msg, type = 'success') => {
+      const tc = document.getElementById('toastContainer');
+      const t = document.createElement('div');
+      t.className = `toast toast-${type}`;
+      t.textContent = msg;
+      tc.appendChild(t);
+      setTimeout(() => t.remove(), 4000);
+    };
+
+    // ── Reviews ─────────────────────────────────────────────────────
+
+    function starsHtml(rating, size = '0.95rem') {
+      return Array.from({ length: 5 }, (_, i) =>
+        `<span style="color:${i < rating ? '#fbbf24' : 'rgba(255,255,255,0.18)'};font-size:${size};">★</span>`
+      ).join('');
+    }
+
+    function renderReviews() {
+      const list = document.getElementById('reviewsList');
+      const total = allReviews.length;
+
+      // Summary line
+      const avg = total ? (allReviews.reduce((s, r) => s + r.rating, 0) / total) : 0;
+      document.getElementById('reviewSummaryLine').textContent =
+        total ? `${avg.toFixed(1)} ★ · ${total} review${total !== 1 ? 's' : ''}` : 'No reviews yet — be the first!';
+
+      if (total) {
+        // Breakdown bar
+        document.getElementById('ratingBreakdown').style.display = 'block';
+        document.getElementById('avgRatingBig').textContent = avg.toFixed(1);
+        document.getElementById('avgStarsDisplay').innerHTML = starsHtml(Math.round(avg), '1.2rem');
+        document.getElementById('totalReviewCount').textContent = `${total} review${total !== 1 ? 's' : ''}`;
+
+        const counts = [5, 4, 3, 2, 1].map(s => ({ s, n: allReviews.filter(r => r.rating === s).length }));
+        document.getElementById('barBreakdown').innerHTML = counts.map(({ s, n }) => `
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:0.75rem;">
+          <span style="width:10px;text-align:right;color:var(--text-muted);">${s}</span>
+          <span style="color:#fbbf24;font-size:0.80rem;">★</span>
+          <div style="flex:1;height:6px;border-radius:999px;background:rgba(255,255,255,0.08);">
+            <div style="height:100%;border-radius:999px;background:#fbbf24;width:${total ? (n / total * 100).toFixed(0) : 0}%;transition:width 0.6s ease;"></div>
+          </div>
+          <span style="width:16px;color:var(--text-muted);">${n}</span>
+        </div>`).join('');
+      } else {
+        document.getElementById('ratingBreakdown').style.display = 'none';
+      }
+
+      // Review cards
+      if (!total) {
+        list.innerHTML = `<div style="text-align:center;padding:40px 20px;color:var(--text-muted);">
+        <div style="font-size:2.5rem;margin-bottom:10px;">⭐</div>
+        <p>No reviews yet. Be the first to share your experience!</p>
+        <button class="btn btn-primary btn-sm" style="margin-top:16px;" onclick="openReviewForm()">Write a Review</button>
+      </div>`;
+        lucide.createIcons(); return;
+      }
+
+      list.innerHTML = allReviews.map(r => `
+      <div class="review-card">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px;flex-wrap:wrap;">
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span style="font-weight:700;font-size:0.90rem;">${r.buyer_name}</span>
+              ${r.verified ? `<span class="verified-badge"><i data-lucide="check-circle" style="width:9px;height:9px;"></i> Verified Purchase</span>` : ''}
+            </div>
+            <div class="review-stars" style="margin-top:4px;">${starsHtml(r.rating)}</div>
+          </div>
+          <span style="font-size:0.72rem;color:var(--text-muted);white-space:nowrap;">${new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+        </div>
+        ${r.body ? `<p style="font-size:0.85rem;color:var(--text-muted);line-height:1.7;margin:0;">${r.body}</p>` : ''}
+        ${r.reply ? `
+          <div class="reply-bubble">
+            <div style="font-size:0.72rem;font-weight:700;color:var(--red);margin-bottom:4px;">
+              <i data-lucide="corner-down-right" style="width:11px;height:11px;display:inline;"></i> Store Reply
+            </div>
+            <p style="margin:0;font-size:0.82rem;color:var(--text-muted);">${r.reply}</p>
+          </div>` : ''}
+      </div>`).join('');
+      lucide.createIcons();
+    }
+
+    // ── Review form ───────────────────────────────────────────────
+    window.openReviewForm = () => {
+      document.getElementById('reviewFormCard').style.display = 'block';
+      document.getElementById('reviewFormCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    };
+    window.closeReviewForm = () => {
+      document.getElementById('reviewFormCard').style.display = 'none';
+    };
+
+    window.setRating = (val) => {
+      selectedRating = val;
+      document.querySelectorAll('.star-btn').forEach(btn => {
+        btn.textContent = Number(btn.dataset.val) <= val ? '★' : '☆';
+        btn.style.color = Number(btn.dataset.val) <= val ? '#fbbf24' : 'rgba(255,255,255,0.3)';
+      });
+    };
+
+    window.submitReviewForm = async () => {
+      const name = document.getElementById('rvName').value.trim();
+      const body = document.getElementById('rvBody').value.trim();
+      const errEl = document.getElementById('rvError');
+
+      if (!name) { showRvError('Please enter your name.'); return; }
+      if (!selectedRating) { showRvError('Please select a star rating.'); return; }
+
+      const btn = document.getElementById('btnSubmitReview');
+      const txt = document.getElementById('btnReviewTxt');
+      btn.disabled = true; txt.textContent = 'Submitting…';
+
+      try {
+        const r = await submitReview({
+          productId, storeId: storeData.id,
+          buyerName: name, rating: selectedRating, body,
+        });
+        allReviews.unshift(r);
+        renderReviews();
+        closeReviewForm();
+        // Reset form
+        selectedRating = 0;
+        document.getElementById('rvName').value = '';
+        document.getElementById('rvBody').value = '';
+        document.querySelectorAll('.star-btn').forEach(b => { b.textContent = '☆'; b.style.color = ''; });
+        showToast('Review submitted! Thank you 🙏', 'success');
+      } catch (e) {
+        showRvError(e.message || 'Failed to submit. Please try again.');
+      } finally {
+        btn.disabled = false; txt.textContent = 'Submit Review';
+        lucide.createIcons();
+      }
+    };
+
+    function showRvError(msg) {
+      const el = document.getElementById('rvError');
+      el.className = 'alert alert-error';
+      el.innerHTML = `<i data-lucide="alert-circle" style="width:15px;height:15px;flex-shrink:0;"></i> ${msg}`;
+      lucide.createIcons();
+    }
+
+    loadProduct();
+    // Track promoter link click silently
+    if (promoterId && productId) trackClick(promoterId, productId);
+  </script>
+</body>
+
+</html>

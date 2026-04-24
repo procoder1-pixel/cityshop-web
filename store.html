@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>City Shop — Store</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    /* ── Store hero ── */
+    .store-hero {
+      padding: 60px 64px 48px;
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+
+    .store-avatar {
+      width: 96px; height: 96px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, var(--red), var(--red-dark));
+      display: grid;
+      place-items: center;
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+      box-shadow: 0 8px 28px var(--red-glow);
+      overflow: hidden;
+    }
+    .store-avatar img { width:100%; height:100%; object-fit:cover; }
+
+    .store-hero-info  { flex: 1; min-width: 200px; }
+    .store-hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+    /* ── Catalog ── */
+    .catalog-section {
+      padding: 0 64px 64px;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    /* ── Product detail modal ── */
+    .product-detail-img {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      margin-bottom: 20px;
+    }
+    .product-detail-placeholder {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: linear-gradient(135deg, rgba(239,68,68,0.15), rgba(139,92,246,0.10));
+      border-radius: var(--radius-sm);
+      display: grid;
+      place-items: center;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
+    /* ── Not found ── */
+    .not-found { text-align: center; padding: 120px 20px; }
+
+    /* ── Filter bar ── */
+    .store-filter {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 24px;
+      align-items: center;
+    }
+    .store-filter input,
+    .store-filter select {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: var(--radius-sm);
+      padding: 12px 18px;
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      transition: var(--transition);
+    }
+    .store-filter input { flex: 1; min-width: 200px; }
+    .store-filter input:focus { border-color: var(--red); background: rgba(239,68,68,0.08); }
+    .store-filter input::placeholder { color: rgba(255,255,255,0.30); }
+    .store-filter select option { background: #1a0a2e; }
+
+    @media (max-width: 768px) {
+      .store-hero      { padding: 32px 20px 28px; }
+      .catalog-section { padding: 0 20px 40px; }
+    }
+  </style>
+  <meta id="ogTitle" property="og:title" content="City Shop Ghana" />
+  <meta id="ogDesc" property="og:description" content="Shop from verified sellers across Ghana." />
+  <meta id="ogImage" property="og:image" content="" />
+  <meta id="ogUrl" property="og:url" content="" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="City Shop Ghana" />
+  <meta name="twitter:card" content="summary_large_image" />
+</head>
+<body>
+
+<div class="loading-overlay" id="pageLoader"><div class="spinner"></div></div>
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ── Navbar ── -->
+<nav class="navbar">
+  <a class="navbar-brand" href="index.html" style="text-decoration:none;">
+    <div class="brand-logo">C</div>
+    <span class="brand-name">City<span>Shop</span></span>
+  </a>
+  <div class="navbar-actions">
+    <a href="auth.html?mode=login" class="btn btn-glass btn-sm">Sign In</a>
+    <a href="auth.html?mode=signup" class="btn btn-primary btn-sm">Get Started</a>
+  </div>
+</nav>
+
+<!-- ── Store Not Found ── -->
+<div id="notFound" class="not-found hidden">
+  <div style="width:80px;height:80px;border-radius:50%;background:rgba(239,68,68,0.12);display:grid;place-items:center;margin:0 auto 24px;color:var(--red);">
+    <i data-lucide="store-x" style="width:36px;height:36px;"></i>
+  </div>
+  <h2 class="mb-16">Store Not Found</h2>
+  <p style="max-width:360px;margin:0 auto 28px;">The store you're looking for doesn't exist or the link may be incorrect.</p>
+  <a href="index.html" class="btn btn-primary">← Back to City Shop</a>
+</div>
+
+<!-- ── Store Content ── -->
+<div id="storeContent" class="hidden">
+
+  <!-- Hero -->
+  <div class="store-hero">
+    <div class="store-avatar" id="storeAvatar">?</div>
+    <div class="store-hero-info">
+      <div class="flex gap-12 mb-8" style="align-items:center;flex-wrap:wrap;">
+        <h1 id="storeName" style="font-size:clamp(1.6rem,4vw,2.6rem);">Loading…</h1>
+        <span id="verifiedBadge" class="badge badge-green" style="display:none;">
+          <i data-lucide="check-circle" style="width:12px;height:12px;"></i> Verified Store
+        </span>
+      </div>
+      <p id="storeDesc" style="font-size:1rem;max-width:480px;line-height:1.7;"></p>
+      <div id="storeRatingEl" style="display:none;align-items:center;margin-top:6px;font-size:1rem;"></div>
+      <div class="flex gap-20 mt-16" style="flex-wrap:wrap;">
+        <div>
+          <div style="font-size:1.3rem;font-weight:800;" id="heroProductCount">0</div>
+          <div class="text-muted" style="font-size:0.82rem;">Products</div>
+        </div>
+        <div>
+          <div style="font-size:1.3rem;font-weight:800;" id="heroCategoryCount">0</div>
+          <div class="text-muted" style="font-size:0.82rem;">Categories</div>
+        </div>
+      </div>
+    </div>
+    <div class="store-hero-actions">
+      <button class="btn btn-glass" onclick="shareStore()">
+        <i data-lucide="share-2" style="width:16px;height:16px;"></i> Share Store
+      </button>
+      <button class="btn btn-primary" id="contactBtn">
+        <i data-lucide="message-circle" style="width:16px;height:16px;"></i> Contact on WhatsApp
+      </button>
+    </div>
+  </div>
+
+  <!-- Catalog -->
+  <div class="catalog-section">
+
+    <!-- Filter Bar -->
+    <div class="store-filter mb-24">
+      <input type="text" id="catalogSearch"
+             placeholder="🔍  Search products in this store…"
+             oninput="filterCatalog()" />
+      <select id="catalogCategory" onchange="filterCatalog()">
+        <option value="">All Categories</option>
+      </select>
+      <select id="catalogSort" onchange="filterCatalog()">
+        <option value="newest">Newest First</option>
+        <option value="price-asc">Price: Low → High</option>
+        <option value="price-desc">Price: High → Low</option>
+        <option value="name">Name A–Z</option>
+      </select>
+    </div>
+
+    <!-- Results summary -->
+    <div class="flex-between mb-16" id="catalogMeta" style="display:none!important;">
+      <p id="catalogCount" style="font-size:0.88rem;"></p>
+    </div>
+
+    <!-- Grid -->
+    <div class="grid-3" id="catalogGrid">
+      <div style="text-align:center;padding:60px;grid-column:1/-1;">
+        <div class="spinner"></div>
+        <p style="margin-top:16px;">Loading catalog…</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Product Detail Modal ── -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal" style="max-width:580px;">
+    <div class="modal-header">
+      <h3 id="detailName">Product</h3>
+      <button class="btn btn-glass btn-icon" onclick="closeDetail()">
+        <i data-lucide="x" style="width:18px;height:18px;"></i>
+      </button>
+    </div>
+    <div id="detailImg"></div>
+    <div class="flex-between mb-12">
+      <span class="badge badge-red" id="detailCategory"></span>
+      <span style="font-size:1.6rem;font-weight:800;color:var(--red);" id="detailPrice"></span>
+    </div>
+    <p id="detailDesc" style="line-height:1.7;margin-bottom:24px;"></p>
+    <div id="detailStockRow" class="mb-16"></div>
+    <div class="flex gap-12">
+      <button class="btn btn-primary w-full" id="detailWhatsApp">
+        <i data-lucide="message-circle" style="width:18px;height:18px;"></i>
+        Order via WhatsApp
+      </button>
+      <button class="btn btn-glass btn-sm" onclick="shareProduct()" style="flex-shrink:0;" title="Share link">
+        <i data-lucide="share-2" style="width:16px;height:16px;"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  // Single JOIN fetch — one network round-trip instead of two
+  import { getStoreWithProducts } from './db.js';
+
+  let storeData   = null;
+  let allProducts = [];
+  let filtered    = [];
+
+  // ── Boot ─────────────────────────────────────────────────────
+  (async () => {
+    const slug = new URLSearchParams(location.search).get('slug');
+    if (!slug) { showNotFound(); return; }
+
+    try {
+      const result = await getStoreWithProducts(slug);
+      storeData   = result.store;
+      allProducts = result.products;
+      filtered    = [...allProducts];
+
+      renderStoreHero();
+      buildCategoryFilter();
+      renderCatalog();
+
+      document.getElementById('pageLoader').style.display = 'none';
+      document.getElementById('storeContent').classList.remove('hidden');
+      document.title = `${storeData.name} — City Shop`;
+      document.getElementById('ogTitle')?.setAttribute('content', `${storeData.name} | City Shop Ghana`);
+      document.getElementById('ogDesc')?.setAttribute('content', storeData.description || `Shop from ${storeData.name} on City Shop Ghana.`);
+      document.getElementById('ogImage')?.setAttribute('content', storeData.banner_url || storeData.logo_url || '');
+      document.getElementById('ogUrl')?.setAttribute('content', location.href);
+      lucide.createIcons();
+    } catch (e) {
+      console.error('store.html boot error:', e);
+      showNotFound();
+    }
+  })();
+
+  // ── Render Store Hero ─────────────────────────────────────────
+  function renderStoreHero() {
+    document.getElementById('storeName').textContent = storeData.name;
+    document.getElementById('storeDesc').textContent = storeData.description || 'Welcome to our store!';
+    document.getElementById('heroProductCount').textContent = allProducts.length;
+    if (storeData.is_verified) document.getElementById('verifiedBadge').style.display = 'inline-flex';
+
+    const cats = new Set(allProducts.map(p => p.category).filter(Boolean));
+    document.getElementById('heroCategoryCount').textContent = cats.size;
+
+    const avatar = document.getElementById('storeAvatar');
+    if (storeData.logo_url) {
+      avatar.innerHTML = `<img src="${storeData.logo_url}"
+        onerror="this.parentElement.textContent='${storeData.name[0].toUpperCase()}'" />`;
+    } else {
+      avatar.textContent = storeData.name[0].toUpperCase();
+    }
+
+    // Contact / WhatsApp button
+    document.getElementById('contactBtn').onclick = () => {
+      const msg = `Hi! I found your store "${storeData.name}" on City Shop. I'd like to inquire about your products.\n🔗 ${location.href}`;
+      const wa  = storeData.whatsapp
+        ? `https://wa.me/${storeData.whatsapp.replace(/[^0-9]/g,'')}?text=${encodeURIComponent(msg)}`
+        : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+      window.open(wa, '_blank');
+    };
+
+    // Load store reviews
+    loadStoreReviews();
+  }
+
+  async function loadStoreReviews() {
+    try {
+      const { data: reviews } = await fetch(
+        `https://pehvrvgptplowukdgone.supabase.co/rest/v1/reviews?store_id=eq.${storeData.id}&select=rating`,
+        { headers: { apikey: 'sb_publishable_9tOFD1hgehzp6woo0w-5-g_CAYZSvtN' } }
+      ).then(r => r.json().then(data => ({ data })));
+
+      const list = Array.isArray(reviews) ? reviews : [];
+      if (!list.length) return;
+      const avg   = list.reduce((s,r) => s + r.rating, 0) / list.length;
+      const stars = Array.from({length:5}, (_,i) =>
+        `<span style="color:${i < Math.round(avg) ? '#fbbf24' : 'rgba(255,255,255,0.2)'};">★</span>`
+      ).join('');
+      const ratingEl = document.getElementById('storeRatingEl');
+      if (ratingEl) {
+        ratingEl.innerHTML = `${stars} <span style="font-size:0.82rem;color:var(--text-muted);margin-left:6px;">${avg.toFixed(1)} (${list.length} review${list.length !== 1 ? 's' : ''})</span>`;
+        ratingEl.style.display = 'flex';
+      }
+    } catch(e) { console.error(e); }
+  }
+
+  // ── Category filter dropdown ──────────────────────────────────
+  function buildCategoryFilter() {
+    const cats = [...new Set(allProducts.map(p => p.category).filter(Boolean))].sort();
+    const sel  = document.getElementById('catalogCategory');
+    cats.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c; o.textContent = c;
+      sel.appendChild(o);
+    });
+  }
+
+  // ── Render Catalog ────────────────────────────────────────────
+  function renderCatalog() {
+    const grid = document.getElementById('catalogGrid');
+    if (!filtered.length) {
+      grid.innerHTML = `<div style="text-align:center;padding:60px;grid-column:1/-1;">
+        <div style="width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,0.06);display:grid;place-items:center;margin:0 auto 16px;color:var(--text-muted);">
+          <i data-lucide="search-x" style="width:28px;height:28px;"></i></div>
+        <h3>No products found</h3>
+        <p style="margin-top:8px;">Try a different search or category filter</p>
+      </div>`;
+      lucide.createIcons();
+      return;
+    }
+
+    grid.innerHTML = filtered.map(p => {
+      const img = p.image_url
+        ? `<img src="${p.image_url}" class="product-card-img"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='grid';" />
+           <div class="product-card-img-placeholder" style="display:none;">
+             <i data-lucide="image" style="width:36px;height:36px;"></i></div>`
+        : `<div class="product-card-img-placeholder">
+             <i data-lucide="image" style="width:36px;height:36px;"></i></div>`;
+
+      const stockBadge = p.in_stock !== false
+        ? `<span style="position:absolute;top:10px;left:10px;" class="badge badge-green">In Stock</span>`
+        : `<span style="position:absolute;top:10px;left:10px;" class="badge badge-red">Out of Stock</span>`;
+
+      return `
+        <div class="product-card" data-pid="${p.id}" data-slug="${storeData.slug}" onclick="goToProduct(this)" style="cursor:pointer;">
+          ${img}
+          ${stockBadge}
+          <div class="product-card-body">
+            ${p.category ? `<div class="product-card-category">${p.category}</div>` : ''}
+            <div class="product-card-name">${p.name}</div>
+            ${p.description ? `<p style="font-size:0.8rem;margin:6px 0 10px;line-height:1.5;">${p.description.slice(0,80)}${p.description.length>80?'…':''}</p>` : ''}
+            <div class="product-card-price">GH₵ ${Number(p.price).toFixed(2)}</div>
+          </div>
+          <div class="product-card-actions">
+            <button class="btn btn-primary btn-sm w-full"
+              onclick="event.stopPropagation();whatsappOrder('${encodeURIComponent(p.name)}',${p.price})">
+              <i data-lucide="message-circle" style="width:14px;height:14px;"></i> Order Now
+            </button>
+          </div>
+        </div>`;
+    }).join('');
+    lucide.createIcons();
+  }
+
+  // ── Filter & Sort ─────────────────────────────────────────────
+  window.filterCatalog = () => {
+    const q    = document.getElementById('catalogSearch').value.toLowerCase();
+    const cat  = document.getElementById('catalogCategory').value;
+    const sort = document.getElementById('catalogSort').value;
+
+    filtered = allProducts.filter(p =>
+      (!q   || p.name.toLowerCase().includes(q) || (p.description||'').toLowerCase().includes(q)) &&
+      (!cat || p.category === cat)
+    );
+
+    if (sort === 'price-asc')  filtered.sort((a,b) => a.price - b.price);
+    if (sort === 'price-desc') filtered.sort((a,b) => b.price - a.price);
+    if (sort === 'name')       filtered.sort((a,b) => a.name.localeCompare(b.name));
+    // 'newest' — default order from DB (already newest first)
+
+    renderCatalog();
+  };
+
+  // ── Product Detail Modal ──────────────────────────────────────
+  window.goToProduct = (el) => {
+    const pid  = el.dataset.pid;
+    const slug = el.dataset.slug;
+    location.href = `product-view.html?product=${pid}&slug=${slug}`;
+  };
+
+  window.openDetail = (id) => {
+    const p = allProducts.find(x => x.id === id);
+    if (!p) return;
+
+    document.getElementById('detailName').textContent    = p.name;
+    document.getElementById('detailPrice').textContent   = `GH₵ ${Number(p.price).toFixed(2)}`;
+    document.getElementById('detailDesc').textContent    = p.description || 'No description provided.';
+    document.getElementById('detailCategory').textContent = p.category || 'Product';
+
+    const stockEl = document.getElementById('detailStockRow');
+    stockEl.innerHTML = p.in_stock !== false
+      ? `<span class="badge badge-green"><i data-lucide="check-circle" style="width:12px;height:12px;"></i> In Stock</span>`
+      : `<span class="badge badge-red"><i data-lucide="x-circle" style="width:12px;height:12px;"></i> Out of Stock</span>`;
+
+    const imgEl = document.getElementById('detailImg');
+    imgEl.innerHTML = p.image_url
+      ? `<img src="${p.image_url}" class="product-detail-img"
+           onerror="this.outerHTML='<div class=product-detail-placeholder><i data-lucide=image style=width:48px;height:48px;></i></div>'" />`
+      : `<div class="product-detail-placeholder">
+           <i data-lucide="image" style="width:48px;height:48px;"></i></div>`;
+
+    document.getElementById('detailWhatsApp').onclick = () =>
+      whatsappOrder(encodeURIComponent(p.name), p.price);
+
+    document.getElementById('detailModal').classList.add('active');
+    lucide.createIcons();
+  };
+
+  window.closeDetail = () => document.getElementById('detailModal').classList.remove('active');
+
+  // ── WhatsApp Order Message ─────────────────────────────────────
+  window.whatsappOrder = (encodedName, price) => {
+    const name = decodeURIComponent(encodedName);
+    const msg  = [
+      `Hello! I'd like to order from *${storeData?.name}*`,
+      ``,
+      `🛒 *${name}*`,
+      `💰 Price: GH₵ ${Number(price).toFixed(2)}`,
+      ``,
+      `🔗 Store: ${location.href}`,
+      ``,
+      `_Found on City Shop Ghana_`,
+    ].join('\n');
+
+    const wa = storeData?.whatsapp
+      ? `https://wa.me/${storeData.whatsapp.replace(/[^0-9]/g,'')}?text=${encodeURIComponent(msg)}`
+      : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+
+    window.open(wa, '_blank');
+    showToast('Opening WhatsApp…', 'success');
+  };
+
+  // ── Share Buttons ─────────────────────────────────────────────
+  window.shareStore = () => {
+    if (navigator.share) {
+      navigator.share({ title: storeData.name, text: `Check out ${storeData.name} on City Shop!`, url: location.href });
+    } else {
+      navigator.clipboard.writeText(location.href);
+      showToast('Store link copied to clipboard!', 'success');
+    }
+  };
+
+  window.shareProduct = () => {
+    navigator.clipboard.writeText(location.href);
+    showToast('Product link copied!', 'success');
+  };
+
+  // ── Not Found ─────────────────────────────────────────────────
+  function showNotFound() {
+    document.getElementById('pageLoader').style.display = 'none';
+    document.getElementById('notFound').classList.remove('hidden');
+    lucide.createIcons();
+  }
+
+  // ── Toast ──────────────────────────────────────────────────────
+  window.showToast = (msg, type = 'success') => {
+    const tc = document.getElementById('toastContainer');
+    const t  = document.createElement('div');
+    t.className = `toast toast-${type}`;
+    t.innerHTML = `<i data-lucide="${type==='success'?'check-circle':'alert-circle'}" style="width:18px;height:18px;"></i>${msg}`;
+    tc.appendChild(t);
+    lucide.createIcons();
+    setTimeout(() => t.remove(), 4200);
+  };
+</script>
+</body>
+</html>
