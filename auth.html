@@ -499,7 +499,7 @@
       btn.textContent = 'Sending…';
       try {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: window.location.origin + '/auth.html?reset=true',
+          redirectTo: 'https://cityshop-web.vercel.app/auth.html',
         });
         if (error) throw error;
         showAlert('Reset link sent! Check your email inbox.', 'success');
@@ -544,6 +544,76 @@
       const session = await getSession();
       if (session) redirectToDashboard(session.user.id);
     })();
+
+    // ── Handle password reset link from email ─────────────────
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        showResetPasswordForm();
+      }
+    });
+
+    function showResetPasswordForm() {
+      // Hide all forms, show reset form
+      document.getElementById('signupForm').classList.add('hidden');
+      document.getElementById('loginForm').classList.add('hidden');
+      document.getElementById('tabLogin').classList.remove('active');
+      document.getElementById('tabSignup').classList.remove('active');
+      document.getElementById('formTitle').textContent = 'Set New Password';
+
+      // Create reset form if not exists
+      if (!document.getElementById('resetForm')) {
+        const div = document.createElement('div');
+        div.id = 'resetForm';
+        div.innerHTML = `
+          <div class="form-group mb-8">
+            <label>New Password</label>
+            <div style="position:relative;">
+              <input type="password" id="new_password" placeholder="Minimum 6 characters"
+                oninput="checkStrength(this.value)" style="padding-right:44px;" />
+              <button type="button" onclick="togglePass('new_password','eyeReset')"
+                style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.5);padding:0;display:flex;">
+                <i data-lucide="eye" id="eyeReset" style="width:18px;height:18px;"></i>
+              </button>
+            </div>
+          </div>
+          <div style="margin-bottom:20px;">
+            <div style="display:flex;gap:4px;margin-bottom:4px;">
+              <div id="sb1" style="flex:1;height:3px;border-radius:99px;background:rgba(255,255,255,0.1);transition:background 0.3s;"></div>
+              <div id="sb2" style="flex:1;height:3px;border-radius:99px;background:rgba(255,255,255,0.1);transition:background 0.3s;"></div>
+              <div id="sb3" style="flex:1;height:3px;border-radius:99px;background:rgba(255,255,255,0.1);transition:background 0.3s;"></div>
+              <div id="sb4" style="flex:1;height:3px;border-radius:99px;background:rgba(255,255,255,0.1);transition:background 0.3s;"></div>
+            </div>
+            <p id="strengthLabel" style="font-size:0.75rem;color:rgba(255,255,255,0.4);margin:0;"></p>
+          </div>
+          <button class="btn btn-primary w-full" onclick="handlePasswordReset()">
+            <i data-lucide="lock" style="width:18px;height:18px;"></i>
+            <span id="btnResetText">Update Password</span>
+          </button>`;
+        document.getElementById('loginForm').parentNode.appendChild(div);
+        lucide.createIcons();
+      }
+      document.getElementById('resetForm').classList.remove('hidden');
+    }
+
+    window.handlePasswordReset = async () => {
+      const pass = document.getElementById('new_password').value;
+      if (!pass || pass.length < 6) return showAlert('Password must be at least 6 characters.', 'error');
+      const btn = document.getElementById('btnResetText');
+      btn.textContent = 'Updating…';
+      try {
+        const { error } = await supabase.auth.updateUser({ password: pass });
+        if (error) throw error;
+        showAlert('Password updated! Redirecting to login…', 'success');
+        setTimeout(() => {
+          document.getElementById('resetForm').classList.add('hidden');
+          switchTab('login');
+        }, 2000);
+      } catch(err) {
+        showAlert(err.message || 'Failed to update password.', 'error');
+      } finally {
+        btn.textContent = 'Update Password';
+      }
+    };
   </script>
 </body>
 
