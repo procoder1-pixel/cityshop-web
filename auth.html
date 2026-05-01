@@ -269,9 +269,33 @@
             <input type="email" id="su_email" placeholder="you@example.com" />
           </div>
 
-          <div class="form-group mb-24">
+          <div class="form-group mb-8">
             <label>Password</label>
-            <input type="password" id="su_password" placeholder="Minimum 6 characters" />
+            <div style="position:relative;">
+              <input type="password" id="su_password" placeholder="Minimum 6 characters"
+                oninput="checkStrength(this.value)"
+                style="padding-right:44px;" />
+              <button type="button" onclick="togglePass('su_password','eyeSignup')"
+                style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.5);padding:0;display:flex;">
+                <i data-lucide="eye" id="eyeSignup" style="width:18px;height:18px;"></i>
+              </button>
+            </div>
+          </div>
+          <!-- Password strength -->
+          <div style="margin-bottom:16px;">
+            <div style="display:flex;gap:4px;margin-bottom:4px;">
+              <div id="sb1" style="flex:1;height:3px;border-radius:99px;background:rgba(255,255,255,0.1);transition:background 0.3s;"></div>
+              <div id="sb2" style="flex:1;height:3px;border-radius:99px;background:rgba(255,255,255,0.1);transition:background 0.3s;"></div>
+              <div id="sb3" style="flex:1;height:3px;border-radius:99px;background:rgba(255,255,255,0.1);transition:background 0.3s;"></div>
+              <div id="sb4" style="flex:1;height:3px;border-radius:99px;background:rgba(255,255,255,0.1);transition:background 0.3s;"></div>
+            </div>
+            <p id="strengthLabel" style="font-size:0.75rem;color:rgba(255,255,255,0.4);margin:0;"></p>
+            <ul style="font-size:0.75rem;color:rgba(255,255,255,0.4);margin:4px 0 0 16px;padding:0;list-style:disc;">
+              <li id="req1">At least 6 characters</li>
+              <li id="req2">At least one uppercase letter (A-Z)</li>
+              <li id="req3">At least one number (0-9)</li>
+              <li id="req4">At least one special character (!@#$...)</li>
+            </ul>
           </div>
 
           <button class="btn btn-primary w-full" id="btnSignup" onclick="handleSignup()">
@@ -292,9 +316,34 @@
             <input type="email" id="li_email" placeholder="you@example.com" />
           </div>
 
-          <div class="form-group mb-24">
-            <label>Password</label>
-            <input type="password" id="li_password" placeholder="Your password" />
+          <div class="form-group mb-8">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <label style="margin:0;">Password</label>
+              <a href="#" onclick="showForgotPassword()" style="font-size:0.8rem;color:var(--red);">Forgot password?</a>
+            </div>
+            <div style="position:relative;">
+              <input type="password" id="li_password" placeholder="Your password"
+                style="padding-right:44px;" />
+              <button type="button" onclick="togglePass('li_password','eyeLogin')"
+                style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(255,255,255,0.5);padding:0;display:flex;">
+                <i data-lucide="eye" id="eyeLogin" style="width:18px;height:18px;"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Forgot password form (hidden by default) -->
+          <div id="forgotForm" class="hidden" style="margin-bottom:16px;">
+            <div class="form-group mb-8">
+              <label>Enter your email to reset password</label>
+              <input type="email" id="forgot_email" placeholder="you@example.com" />
+            </div>
+            <button class="btn btn-glass w-full" onclick="handleForgotPassword()">
+              <i data-lucide="mail" style="width:16px;height:16px;"></i>
+              <span id="btnForgotText">Send Reset Link</span>
+            </button>
+            <p style="font-size:0.8rem;color:rgba(255,255,255,0.4);text-align:center;margin-top:8px;">
+              <a href="#" onclick="hideForgotPassword()" style="color:var(--red);">← Back to login</a>
+            </p>
           </div>
 
           <button class="btn btn-primary w-full" id="btnLogin" onclick="handleLogin()">
@@ -316,7 +365,7 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <script type="module">
-    import { signUp, signIn, getProfile, getSession } from './db.js';
+    import { signUp, signIn, getProfile, getSession, supabase } from './db.js';
 
     lucide.createIcons();
 
@@ -401,6 +450,66 @@
         // Do NOT redirect — wait for user to retry.
       }
     }
+
+    // ── Show/Hide Password ───────────────────────────────────────
+    window.togglePass = (inputId, iconId) => {
+      const input = document.getElementById(inputId);
+      const icon  = document.getElementById(iconId);
+      const isHidden = input.type === 'password';
+      input.type = isHidden ? 'text' : 'password';
+      icon.setAttribute('data-lucide', isHidden ? 'eye-off' : 'eye');
+      lucide.createIcons();
+    };
+
+    // ── Password Strength ─────────────────────────────────────
+    window.checkStrength = (pass) => {
+      const bars   = ['sb1','sb2','sb3','sb4'];
+      const colors = ['#ef4444','#f97316','#eab308','#22c55e'];
+      const labels = ['','Weak','Fair','Good','Strong'];
+      const reqs   = [
+        pass.length >= 6,
+        /[A-Z]/.test(pass),
+        /[0-9]/.test(pass),
+        /[^A-Za-z0-9]/.test(pass),
+      ];
+      const score = reqs.filter(Boolean).length;
+      bars.forEach((id, i) => {
+        document.getElementById(id).style.background = i < score ? colors[score-1] : 'rgba(255,255,255,0.1)';
+      });
+      document.getElementById('strengthLabel').textContent = pass ? labels[score] : '';
+      document.getElementById('strengthLabel').style.color = score > 0 ? colors[score-1] : 'rgba(255,255,255,0.4)';
+      ['req1','req2','req3','req4'].forEach((id, i) => {
+        document.getElementById(id).style.color = reqs[i] ? '#22c55e' : 'rgba(255,255,255,0.4)';
+      });
+    };
+
+    // ── Forgot Password ───────────────────────────────────────
+    window.showForgotPassword = () => {
+      document.getElementById('forgotForm').classList.remove('hidden');
+      document.getElementById('btnLogin').style.display = 'none';
+    };
+    window.hideForgotPassword = () => {
+      document.getElementById('forgotForm').classList.add('hidden');
+      document.getElementById('btnLogin').style.display = '';
+    };
+    window.handleForgotPassword = async () => {
+      const email = document.getElementById('forgot_email').value.trim();
+      if (!email) return showAlert('Enter your email address.', 'error');
+      const btn = document.getElementById('btnForgotText');
+      btn.textContent = 'Sending…';
+      try {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin + '/auth.html?reset=true',
+        });
+        if (error) throw error;
+        showAlert('Reset link sent! Check your email inbox.', 'success');
+        hideForgotPassword();
+      } catch(err) {
+        showAlert(err.message || 'Failed to send reset email.', 'error');
+      } finally {
+        btn.textContent = 'Send Reset Link';
+      }
+    };
 
     // ── UI Helpers ─────────────────────────────────────────────
     function showAlert(msg, type) {

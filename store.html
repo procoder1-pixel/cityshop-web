@@ -345,22 +345,22 @@
 
     grid.innerHTML = filtered.map(p => {
       const img = p.image_url
-        ? `<img src="${p.image_url}" class="product-card-img"
+        ? `<img src="${p.image_url}" class="product-card-img" style="pointer-events:none;"
              onerror="this.style.display='none';this.nextElementSibling.style.display='grid';" />
-           <div class="product-card-img-placeholder" style="display:none;">
-             <i data-lucide="image" style="width:36px;height:36px;"></i></div>`
-        : `<div class="product-card-img-placeholder">
-             <i data-lucide="image" style="width:36px;height:36px;"></i></div>`;
+           <div class="product-card-img-placeholder" style="display:none;pointer-events:none;">
+             <i data-lucide="package" style="width:36px;height:36px;"></i></div>`
+        : `<div class="product-card-img-placeholder" style="pointer-events:none;">
+             <i data-lucide="package" style="width:36px;height:36px;"></i></div>`;
 
       const stockBadge = p.in_stock !== false
-        ? `<span style="position:absolute;top:10px;left:10px;" class="badge badge-green">In Stock</span>`
-        : `<span style="position:absolute;top:10px;left:10px;" class="badge badge-red">Out of Stock</span>`;
+        ? `<span style="position:absolute;top:10px;left:10px;pointer-events:none;" class="badge badge-green">In Stock</span>`
+        : `<span style="position:absolute;top:10px;left:10px;pointer-events:none;" class="badge badge-red">Out of Stock</span>`;
 
       return `
         <div class="product-card" data-pid="${p.id}" data-slug="${storeData.slug}" onclick="goToProduct(this)" style="cursor:pointer;">
           ${img}
           ${stockBadge}
-          <div class="product-card-body">
+          <div class="product-card-body" style="pointer-events:none;">
             ${p.category ? `<div class="product-card-category">${p.category}</div>` : ''}
             <div class="product-card-name">${p.name}</div>
             ${p.description ? `<p style="font-size:0.8rem;margin:6px 0 10px;line-height:1.5;">${p.description.slice(0,80)}${p.description.length>80?'…':''}</p>` : ''}
@@ -457,18 +457,63 @@
 
   // ── Share Buttons ─────────────────────────────────────────────
   window.shareStore = () => {
-    if (navigator.share) {
-      navigator.share({ title: storeData.name, text: `Check out ${storeData.name} on City Shop!`, url: location.href });
-    } else {
-      navigator.clipboard.writeText(location.href);
-      showToast('Store link copied to clipboard!', 'success');
-    }
+    const url = location.href;
+    const text = `🛍️ Shop at ${storeData.name} on City Shop Ghana!\n\nVerified seller · Pay with MoMo or Card\n\n${url}`;
+    showShareModal(storeData.name, url, text);
   };
 
   window.shareProduct = () => {
-    navigator.clipboard.writeText(location.href);
+    const url = location.href;
     showToast('Product link copied!', 'success');
+    navigator.clipboard.writeText(url);
   };
+
+  function showShareModal(name, url, text) {
+    // Remove existing modal
+    document.getElementById('shareModal')?.remove();
+    const m = document.createElement('div');
+    m.id = 'shareModal';
+    m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;';
+    m.innerHTML = `
+      <div style="background:#1a1730;border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:28px;max-width:420px;width:100%;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <h3 style="margin:0;font-size:1.1rem;">Share Store</h3>
+          <button onclick="document.getElementById('shareModal').remove()" style="background:none;border:none;color:rgba(255,255,255,0.5);cursor:pointer;font-size:1.4rem;line-height:1;">×</button>
+        </div>
+        <!-- Store URL -->
+        <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+          <span style="flex:1;font-size:0.8rem;color:rgba(255,255,255,0.7);word-break:break-all;">${url}</span>
+          <button onclick="navigator.clipboard.writeText('${url}');showToast('Link copied!','success')"
+            style="background:var(--red);border:none;color:#fff;padding:6px 12px;border-radius:8px;font-size:0.78rem;cursor:pointer;white-space:nowrap;flex-shrink:0;">
+            Copy Link
+          </button>
+        </div>
+        <!-- Share platforms -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+          <button onclick="window.open('https://wa.me/?text='+encodeURIComponent('${text}'),'_blank')"
+            style="background:#25D366;border:none;color:#fff;padding:12px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;">
+            📱 WhatsApp
+          </button>
+          <button onclick="navigator.clipboard.writeText('${text}');showToast('Message copied for TikTok/Instagram!','success')"
+            style="background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);border:none;color:#fff;padding:12px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;">
+            📸 Copy for Ads
+          </button>
+          <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent('${url}'),'_blank')"
+            style="background:#1877f2;border:none;color:#fff;padding:12px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;">
+            📘 Facebook
+          </button>
+          <button onclick="window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent('${text}'),'_blank')"
+            style="background:#000;border:none;color:#fff;padding:12px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;">
+            𝕏 Twitter/X
+          </button>
+        </div>
+        <p style="font-size:0.75rem;color:rgba(255,255,255,0.35);text-align:center;margin:0;">
+          💡 Tip: Use "Copy for Ads" to paste in TikTok, Instagram or Facebook bio
+        </p>
+      </div>`;
+    document.body.appendChild(m);
+    m.addEventListener('click', e => { if (e.target === m) m.remove(); });
+  }
 
   // ── Not Found ─────────────────────────────────────────────────
   function showNotFound() {
