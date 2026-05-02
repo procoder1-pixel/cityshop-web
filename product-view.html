@@ -78,8 +78,14 @@
 
   <!-- Left — Image -->
   <div>
-    <div class="pv-img-wrap" id="imgWrap" onclick="openFullscreen()">
-      <img id="pvImage" src="" alt="" onerror="this.parentElement.innerHTML='<div style=height:100%;display:grid;place-items:center;><i data-lucide=package style=width:60px;height:60px;color:rgba(255,255,255,0.15);></i></div>'" />
+    <div class="pv-img-wrap" id="imgWrap" onclick="openFullscreen()" style="position:relative;">
+      <div id="pvImgPlaceholder" style="position:absolute;inset:0;display:grid;place-items:center;opacity:1;transition:opacity 0.3s;">
+        <i data-lucide="package" style="width:60px;height:60px;color:rgba(255,255,255,0.15);"></i>
+      </div>
+      <img id="pvImage" src="" alt=""
+        onload="document.getElementById('pvImgPlaceholder').style.opacity='0';"
+        onerror="document.getElementById('pvImgPlaceholder').style.opacity='1';"
+        style="position:relative;z-index:1;" />
       <div style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.5);border-radius:8px;padding:6px 8px;cursor:pointer;">
         <i data-lucide="maximize-2" style="width:16px;height:16px;color:#fff;"></i>
       </div>
