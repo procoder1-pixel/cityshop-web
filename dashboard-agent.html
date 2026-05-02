@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -19,39 +20,60 @@
     /* ── Delete / Edit overlay buttons ── */
     .card-actions-overlay {
       position: absolute;
-      top: 10px; right: 10px;
+      top: 10px;
+      right: 10px;
       display: flex;
       gap: 6px;
       opacity: 0;
       transition: var(--transition);
     }
-    .product-card:hover .card-actions-overlay { opacity: 1; }
+
+    .product-card:hover .card-actions-overlay {
+      opacity: 1;
+    }
 
     .card-btn {
-      width: 32px; height: 32px;
+      width: 32px;
+      height: 32px;
       border-radius: var(--radius-xs);
-      border: none; cursor: pointer;
-      display: grid; place-items: center;
+      border: none;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
       color: #fff;
       transition: var(--transition);
     }
-    .card-btn-edit   { background: rgba(59,130,246,0.85); }
-    .card-btn-delete { background: rgba(239,68,68,0.85); }
-    .card-btn:hover  { transform: scale(1.10); }
+
+    .card-btn-edit {
+      background: rgba(59, 130, 246, 0.85);
+    }
+
+    .card-btn-delete {
+      background: rgba(239, 68, 68, 0.85);
+    }
+
+    .card-btn:hover {
+      transform: scale(1.10);
+    }
 
     /* ── Store URL box ── */
     .store-url-box {
       display: flex;
       align-items: center;
       gap: 12px;
-      background: rgba(255,255,255,0.06);
+      background: rgba(255, 255, 255, 0.06);
       border: 1px solid var(--glass-border);
       border-radius: var(--radius-sm);
       padding: 14px 18px;
     }
+
     .store-url-box input {
-      flex: 1; background: transparent; border: none;
-      color: var(--text-muted); font-size: 0.9rem; outline: none;
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      outline: none;
       font-family: 'Inter', sans-serif;
     }
 
@@ -61,11 +83,14 @@
       padding: 60px 20px;
       grid-column: 1 / -1;
     }
+
     .empty-state-icon {
-      width: 72px; height: 72px;
+      width: 72px;
+      height: 72px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.06);
-      display: grid; place-items: center;
+      background: rgba(255, 255, 255, 0.06);
+      display: grid;
+      place-items: center;
       margin: 0 auto 20px;
       color: var(--text-muted);
     }
@@ -80,455 +105,517 @@
       cursor: pointer;
       color: var(--text-primary);
     }
+
     .sidebar-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.55);
+      background: rgba(0, 0, 0, 0.55);
       z-index: 199;
     }
+
     @media (max-width: 900px) {
-      .mobile-menu-btn  { display: grid; place-items: center; }
-      .sidebar-overlay.open { display: block; }
+      .mobile-menu-btn {
+        display: grid;
+        place-items: center;
+      }
+
+      .sidebar-overlay.open {
+        display: block;
+      }
     }
 
     /* ── In-stock toggle in card ── */
     .stock-badge {
       position: absolute;
-      top: 10px; left: 10px;
-      font-size: 0.68rem; font-weight: 700;
+      top: 10px;
+      left: 10px;
+      font-size: 0.68rem;
+      font-weight: 700;
       padding: 3px 9px;
       border-radius: 999px;
     }
   </style>
 </head>
+
 <body>
 
-<div class="loading-overlay" id="pageLoader"><div class="spinner"></div></div>
-<div class="toast-container" id="toastContainer"></div>
-<div id="announcementBanner" style="display:none;width:100%;padding:10px 20px;font-size:0.88rem;font-weight:500;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);"></div>
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+  <div class="loading-overlay" id="pageLoader">
+    <div class="spinner"></div>
+  </div>
+  <div class="toast-container" id="toastContainer"></div>
+  <div id="announcementBanner"
+    style="display:none;width:100%;padding:10px 20px;font-size:0.88rem;font-weight:500;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);">
+  </div>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
-<div class="dashboard-layout" id="app" style="display:none;">
+  <div class="dashboard-layout" id="app" style="display:none;">
 
-  <!-- ── Sidebar ── -->
-  <aside class="sidebar" id="sidebar">
-    <div style="margin-bottom:24px;">
-      <a class="navbar-brand" href="index.html" style="text-decoration:none;">
-        <div class="brand-logo">C</div>
-        <span class="brand-name">City<span>Shop</span></span>
-      </a>
-    </div>
-
-    <!-- Profile card in sidebar -->
-    <div style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:var(--radius-sm);background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);margin-bottom:16px;cursor:pointer;" onclick="showSection('profile')">
-      <div id="sidebarAvatar" style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--red-dark));display:grid;place-items:center;font-weight:800;color:#fff;font-size:0.95rem;flex-shrink:0;overflow:hidden;border:2px solid rgba(239,68,68,0.4);"></div>
-      <div style="min-width:0;">
-        <div id="sidebarName" style="font-size:0.82rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
-        <div style="font-size:0.70rem;color:var(--text-muted);">Agent · Edit Profile</div>
-      </div>
-    </div>
-
-    <div class="badge badge-red mb-16" id="subBadge" style="width:fit-content;">
-      <i data-lucide="shield" style="width:12px;height:12px;"></i>
-      Inactive
-    </div>
-
-    <div class="sidebar-section-label">Store</div>
-    <div class="sidebar-item active" id="navOverview" onclick="showSection('overview')">
-      <i data-lucide="layout-dashboard" style="width:18px;height:18px;"></i> Overview
-    </div>
-    <div class="sidebar-item" id="navOrders" onclick="showSection('orders')">
-      <i data-lucide="shopping-bag" style="width:18px;height:18px;"></i> Orders
-      <span id="newOrdersBadge" style="display:none;margin-left:auto;background:var(--red);color:#fff;font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:999px;"></span>
-    </div>
-    <div class="sidebar-item" id="navReviews" onclick="showSection('reviews')">
-      <i data-lucide="star" style="width:18px;height:18px;"></i> Reviews
-    </div>
-    <div class="sidebar-item" id="navProducts" onclick="showSection('products')">
-      <i data-lucide="package" style="width:18px;height:18px;"></i> Products
-    </div>
-    <div class="sidebar-item" id="navSettings" onclick="showSection('store-settings')">
-      <i data-lucide="settings" style="width:18px;height:18px;"></i> Store Settings
-    </div>
-    <div class="sidebar-item" id="navProfile" onclick="showSection('profile')">
-      <i data-lucide="user-circle" style="width:18px;height:18px;"></i> My Profile
-    </div>
-
-    <div class="sidebar-section-label mt-16">Account</div>
-    <div class="sidebar-item" onclick="handleSignOut()">
-      <i data-lucide="log-out" style="width:18px;height:18px;"></i> Sign Out
-    </div>
-
-    <div style="margin-top:auto;padding-top:24px;">
-      <div class="glass-sm" style="padding:16px;">
-        <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">Store URL</div>
-        <div id="sidebarSlug" style="font-size:0.82rem;font-weight:600;color:var(--red);word-break:break-all;"></div>
-      </div>
-    </div>
-  </aside>
-
-  <!-- ── Main Content ── -->
-  <main class="main-content">
-
-    <!-- ─ Topbar ─ -->
-    <div class="flex-between mb-32">
-      <div style="display:flex;align-items:center;gap:14px;">
-        <button class="mobile-menu-btn" onclick="openSidebar()">
-          <i data-lucide="menu" style="width:20px;height:20px;"></i>
-        </button>
-        <div>
-          <h2 id="topGreeting">Good morning 👋</h2>
-          <p id="topSubtitle">Manage your store and products</p>
-        </div>
-      </div>
-      <div class="flex gap-12">
-        <a id="viewStoreBtn" href="#" target="_blank" class="btn btn-glass btn-sm">
-          <i data-lucide="external-link" style="width:16px;height:16px;"></i>
-          View Store
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar" id="sidebar">
+      <div style="margin-bottom:24px;">
+        <a class="navbar-brand" href="index.html" style="text-decoration:none;">
+          <div class="brand-logo">C</div>
+          <span class="brand-name">City<span>Shop</span></span>
         </a>
-        <button class="btn btn-primary btn-sm add-product-btn" onclick="openProductModal()" id="addProductBtnTop">
-          <i data-lucide="plus" style="width:16px;height:16px;"></i>
-          Add Product
-        </button>
       </div>
-    </div>
 
-    <!-- ─ PAYMENT GATE ─ -->
-    <div id="payGate" class="glass" style="display:none;">
-      <div class="pay-gate">
-        <div class="pay-gate-icon">
-          <i data-lucide="lock" style="width:36px;height:36px;"></i>
+      <!-- Profile card in sidebar -->
+      <div
+        style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:var(--radius-sm);background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);margin-bottom:16px;cursor:pointer;"
+        onclick="showSection('profile')">
+        <div id="sidebarAvatar"
+          style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--red-dark));display:grid;place-items:center;font-weight:800;color:#fff;font-size:0.95rem;flex-shrink:0;overflow:hidden;border:2px solid rgba(239,68,68,0.4);">
         </div>
-        <h2 class="mb-16">Activate Your Store</h2>
-        <p style="max-width:340px;margin:0 auto 28px;line-height:1.7;">
-          Your store is ready but locked. Pay the monthly subscription of
-          <strong style="color:var(--red);">GH₵ 90</strong> to unlock all features and start listing products.
-        </p>
-        <div class="glass-sm" style="padding:20px;margin-bottom:28px;text-align:left;">
-          <div class="flex-between mb-8">
-            <span class="text-muted" style="font-size:0.85rem;">Monthly Subscription</span>
-            <span style="font-weight:700;">GH₵ 90.00</span>
-          </div>
-          <div class="flex-between">
-            <span class="text-muted" style="font-size:0.85rem;">Features Unlocked</span>
-            <span class="badge badge-green">All Features</span>
-          </div>
+        <div style="min-width:0;">
+          <div id="sidebarName"
+            style="font-size:0.82rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+          <div style="font-size:0.70rem;color:var(--text-muted);">Agent · Edit Profile</div>
         </div>
-        <button class="btn btn-primary btn-lg" id="payBtn" onclick="initiatePayment()">
-          <i data-lucide="credit-card" style="width:20px;height:20px;"></i>
-          Pay GH₵ 90 with Paystack
-        </button>
-        <p style="font-size:0.78rem;margin-top:14px;">
-          <i data-lucide="shield-check" style="width:12px;height:12px;display:inline;margin-right:4px;"></i>
-          Secured by Paystack
-        </p>
       </div>
-    </div>
 
-    <!-- ─ OVERVIEW SECTION ─ -->
-    <div id="sectionOverview">
-      <div class="stats-grid mb-32">
-        <div class="stat-card">
-          <div class="stat-icon"><i data-lucide="package" style="width:22px;height:22px;"></i></div>
-          <div><div class="stat-value" id="statProducts">0</div><div class="stat-label">Total Products</div></div>
+      <div class="badge badge-red mb-16" id="subBadge" style="width:fit-content;">
+        <i data-lucide="shield" style="width:12px;height:12px;"></i>
+        Inactive
+      </div>
+
+      <div class="sidebar-section-label">Store</div>
+      <div class="sidebar-item active" id="navOverview" onclick="showSection('overview')">
+        <i data-lucide="layout-dashboard" style="width:18px;height:18px;"></i> Overview
+      </div>
+      <div class="sidebar-item" id="navOrders" onclick="showSection('orders')">
+        <i data-lucide="shopping-bag" style="width:18px;height:18px;"></i> Orders
+        <span id="newOrdersBadge"
+          style="display:none;margin-left:auto;background:var(--red);color:#fff;font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:999px;"></span>
+      </div>
+      <div class="sidebar-item" id="navReviews" onclick="showSection('reviews')">
+        <i data-lucide="star" style="width:18px;height:18px;"></i> Reviews
+      </div>
+      <div class="sidebar-item" id="navProducts" onclick="showSection('products')">
+        <i data-lucide="package" style="width:18px;height:18px;"></i> Products
+      </div>
+      <div class="sidebar-item" id="navSettings" onclick="showSection('store-settings')">
+        <i data-lucide="settings" style="width:18px;height:18px;"></i> Store Settings
+      </div>
+      <div class="sidebar-item" id="navProfile" onclick="showSection('profile')">
+        <i data-lucide="user-circle" style="width:18px;height:18px;"></i> My Profile
+      </div>
+
+      <div class="sidebar-section-label mt-16">Account</div>
+      <div class="sidebar-item" onclick="handleSignOut()">
+        <i data-lucide="log-out" style="width:18px;height:18px;"></i> Sign Out
+      </div>
+
+      <div style="margin-top:auto;padding-top:24px;">
+        <div class="glass-sm" style="padding:16px;">
+          <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;">Store URL</div>
+          <div id="sidebarSlug" style="font-size:0.82rem;font-weight:600;color:var(--red);word-break:break-all;"></div>
         </div>
-        <div class="stat-card">
-          <div class="stat-icon" style="background:linear-gradient(135deg,#10b981,#047857);">
-            <i data-lucide="check-circle" style="width:22px;height:22px;"></i>
-          </div>
-          <div><div class="stat-value" id="statInStock">0</div><div class="stat-label">In Stock</div></div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">
-            <i data-lucide="tag" style="width:22px;height:22px;"></i>
-          </div>
-          <div><div class="stat-value" id="statCategories">0</div><div class="stat-label">Categories</div></div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);">
-            <i data-lucide="trending-up" style="width:22px;height:22px;"></i>
-          </div>
+      </div>
+    </aside>
+
+    <!-- ── Main Content ── -->
+    <main class="main-content">
+
+      <!-- ─ Topbar ─ -->
+      <div class="flex-between mb-32">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <button class="mobile-menu-btn" onclick="openSidebar()">
+            <i data-lucide="menu" style="width:20px;height:20px;"></i>
+          </button>
           <div>
-            <div class="stat-value" id="statHighest">–</div>
-            <div class="stat-label">Highest Price</div>
+            <h2 id="topGreeting">Good morning 👋</h2>
+            <p id="topSubtitle">Manage your store and products</p>
           </div>
         </div>
-      </div>
-
-      <h3 class="mb-16">Recent Products</h3>
-      <div class="product-grid" id="recentProducts">
-        <div class="empty-state">
-          <div class="empty-state-icon"><i data-lucide="package" style="width:32px;height:32px;"></i></div>
-          <h3>No products yet</h3>
-          <p style="margin-top:8px;">Add your first product to get started</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- ─ ORDERS SECTION ─ -->
-    <div id="sectionOrders" style="display:none;">
-      <div class="flex-between mb-24" style="flex-wrap:wrap;gap:12px;">
-        <div>
-          <h3>Orders</h3>
-          <p style="font-size:0.85rem;margin-top:4px;color:var(--text-muted);">Manage incoming orders from buyers</p>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;" id="orderFilterBtns">
-          <button class="btn btn-glass btn-sm order-filter active" data-status="all"        onclick="filterOrders('all')">All</button>
-          <button class="btn btn-glass btn-sm order-filter"        data-status="pending"    onclick="filterOrders('pending')">Pending</button>
-          <button class="btn btn-glass btn-sm order-filter"        data-status="confirmed"  onclick="filterOrders('confirmed')">Confirmed</button>
-          <button class="btn btn-glass btn-sm order-filter"        data-status="processing" onclick="filterOrders('processing')">Processing</button>
-          <button class="btn btn-glass btn-sm order-filter"        data-status="shipped"    onclick="filterOrders('shipped')">Shipped</button>
-          <button class="btn btn-glass btn-sm order-filter"        data-status="delivered"  onclick="filterOrders('delivered')">Delivered</button>
-        </div>
-      </div>
-      <div id="ordersGrid" style="display:flex;flex-direction:column;gap:14px;">
-        <div style="text-align:center;padding:60px;color:var(--text-muted);">
-          <div class="spinner"></div><p style="margin-top:16px;">Loading orders…</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- ─ REVIEWS SECTION ─ -->
-    <div id="sectionReviews" style="display:none;">
-      <div class="flex-between mb-24" style="flex-wrap:wrap;gap:12px;">
-        <div>
-          <h3>Customer Reviews</h3>
-          <p style="font-size:0.85rem;margin-top:4px;color:var(--text-muted);" id="reviewStatsLine">Loading reviews…</p>
-        </div>
-      </div>
-      <div id="reviewsDashGrid" style="display:flex;flex-direction:column;gap:14px;">
-        <div style="text-align:center;padding:60px;color:var(--text-muted);">
-          <div class="spinner"></div><p style="margin-top:16px;">Loading reviews…</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Reply modal -->
-    <div class="modal-overlay" id="replyModal">
-      <div class="modal" style="max-width:440px;">
-        <div class="modal-header">
-          <h3>Reply to Review</h3>
-          <button class="btn btn-glass btn-icon" onclick="closeReplyModal()">
-            <i data-lucide="x" style="width:18px;height:18px;"></i>
-          </button>
-        </div>
-        <div id="replyReviewPreview" class="glass-sm" style="padding:14px;border-radius:var(--radius-sm);margin-bottom:16px;font-size:0.85rem;"></div>
-        <div class="form-group" style="margin-bottom:16px;">
-          <label>Your Reply</label>
-          <textarea id="replyText" rows="4" placeholder="Write a professional reply to this review…"
-            style="width:100%;background:rgba(255,255,255,0.07);border:1px solid var(--glass-border);border-radius:var(--radius-xs);padding:10px 14px;color:var(--text-primary);font-family:'Inter',sans-serif;font-size:0.88rem;outline:none;resize:vertical;"></textarea>
-        </div>
-        <div style="display:flex;gap:10px;">
-          <button class="btn btn-glass" style="flex:1;" onclick="closeReplyModal()">Cancel</button>
-          <button class="btn btn-primary" style="flex:2;" id="btnSendReply" onclick="sendReply()">
-            <i data-lucide="send" style="width:14px;height:14px;"></i> Send Reply
+        <div class="flex gap-12">
+          <a id="viewStoreBtn" href="#" target="_blank" class="btn btn-glass btn-sm">
+            <i data-lucide="external-link" style="width:16px;height:16px;"></i>
+            View Store
+          </a>
+          <button class="btn btn-primary btn-sm add-product-btn" onclick="openProductModal()" id="addProductBtnTop">
+            <i data-lucide="plus" style="width:16px;height:16px;"></i>
+            Add Product
           </button>
         </div>
       </div>
-    </div>
 
-    <!-- ─ PRODUCTS SECTION ─ -->
-    <div id="sectionProducts" style="display:none;">
-      <div class="flex-between mb-24">
-        <div>
-          <h3>All Products</h3>
-          <p style="font-size:0.85rem;margin-top:4px;" id="productCountLabel">0 products</p>
-        </div>
-        <button class="btn btn-primary btn-sm add-product-btn" onclick="openProductModal()">
-          <i data-lucide="plus" style="width:16px;height:16px;"></i> Add Product
-        </button>
-      </div>
-      <div class="product-grid" id="allProductsGrid">
-        <div class="empty-state">
-          <div class="empty-state-icon"><i data-lucide="package" style="width:32px;height:32px;"></i></div>
-          <h3>No products yet</h3>
-          <p style="margin-top:8px;">Your products will appear here</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- ─ STORE SETTINGS SECTION ─ -->
-    <div id="sectionStoreSettings" style="display:none;">
-      <h3 class="mb-24">Store Settings</h3>
-      <div class="glass" style="padding:32px;max-width:580px;">
-
-        <div class="form-group mb-16">
-          <label>Store Name</label>
-          <input type="text" id="set_name" placeholder="My Awesome Store" />
-        </div>
-
-        <div class="form-group mb-16">
-          <label>Store Description</label>
-          <textarea id="set_desc" rows="3" placeholder="Tell buyers about your store…"></textarea>
-        </div>
-
-        <div class="form-group mb-16">
-          <label>WhatsApp Number (with country code, e.g. +233241234567)</label>
-          <input type="tel" id="set_whatsapp" placeholder="+233241234567" />
-        </div>
-
-        <div class="form-group mb-16">
-          <label>Phone Number</label>
-          <input type="tel" id="set_phone" placeholder="+233241234567" />
-        </div>
-
-        <!-- Store Banner Upload -->
-        <div class="form-group mb-16">
-          <label>Store Banner <span style="font-size:0.75rem;color:var(--text-muted);">(shown at top of your store page)</span></label>
-          <div id="storeBannerPreview" onclick="document.getElementById('storeBannerInput').click()"
-            style="width:100%;height:130px;border-radius:12px;border:2px dashed rgba(255,255,255,0.15);overflow:hidden;cursor:pointer;position:relative;background:rgba(255,255,255,0.04);">
-            <img id="storeBannerImg" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none;" />
-            <div id="storeBannerPlaceholder" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
-              <i data-lucide="image-plus" style="width:28px;height:28px;color:rgba(255,255,255,0.3);"></i>
-              <span style="font-size:0.78rem;color:rgba(255,255,255,0.4);">Click to upload store banner</span>
+      <!-- ─ PAYMENT GATE ─ -->
+      <div id="payGate" class="glass" style="display:none;">
+        <div class="pay-gate">
+          <div class="pay-gate-icon">
+            <i data-lucide="lock" style="width:36px;height:36px;"></i>
+          </div>
+          <h2 class="mb-16">Activate Your Store</h2>
+          <p style="max-width:340px;margin:0 auto 28px;line-height:1.7;">
+            Your store is ready but locked. Pay the monthly subscription of
+            <strong style="color:var(--red);">GH₵ 90</strong> to unlock all features and start listing products.
+          </p>
+          <div class="glass-sm" style="padding:20px;margin-bottom:28px;text-align:left;">
+            <div class="flex-between mb-8">
+              <span class="text-muted" style="font-size:0.85rem;">Monthly Subscription</span>
+              <span style="font-weight:700;">GH₵ 90.00</span>
             </div>
-            <div id="storeBannerSpinner" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;">
-              <div class="spinner" style="width:24px;height:24px;"></div>
+            <div class="flex-between">
+              <span class="text-muted" style="font-size:0.85rem;">Features Unlocked</span>
+              <span class="badge badge-green">All Features</span>
             </div>
           </div>
-          <input type="file" id="storeBannerInput" accept="image/*" style="display:none;" onchange="uploadStoreBanner(event)" />
+          <button class="btn btn-primary btn-lg" id="payBtn" onclick="initiatePayment()">
+            <i data-lucide="credit-card" style="width:20px;height:20px;"></i>
+            Pay GH₵ 90 with Paystack
+          </button>
+          <p style="font-size:0.78rem;margin-top:14px;">
+            <i data-lucide="shield-check" style="width:12px;height:12px;display:inline;margin-right:4px;"></i>
+            Secured by Paystack
+          </p>
         </div>
+      </div>
 
-        <!-- Store Logo Upload -->
-        <div class="form-group mb-16">
-          <label>Store Logo <span style="font-size:0.75rem;color:var(--text-muted);">(shown as your store icon)</span></label>
-          <div style="display:flex;align-items:center;gap:16px;">
-            <div id="storeLogoPreview" onclick="document.getElementById('storeLogoInput').click()"
-              style="width:80px;height:80px;border-radius:50%;border:2px dashed rgba(255,255,255,0.2);overflow:hidden;cursor:pointer;position:relative;background:rgba(255,255,255,0.04);flex-shrink:0;">
-              <img id="storeLogoImg" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none;" />
-              <div id="storeLogoPlaceholder" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
-                <i data-lucide="image-plus" style="width:22px;height:22px;color:rgba(255,255,255,0.3);"></i>
-              </div>
-              <div id="storeLogoSpinner" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;">
-                <div class="spinner" style="width:20px;height:20px;"></div>
-              </div>
+      <!-- ─ OVERVIEW SECTION ─ -->
+      <div id="sectionOverview">
+        <div class="stats-grid mb-32">
+          <div class="stat-card">
+            <div class="stat-icon"><i data-lucide="package" style="width:22px;height:22px;"></i></div>
+            <div>
+              <div class="stat-value" id="statProducts">0</div>
+              <div class="stat-label">Total Products</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#10b981,#047857);">
+              <i data-lucide="check-circle" style="width:22px;height:22px;"></i>
             </div>
             <div>
-              <p style="font-size:0.82rem;color:var(--text-muted);margin:0 0 6px;">Click the circle to upload your logo</p>
-              <p style="font-size:0.75rem;color:rgba(255,255,255,0.3);margin:0;">JPG, PNG, WEBP · Max 5MB</p>
+              <div class="stat-value" id="statInStock">0</div>
+              <div class="stat-label">In Stock</div>
             </div>
           </div>
-          <input type="file" id="storeLogoInput" accept="image/*" style="display:none;" onchange="uploadStoreLogo(event)" />
-          <input type="hidden" id="set_logo" />
+          <div class="stat-card">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);">
+              <i data-lucide="tag" style="width:22px;height:22px;"></i>
+            </div>
+            <div>
+              <div class="stat-value" id="statCategories">0</div>
+              <div class="stat-label">Categories</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon" style="background:linear-gradient(135deg,#f59e0b,#d97706);">
+              <i data-lucide="trending-up" style="width:22px;height:22px;"></i>
+            </div>
+            <div>
+              <div class="stat-value" id="statHighest">–</div>
+              <div class="stat-label">Highest Price</div>
+            </div>
+          </div>
         </div>
 
-        <div class="mb-16">
-          <label class="form-group" style="gap:6px;">
-            <span style="font-size:0.85rem;font-weight:500;color:var(--text-muted);">Custom Store Slug</span>
-          </label>
-          <div style="display:flex;gap:10px;align-items:center;">
-            <input type="text" id="set_slug_input"
-              style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);border-radius:var(--radius-sm);padding:13px 18px;color:var(--text-primary);font-size:0.95rem;font-family:'Inter',sans-serif;outline:none;transition:var(--transition);flex:1;"
-              placeholder="your-store-slug"
-              oninput="slugifyInput()" />
-            <button class="btn btn-glass btn-sm" onclick="checkSlug()">
-              <i data-lucide="search" style="width:14px;height:14px;"></i> Check
+        <h3 class="mb-16">Recent Products</h3>
+        <div class="product-grid" id="recentProducts">
+          <div class="empty-state">
+            <div class="empty-state-icon"><i data-lucide="package" style="width:32px;height:32px;"></i></div>
+            <h3>No products yet</h3>
+            <p style="margin-top:8px;">Add your first product to get started</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─ ORDERS SECTION ─ -->
+      <div id="sectionOrders" style="display:none;">
+        <div class="flex-between mb-24" style="flex-wrap:wrap;gap:12px;">
+          <div>
+            <h3>Orders</h3>
+            <p style="font-size:0.85rem;margin-top:4px;color:var(--text-muted);">Manage incoming orders from buyers</p>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;" id="orderFilterBtns">
+            <button class="btn btn-glass btn-sm order-filter active" data-status="all"
+              onclick="filterOrders('all')">All</button>
+            <button class="btn btn-glass btn-sm order-filter" data-status="pending"
+              onclick="filterOrders('pending')">Pending</button>
+            <button class="btn btn-glass btn-sm order-filter" data-status="confirmed"
+              onclick="filterOrders('confirmed')">Confirmed</button>
+            <button class="btn btn-glass btn-sm order-filter" data-status="processing"
+              onclick="filterOrders('processing')">Processing</button>
+            <button class="btn btn-glass btn-sm order-filter" data-status="shipped"
+              onclick="filterOrders('shipped')">Shipped</button>
+            <button class="btn btn-glass btn-sm order-filter" data-status="delivered"
+              onclick="filterOrders('delivered')">Delivered</button>
+          </div>
+        </div>
+        <div id="ordersGrid" style="display:flex;flex-direction:column;gap:14px;">
+          <div style="text-align:center;padding:60px;color:var(--text-muted);">
+            <div class="spinner"></div>
+            <p style="margin-top:16px;">Loading orders…</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─ REVIEWS SECTION ─ -->
+      <div id="sectionReviews" style="display:none;">
+        <div class="flex-between mb-24" style="flex-wrap:wrap;gap:12px;">
+          <div>
+            <h3>Customer Reviews</h3>
+            <p style="font-size:0.85rem;margin-top:4px;color:var(--text-muted);" id="reviewStatsLine">Loading reviews…
+            </p>
+          </div>
+        </div>
+        <div id="reviewsDashGrid" style="display:flex;flex-direction:column;gap:14px;">
+          <div style="text-align:center;padding:60px;color:var(--text-muted);">
+            <div class="spinner"></div>
+            <p style="margin-top:16px;">Loading reviews…</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reply modal -->
+      <div class="modal-overlay" id="replyModal">
+        <div class="modal" style="max-width:440px;">
+          <div class="modal-header">
+            <h3>Reply to Review</h3>
+            <button class="btn btn-glass btn-icon" onclick="closeReplyModal()">
+              <i data-lucide="x" style="width:18px;height:18px;"></i>
             </button>
           </div>
-          <p style="font-size:0.78rem;color:var(--text-muted);margin-top:5px;" id="slugHint">
-            Lowercase letters, numbers, and hyphens only.
+          <div id="replyReviewPreview" class="glass-sm"
+            style="padding:14px;border-radius:var(--radius-sm);margin-bottom:16px;font-size:0.85rem;"></div>
+          <div class="form-group" style="margin-bottom:16px;">
+            <label>Your Reply</label>
+            <textarea id="replyText" rows="4" placeholder="Write a professional reply to this review…"
+              style="width:100%;background:rgba(255,255,255,0.07);border:1px solid var(--glass-border);border-radius:var(--radius-xs);padding:10px 14px;color:var(--text-primary);font-family:'Inter',sans-serif;font-size:0.88rem;outline:none;resize:vertical;"></textarea>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn btn-glass" style="flex:1;" onclick="closeReplyModal()">Cancel</button>
+            <button class="btn btn-primary" style="flex:2;" id="btnSendReply" onclick="sendReply()">
+              <i data-lucide="send" style="width:14px;height:14px;"></i> Send Reply
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─ PRODUCTS SECTION ─ -->
+      <div id="sectionProducts" style="display:none;">
+        <div class="flex-between mb-24">
+          <div>
+            <h3>All Products</h3>
+            <p style="font-size:0.85rem;margin-top:4px;" id="productCountLabel">0 products</p>
+          </div>
+          <button class="btn btn-primary btn-sm add-product-btn" onclick="openProductModal()">
+            <i data-lucide="plus" style="width:16px;height:16px;"></i> Add Product
+          </button>
+        </div>
+        <div class="product-grid" id="allProductsGrid">
+          <div class="empty-state">
+            <div class="empty-state-icon"><i data-lucide="package" style="width:32px;height:32px;"></i></div>
+            <h3>No products yet</h3>
+            <p style="margin-top:8px;">Your products will appear here</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─ STORE SETTINGS SECTION ─ -->
+      <div id="sectionStoreSettings" style="display:none;">
+        <h3 class="mb-24">Store Settings</h3>
+        <div class="glass" style="padding:32px;max-width:580px;">
+
+          <div class="form-group mb-16">
+            <label>Store Name</label>
+            <input type="text" id="set_name" placeholder="My Awesome Store" />
+          </div>
+
+          <div class="form-group mb-16">
+            <label>Store Description</label>
+            <textarea id="set_desc" rows="3" placeholder="Tell buyers about your store…"></textarea>
+          </div>
+
+          <div class="form-group mb-16">
+            <label>WhatsApp Number (with country code, e.g. +233241234567)</label>
+            <input type="tel" id="set_whatsapp" placeholder="+233241234567" />
+          </div>
+
+          <div class="form-group mb-16">
+            <label>Phone Number</label>
+            <input type="tel" id="set_phone" placeholder="+233241234567" />
+          </div>
+
+          <!-- Store Banner Upload -->
+          <div class="form-group mb-16">
+            <label>Store Banner <span style="font-size:0.75rem;color:var(--text-muted);">(shown at top of your store
+                page)</span></label>
+            <div id="storeBannerPreview" onclick="document.getElementById('storeBannerInput').click()"
+              style="width:100%;height:130px;border-radius:12px;border:2px dashed rgba(255,255,255,0.15);overflow:hidden;cursor:pointer;position:relative;background:rgba(255,255,255,0.04);">
+              <img id="storeBannerImg" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none;" />
+              <div id="storeBannerPlaceholder"
+                style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
+                <i data-lucide="image-plus" style="width:28px;height:28px;color:rgba(255,255,255,0.3);"></i>
+                <span style="font-size:0.78rem;color:rgba(255,255,255,0.4);">Click to upload store banner</span>
+              </div>
+              <div id="storeBannerSpinner"
+                style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;">
+                <div class="spinner" style="width:24px;height:24px;"></div>
+              </div>
+            </div>
+            <input type="file" id="storeBannerInput" accept="image/*" style="display:none;"
+              onchange="uploadStoreBanner(event)" />
+          </div>
+
+          <!-- Store Logo Upload -->
+          <div class="form-group mb-16">
+            <label>Store Logo <span style="font-size:0.75rem;color:var(--text-muted);">(shown as your store
+                icon)</span></label>
+            <div style="display:flex;align-items:center;gap:16px;">
+              <div id="storeLogoPreview" onclick="document.getElementById('storeLogoInput').click()"
+                style="width:80px;height:80px;border-radius:50%;border:2px dashed rgba(255,255,255,0.2);overflow:hidden;cursor:pointer;position:relative;background:rgba(255,255,255,0.04);flex-shrink:0;">
+                <img id="storeLogoImg" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none;" />
+                <div id="storeLogoPlaceholder"
+                  style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+                  <i data-lucide="image-plus" style="width:22px;height:22px;color:rgba(255,255,255,0.3);"></i>
+                </div>
+                <div id="storeLogoSpinner"
+                  style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;">
+                  <div class="spinner" style="width:20px;height:20px;"></div>
+                </div>
+              </div>
+              <div>
+                <p style="font-size:0.82rem;color:var(--text-muted);margin:0 0 6px;">Click the circle to upload your
+                  logo</p>
+                <p style="font-size:0.75rem;color:rgba(255,255,255,0.3);margin:0;">JPG, PNG, WEBP · Max 5MB</p>
+              </div>
+            </div>
+            <input type="file" id="storeLogoInput" accept="image/*" style="display:none;"
+              onchange="uploadStoreLogo(event)" />
+            <input type="hidden" id="set_logo" />
+          </div>
+
+          <div class="mb-16">
+            <label class="form-group" style="gap:6px;">
+              <span style="font-size:0.85rem;font-weight:500;color:var(--text-muted);">Custom Store Slug</span>
+            </label>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <input type="text" id="set_slug_input"
+                style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);border-radius:var(--radius-sm);padding:13px 18px;color:var(--text-primary);font-size:0.95rem;font-family:'Inter',sans-serif;outline:none;transition:var(--transition);flex:1;"
+                placeholder="your-store-slug" oninput="slugifyInput()" />
+              <button class="btn btn-glass btn-sm" onclick="checkSlug()">
+                <i data-lucide="search" style="width:14px;height:14px;"></i> Check
+              </button>
+            </div>
+            <p style="font-size:0.78rem;color:var(--text-muted);margin-top:5px;" id="slugHint">
+              Lowercase letters, numbers, and hyphens only.
+            </p>
+          </div>
+
+          <div class="mb-24">
+            <label style="font-size:0.85rem;font-weight:500;color:var(--text-muted);">Public Store URL</label>
+            <div class="store-url-box mt-8">
+              <i data-lucide="link" style="width:16px;height:16px;color:var(--text-muted);flex-shrink:0;"></i>
+              <input type="text" id="set_slug_display" readonly />
+              <button class="btn btn-glass btn-sm" onclick="copyStoreUrl()">
+                <i data-lucide="copy" style="width:14px;height:14px;"></i>
+              </button>
+            </div>
+          </div>
+
+          <button class="btn btn-primary" onclick="saveStoreSettings()">
+            <i data-lucide="save" style="width:16px;height:16px;"></i> Save Settings
+          </button>
+        </div>
+      </div>
+
+      <!-- ─ PROFILE SECTION ─ -->
+      <div id="sectionProfile" style="display:none;">
+        <div class="mb-24">
+          <h3>My Profile</h3>
+          <p style="font-size:0.85rem;margin-top:4px;color:var(--text-muted);">Your personal profile picture and banner
           </p>
         </div>
 
-        <div class="mb-24">
-          <label style="font-size:0.85rem;font-weight:500;color:var(--text-muted);">Public Store URL</label>
-          <div class="store-url-box mt-8">
-            <i data-lucide="link" style="width:16px;height:16px;color:var(--text-muted);flex-shrink:0;"></i>
-            <input type="text" id="set_slug_display" readonly />
-            <button class="btn btn-glass btn-sm" onclick="copyStoreUrl()">
-              <i data-lucide="copy" style="width:14px;height:14px;"></i>
-            </button>
-          </div>
-        </div>
-
-        <button class="btn btn-primary" onclick="saveStoreSettings()">
-          <i data-lucide="save" style="width:16px;height:16px;"></i> Save Settings
-        </button>
-      </div>
-    </div>
-
-    <!-- ─ PROFILE SECTION ─ -->
-    <div id="sectionProfile" style="display:none;">
-      <div class="mb-24">
-        <h3>My Profile</h3>
-        <p style="font-size:0.85rem;margin-top:4px;color:var(--text-muted);">Your personal profile picture and banner</p>
-      </div>
-
-      <!-- Profile banner -->
-      <div style="position:relative;margin-bottom:60px;">
-        <div id="profileBannerPreview" style="width:100%;height:160px;border-radius:var(--radius);background:linear-gradient(135deg,rgba(239,68,68,0.3),rgba(139,92,246,0.3));border:2px dashed rgba(255,255,255,0.15);overflow:hidden;cursor:pointer;position:relative;" onclick="document.getElementById('profileBannerInput').click()">
-          <img id="profileBannerImg" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none;" />
-          <div id="profileBannerPlaceholder" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;">
-            <i data-lucide="image-plus" style="width:28px;height:28px;color:rgba(255,255,255,0.4);"></i>
-            <span style="font-size:0.80rem;color:rgba(255,255,255,0.4);">Click to upload profile banner</span>
-          </div>
-          <div id="profileBannerSpinner" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;">
-            <div class="spinner"></div>
-          </div>
-        </div>
-        <input type="file" id="profileBannerInput" accept="image/*" style="display:none;" onchange="uploadProfileBanner(event)" />
-
-        <!-- Avatar overlapping banner -->
-        <div style="position:absolute;bottom:-44px;left:24px;">
-          <div id="profileAvatarWrap" style="width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--red-dark));border:4px solid var(--bg-primary);display:grid;place-items:center;font-weight:800;color:#fff;font-size:1.8rem;overflow:hidden;cursor:pointer;position:relative;" onclick="document.getElementById('profileAvatarInput').click()">
-            <img id="profileAvatarImg" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none;" />
-            <span id="profileAvatarInitial"></span>
-            <div id="profileAvatarOverlay" style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;border-radius:50%;">
-              <i data-lucide="camera" style="width:20px;height:20px;color:#fff;"></i>
+        <!-- Profile banner -->
+        <div style="position:relative;margin-bottom:60px;">
+          <div id="profileBannerPreview"
+            style="width:100%;height:160px;border-radius:var(--radius);background:linear-gradient(135deg,rgba(239,68,68,0.3),rgba(139,92,246,0.3));border:2px dashed rgba(255,255,255,0.15);overflow:hidden;cursor:pointer;position:relative;"
+            onclick="document.getElementById('profileBannerInput').click()">
+            <img id="profileBannerImg" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none;" />
+            <div id="profileBannerPlaceholder"
+              style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;">
+              <i data-lucide="image-plus" style="width:28px;height:28px;color:rgba(255,255,255,0.4);"></i>
+              <span style="font-size:0.80rem;color:rgba(255,255,255,0.4);">Click to upload profile banner</span>
             </div>
-            <div id="profileAvatarSpinner" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;border-radius:50%;">
-              <div class="spinner" style="width:24px;height:24px;"></div>
+            <div id="profileBannerSpinner"
+              style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;">
+              <div class="spinner"></div>
             </div>
           </div>
-          <input type="file" id="profileAvatarInput" accept="image/*" style="display:none;" onchange="uploadProfileAvatar(event)" />
+          <input type="file" id="profileBannerInput" accept="image/*" style="display:none;"
+            onchange="uploadProfileBanner(event)" />
+
+          <!-- Avatar overlapping banner -->
+          <div style="position:absolute;bottom:-44px;left:24px;">
+            <div id="profileAvatarWrap"
+              style="width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--red-dark));border:4px solid var(--bg-primary);display:grid;place-items:center;font-weight:800;color:#fff;font-size:1.8rem;overflow:hidden;cursor:pointer;position:relative;"
+              onclick="document.getElementById('profileAvatarInput').click()">
+              <img id="profileAvatarImg" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none;" />
+              <span id="profileAvatarInitial"></span>
+              <div id="profileAvatarOverlay"
+                style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;border-radius:50%;">
+                <i data-lucide="camera" style="width:20px;height:20px;color:#fff;"></i>
+              </div>
+              <div id="profileAvatarSpinner"
+                style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;border-radius:50%;">
+                <div class="spinner" style="width:24px;height:24px;"></div>
+              </div>
+            </div>
+            <input type="file" id="profileAvatarInput" accept="image/*" style="display:none;"
+              onchange="uploadProfileAvatar(event)" />
+          </div>
+        </div>
+
+        <!-- Profile details -->
+        <div class="glass" style="padding:24px;max-width:520px;">
+          <div class="form-group" style="margin-bottom:14px;">
+            <label>Full Name</label>
+            <input type="text" id="profileName" />
+          </div>
+          <div class="form-group" style="margin-bottom:20px;">
+            <label>Email</label>
+            <input type="email" id="profileEmail" disabled style="opacity:0.5;cursor:not-allowed;" />
+          </div>
+          <button class="btn btn-primary" id="btnSaveProfile" onclick="saveProfile()">
+            <i data-lucide="save" style="width:15px;height:15px;"></i> Save Changes
+          </button>
         </div>
       </div>
 
-      <!-- Profile details -->
-      <div class="glass" style="padding:24px;max-width:520px;">
-        <div class="form-group" style="margin-bottom:14px;">
-          <label>Full Name</label>
-          <input type="text" id="profileName" />
-        </div>
-        <div class="form-group" style="margin-bottom:20px;">
-          <label>Email</label>
-          <input type="email" id="profileEmail" disabled style="opacity:0.5;cursor:not-allowed;" />
-        </div>
-        <button class="btn btn-primary" id="btnSaveProfile" onclick="saveProfile()">
-          <i data-lucide="save" style="width:15px;height:15px;"></i> Save Changes
+    </main>
+  </div>
+
+  <!-- ── Add / Edit Product Modal ── -->
+  <div class="modal-overlay" id="productModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>
+          <i data-lucide="package-plus"
+            style="width:20px;height:20px;display:inline;margin-right:8px;color:var(--red);"></i>
+          <span id="modalTitle">Add New Product</span>
+        </h3>
+        <button class="btn btn-glass btn-icon" onclick="closeProductModal()">
+          <i data-lucide="x" style="width:18px;height:18px;"></i>
         </button>
       </div>
-    </div>
-
-  </main>
-</div>
-
-<!-- ── Add / Edit Product Modal ── -->
-<div class="modal-overlay" id="productModal">
-  <div class="modal">
-    <div class="modal-header">
-      <h3>
-        <i data-lucide="package-plus" style="width:20px;height:20px;display:inline;margin-right:8px;color:var(--red);"></i>
-        <span id="modalTitle">Add New Product</span>
-      </h3>
-      <button class="btn btn-glass btn-icon" onclick="closeProductModal()">
-        <i data-lucide="x" style="width:18px;height:18px;"></i>
-      </button>
-    </div>
-    <div class="flex-col gap-16">
-      <div class="form-group">
-        <label>Product Name *</label>
-        <input type="text" id="p_name" placeholder="e.g., Premium Kente Shirt" />
-      </div>
-      <div class="form-group">
-        <label>Price (GH₵) *</label>
-        <input type="number" id="p_price" placeholder="0.00" min="0" step="0.01" />
-      </div>
-      <div class="form-group">
-        <label>Wholesale Price (GH₵) <span style="font-size:0.72rem;color:var(--text-muted);">(5+ items, optional)</span></label>
-        <input type="number" id="p_wholesale" placeholder="Optional — leave blank if not applicable" min="0" step="0.01" />
-      </div>
+      <div class="flex-col gap-16">
+        <div class="form-group">
+          <label>Product Name *</label>
+          <input type="text" id="p_name" placeholder="e.g., Premium Kente Shirt" />
+        </div>
+        <div class="form-group">
+          <label>Price (GH₵) *</label>
+          <input type="number" id="p_price" placeholder="0.00" min="0" step="0.01" />
+        </div>
+        <div class="form-group">
+          <label>Wholesale Price (GH₵) <span style="font-size:0.72rem;color:var(--text-muted);">(5+ items,
+              optional)</span></label>
+          <input type="number" id="p_wholesale" placeholder="Optional — leave blank if not applicable" min="0"
+            step="0.01" />
+        </div>
         <div class="form-group">
           <label>Category</label>
           <select id="p_category">
@@ -545,30 +632,36 @@
       </div>
       <div class="form-group">
         <label>Product Image</label>
-        <div id="imageUploadArea" style="border:2px dashed rgba(255,255,255,0.18);border-radius:var(--radius-sm);padding:20px;text-align:center;cursor:pointer;transition:var(--transition);background:rgba(255,255,255,0.04);"
+        <div id="imageUploadArea"
+          style="border:2px dashed rgba(255,255,255,0.18);border-radius:var(--radius-sm);padding:20px;text-align:center;cursor:pointer;transition:var(--transition);background:rgba(255,255,255,0.04);"
           onclick="document.getElementById('p_image_file').click()"
           ondragover="event.preventDefault();this.style.borderColor='var(--red)';"
-          ondragleave="this.style.borderColor='rgba(255,255,255,0.18)';"
-          ondrop="handleImageDrop(event)">
+          ondragleave="this.style.borderColor='rgba(255,255,255,0.18)';" ondrop="handleImageDrop(event)">
           <div id="imagePreviewWrap" style="display:none;margin-bottom:10px;">
-            <img id="imagePreview" style="max-height:120px;border-radius:var(--radius-xs);object-fit:cover;max-width:100%;" />
+            <img id="imagePreview"
+              style="max-height:120px;border-radius:var(--radius-xs);object-fit:cover;max-width:100%;" />
           </div>
           <div id="imageUploadPrompt">
             <i data-lucide="image-plus" style="width:28px;height:28px;color:var(--text-muted);margin-bottom:8px;"></i>
             <p style="font-size:0.85rem;color:var(--text-muted);margin:0;">Click or drag &amp; drop an image</p>
             <p style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">JPG, PNG, WEBP up to 5MB</p>
           </div>
-          <input type="file" id="p_image_file" accept="image/*" style="display:none;" onchange="handleImageSelect(event)" />
+          <input type="file" id="p_image_file" accept="image/*" style="display:none;"
+            onchange="handleImageSelect(event)" />
         </div>
         <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
           <div style="flex:1;height:1px;background:rgba(255,255,255,0.10);"></div>
           <span style="font-size:0.75rem;color:var(--text-muted);">or paste URL</span>
           <div style="flex:1;height:1px;background:rgba(255,255,255,0.10);"></div>
         </div>
-        <input type="url" id="p_image" placeholder="https://…/image.jpg" style="margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);border-radius:var(--radius-sm);padding:10px 14px;color:var(--text-primary);font-size:0.9rem;font-family:'Inter',sans-serif;outline:none;transition:var(--transition);width:100%;" oninput="previewUrlImage()" />
+        <input type="url" id="p_image" placeholder="https://…/image.jpg"
+          style="margin-top:8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);border-radius:var(--radius-sm);padding:10px 14px;color:var(--text-primary);font-size:0.9rem;font-family:'Inter',sans-serif;outline:none;transition:var(--transition);width:100%;"
+          oninput="previewUrlImage()" />
         <div id="uploadProgress" style="display:none;margin-top:8px;">
           <div style="background:rgba(255,255,255,0.08);border-radius:99px;height:6px;overflow:hidden;">
-            <div id="uploadProgressBar" style="height:100%;background:linear-gradient(90deg,var(--red),var(--red-dark));width:0%;transition:width 0.3s ease;border-radius:99px;"></div>
+            <div id="uploadProgressBar"
+              style="height:100%;background:linear-gradient(90deg,var(--red),var(--red-dark));width:0%;transition:width 0.3s ease;border-radius:99px;">
+            </div>
           </div>
           <p style="font-size:0.78rem;color:var(--text-muted);margin-top:5px;" id="uploadProgressText">Uploading…</p>
         </div>
@@ -579,7 +672,8 @@
       </div>
       <div style="display:flex;align-items:center;gap:12px;">
         <input type="checkbox" id="p_instock" checked style="width:18px;height:18px;accent-color:var(--red);" />
-        <label for="p_instock" style="font-size:0.9rem;font-weight:500;color:var(--text-muted);cursor:pointer;">In Stock</label>
+        <label for="p_instock" style="font-size:0.9rem;font-weight:500;color:var(--text-muted);cursor:pointer;">In
+          Stock</label>
       </div>
       <div id="productAlert" class="hidden"></div>
       <button class="btn btn-primary w-full" id="btnSaveProduct" onclick="submitProduct()">
@@ -588,194 +682,198 @@
       </button>
     </div>
   </div>
-</div>
+  </div>
 
-<script type="module">
-  import {
-    supabase, getSession, getProfile, getStoreByOwner,
-    addProduct, updateProduct, getProductsByStore, deleteProduct,
-    activateSubscription, listenToProducts, signOut,
-    updateStore, isSlugAvailable, uploadProductImage,
-    submitWithdrawal, getWithdrawals,
-    getOrdersByStore, updateOrderStatus, listenToOrders,
-    getReviewsByStore, replyToReview,
-    updateProfile, uploadProfileMedia
-  } from './db.js';
+  <script type="module">
+    import {
+      supabase, getSession, getProfile, getStoreByOwner,
+      addProduct, updateProduct, getProductsByStore, deleteProduct,
+      activateSubscription, listenToProducts, signOut,
+      updateStore, isSlugAvailable, uploadProductImage,
+      submitWithdrawal, getWithdrawals,
+      getOrdersByStore, updateOrderStatus, listenToOrders,
+      getReviewsByStore, replyToReview,
+      updateProfile, uploadProfileMedia
+    } from './db.js';
 
-  // ── State ────────────────────────────────────────────────────
-  let currentUser, currentProfile, currentStore;
-  let allProducts  = [];
-  let editingId    = null;  // null = add mode, string = edit mode (product UUID)
-  const PAYSTACK_KEY = 'pk_test_YOUR_PAYSTACK_PUBLIC_KEY'; // ⚠ Replace
+    // ── State ────────────────────────────────────────────────────
+    let currentUser, currentProfile, currentStore;
+    let allProducts = [];
+    let editingId = null;  // null = add mode, string = edit mode (product UUID)
+    const PAYSTACK_KEY = 'pk_test_15ae722b33112c22862295b291e1e4e553f49be2'; // ⚠ Replace
 
-  // ── Boot ─────────────────────────────────────────────────────
-  (async () => {
-    const session = await getSession();
-    if (!session) { location.href = 'auth.html'; return; }
+    // ── Boot ─────────────────────────────────────────────────────
+    (async () => {
+      const session = await getSession();
+      if (!session) { location.href = 'auth.html'; return; }
 
-    currentUser    = session.user;
-    currentProfile = await getProfile(currentUser.id);
+      currentUser = session.user;
+      currentProfile = await getProfile(currentUser.id);
 
-    if (currentProfile.role !== 'agent') {
-      location.href = 'dashboard-promoter.html';
-      return;
+      if (currentProfile.role !== 'agent') {
+        location.href = 'dashboard-promoter.html';
+        return;
+      }
+
+      // Get or create store
+      try {
+        currentStore = await getStoreByOwner(currentUser.id);
+      } catch (e) {
+        // Store doesn't exist yet — create it now
+        const name = currentProfile.full_name || 'My Store';
+        const baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        const slug = `${baseSlug}-${Date.now().toString(36)}`;
+        const { data, error } = await supabase.from('stores').insert({
+          owner_id: currentUser.id,
+          name: `${name}'s Store`,
+          slug, description: '', logo_url: '', phone: '', whatsapp: '',
+        }).select().single();
+        if (error) { showToast('Failed to create store: ' + error.message, 'error'); return; }
+        currentStore = data;
+      }
+
+      initUI();
+      await loadProducts();
+      setupRealtime();
+      loadAnnouncements('agent');
+
+      document.getElementById('pageLoader').style.display = 'none';
+      document.getElementById('app').style.display = 'grid';
+      lucide.createIcons();
+    })();
+
+    async function loadAnnouncements(role) {
+      try {
+        const { data } = await supabase
+          .from('announcements')
+          .select('*')
+          .eq('is_active', true)
+          .or(`target_role.eq.all,target_role.eq.${role}`)
+          .order('created_at', { ascending: false })
+          .limit(1);
+        if (!data?.length) return;
+        const a = data[0];
+        const colors = { info: 'rgba(59,130,246,0.15)', warning: 'rgba(234,179,8,0.15)', success: 'rgba(74,222,128,0.15)', error: 'rgba(239,68,68,0.15)' };
+        const textColors = { info: '#93c5fd', warning: '#fde047', success: '#4ade80', error: '#fca5a5' };
+        const banner = document.getElementById('announcementBanner');
+        banner.textContent = a.message;
+        banner.style.display = 'block';
+        banner.style.background = colors[a.type] || colors.info;
+        banner.style.color = textColors[a.type] || textColors.info;
+      } catch (e) { /* silent */ }
     }
 
-    // Get or create store
-    try {
-      currentStore = await getStoreByOwner(currentUser.id);
-    } catch (e) {
-      // Store doesn't exist yet — create it now
-      const name     = currentProfile.full_name || 'My Store';
-      const baseSlug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-      const slug     = `${baseSlug}-${Date.now().toString(36)}`;
-      const { data, error } = await supabase.from('stores').insert({
-        owner_id: currentUser.id,
-        name:     `${name}'s Store`,
-        slug, description: '', logo_url: '', phone: '', whatsapp: '',
-      }).select().single();
-      if (error) { showToast('Failed to create store: ' + error.message, 'error'); return; }
-      currentStore = data;
+    // ── Init UI ──────────────────────────────────────────────────
+    function initUI() {
+      const hour = new Date().getHours();
+      const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+      document.getElementById('topGreeting').textContent = `${greet}, ${currentProfile.full_name.split(' ')[0]} 👋`;
+      document.getElementById('topSubtitle').textContent = `Managing: ${currentStore.name}`;
+
+      // Sidebar avatar
+      renderSidebarAvatar();
+
+      // Subscription badge
+      const badge = document.getElementById('subBadge');
+      if (currentProfile.subscription_active) {
+        badge.className = 'badge badge-green mb-16';
+        badge.innerHTML = '<i data-lucide="shield-check" style="width:12px;height:12px;"></i> Active';
+      }
+
+      // Store URL
+      refreshStoreUrlDisplay();
+      document.getElementById('set_name').value = currentStore.name || '';
+      document.getElementById('set_desc').value = currentStore.description || '';
+      document.getElementById('set_logo').value = currentStore.logo_url || '';
+      // Populate logo preview
+      if (currentStore.logo_url) {
+        const li = document.getElementById('storeLogoImg');
+        if (li) {
+          li.src = currentStore.logo_url; li.style.display = 'block';
+          document.getElementById('storeLogoPlaceholder').style.display = 'none';
+        }
+      }
+      // Populate banner preview
+      if (currentStore.banner_url) {
+        const bi = document.getElementById('storeBannerImg');
+        if (bi) {
+          bi.src = currentStore.banner_url; bi.style.display = 'block';
+          document.getElementById('storeBannerPlaceholder').style.display = 'none';
+        }
+      }
+      document.getElementById('set_whatsapp').value = currentStore.whatsapp || '';
+      document.getElementById('set_phone').value = currentStore.phone || '';
+      document.getElementById('set_slug_input').value = currentStore.slug || '';
+
+      // Payment gate
+      if (!currentProfile.subscription_active) {
+        document.getElementById('payGate').style.display = 'block';
+        document.querySelectorAll('.add-product-btn').forEach(b => b.disabled = true);
+      }
     }
 
-    initUI();
-    await loadProducts();
-    setupRealtime();
-    loadAnnouncements('agent');
-
-    document.getElementById('pageLoader').style.display = 'none';
-    document.getElementById('app').style.display = 'grid';
-    lucide.createIcons();
-  })();
-
-  async function loadAnnouncements(role) {
-    try {
-      const { data } = await supabase
-        .from('announcements')
-        .select('*')
-        .eq('is_active', true)
-        .or(`target_role.eq.all,target_role.eq.${role}`)
-        .order('created_at', { ascending: false })
-        .limit(1);
-      if (!data?.length) return;
-      const a = data[0];
-      const colors = { info:'rgba(59,130,246,0.15)', warning:'rgba(234,179,8,0.15)', success:'rgba(74,222,128,0.15)', error:'rgba(239,68,68,0.15)' };
-      const textColors = { info:'#93c5fd', warning:'#fde047', success:'#4ade80', error:'#fca5a5' };
-      const banner = document.getElementById('announcementBanner');
-      banner.textContent = a.message;
-      banner.style.display = 'block';
-      banner.style.background = colors[a.type] || colors.info;
-      banner.style.color = textColors[a.type] || textColors.info;
-    } catch(e) { /* silent */ }
-  }
-
-  // ── Init UI ──────────────────────────────────────────────────
-  function initUI() {
-    const hour  = new Date().getHours();
-    const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-    document.getElementById('topGreeting').textContent  = `${greet}, ${currentProfile.full_name.split(' ')[0]} 👋`;
-    document.getElementById('topSubtitle').textContent  = `Managing: ${currentStore.name}`;
-
-    // Sidebar avatar
-    renderSidebarAvatar();
-
-    // Subscription badge
-    const badge = document.getElementById('subBadge');
-    if (currentProfile.subscription_active) {
-      badge.className = 'badge badge-green mb-16';
-      badge.innerHTML = '<i data-lucide="shield-check" style="width:12px;height:12px;"></i> Active';
+    function refreshStoreUrlDisplay() {
+      const storeUrl = `${location.origin}/store.html?slug=${currentStore.slug}`;
+      document.getElementById('sidebarSlug').textContent = currentStore.slug;
+      document.getElementById('viewStoreBtn').href = storeUrl;
+      document.getElementById('set_slug_display').value = storeUrl;
     }
 
-    // Store URL
-    refreshStoreUrlDisplay();
-    document.getElementById('set_name').value     = currentStore.name        || '';
-    document.getElementById('set_desc').value     = currentStore.description || '';
-    document.getElementById('set_logo').value     = currentStore.logo_url    || '';
-    // Populate logo preview
-    if (currentStore.logo_url) {
-      const li = document.getElementById('storeLogoImg');
-      if (li) { li.src = currentStore.logo_url; li.style.display = 'block';
-        document.getElementById('storeLogoPlaceholder').style.display = 'none'; }
+    // ── Load Products ────────────────────────────────────────────
+    async function loadProducts() {
+      try {
+        allProducts = await getProductsByStore(currentStore.id);
+        renderProducts();
+        updateStats();
+      } catch (e) { console.error(e); }
     }
-    // Populate banner preview
-    if (currentStore.banner_url) {
-      const bi = document.getElementById('storeBannerImg');
-      if (bi) { bi.src = currentStore.banner_url; bi.style.display = 'block';
-        document.getElementById('storeBannerPlaceholder').style.display = 'none'; }
+
+    function updateStats() {
+      const inStock = allProducts.filter(p => p.in_stock).length;
+      const cats = new Set(allProducts.map(p => p.category).filter(Boolean)).size;
+      const highest = allProducts.length ? Math.max(...allProducts.map(p => p.price)) : null;
+
+      document.getElementById('statProducts').textContent = allProducts.length;
+      document.getElementById('statInStock').textContent = inStock;
+      document.getElementById('statCategories').textContent = cats;
+      document.getElementById('statHighest').textContent = highest !== null ? `GH₵ ${Number(highest).toFixed(0)}` : '–';
+      document.getElementById('productCountLabel').textContent = `${allProducts.length} product${allProducts.length !== 1 ? 's' : ''}`;
     }
-    document.getElementById('set_whatsapp').value = currentStore.whatsapp    || '';
-    document.getElementById('set_phone').value    = currentStore.phone       || '';
-    document.getElementById('set_slug_input').value = currentStore.slug      || '';
 
-    // Payment gate
-    if (!currentProfile.subscription_active) {
-      document.getElementById('payGate').style.display = 'block';
-      document.querySelectorAll('.add-product-btn').forEach(b => b.disabled = true);
+    function renderProducts() {
+      const recent = allProducts.slice(0, 6);
+      renderGrid('recentProducts', recent);
+      renderGrid('allProductsGrid', allProducts);
     }
-  }
 
-  function refreshStoreUrlDisplay() {
-    const storeUrl = `${location.origin}/store.html?slug=${currentStore.slug}`;
-    document.getElementById('sidebarSlug').textContent    = currentStore.slug;
-    document.getElementById('viewStoreBtn').href          = storeUrl;
-    document.getElementById('set_slug_display').value     = storeUrl;
-  }
-
-  // ── Load Products ────────────────────────────────────────────
-  async function loadProducts() {
-    try {
-      allProducts = await getProductsByStore(currentStore.id);
-      renderProducts();
-      updateStats();
-    } catch (e) { console.error(e); }
-  }
-
-  function updateStats() {
-    const inStock    = allProducts.filter(p => p.in_stock).length;
-    const cats       = new Set(allProducts.map(p => p.category).filter(Boolean)).size;
-    const highest    = allProducts.length ? Math.max(...allProducts.map(p => p.price)) : null;
-
-    document.getElementById('statProducts').textContent   = allProducts.length;
-    document.getElementById('statInStock').textContent    = inStock;
-    document.getElementById('statCategories').textContent = cats;
-    document.getElementById('statHighest').textContent    = highest !== null ? `GH₵ ${Number(highest).toFixed(0)}` : '–';
-    document.getElementById('productCountLabel').textContent = `${allProducts.length} product${allProducts.length !== 1 ? 's' : ''}`;
-  }
-
-  function renderProducts() {
-    const recent = allProducts.slice(0, 6);
-    renderGrid('recentProducts',  recent);
-    renderGrid('allProductsGrid', allProducts);
-  }
-
-  function renderGrid(gridId, products) {
-    const el = document.getElementById(gridId);
-    if (!products.length) {
-      el.innerHTML = `<div class="empty-state">
+    function renderGrid(gridId, products) {
+      const el = document.getElementById(gridId);
+      if (!products.length) {
+        el.innerHTML = `<div class="empty-state">
         <div class="empty-state-icon"><i data-lucide="package" style="width:32px;height:32px;"></i></div>
         <h3>No products yet</h3>
         <p style="margin-top:8px;">Add your first product to get started</p>
       </div>`;
-    } else {
-      el.innerHTML = products.map(productCard).join('');
+      } else {
+        el.innerHTML = products.map(productCard).join('');
+      }
+      lucide.createIcons();
     }
-    lucide.createIcons();
-  }
 
-  function productCard(p) {
-    const img = p.image_url
-      ? `<img src="${p.image_url}" class="product-card-img"
+    function productCard(p) {
+      const img = p.image_url
+        ? `<img src="${p.image_url}" class="product-card-img"
            onerror="this.style.display='none';this.nextElementSibling.style.display='grid';" />
          <div class="product-card-img-placeholder" style="display:none;">
            <i data-lucide="image" style="width:36px;height:36px;"></i></div>`
-      : `<div class="product-card-img-placeholder">
+        : `<div class="product-card-img-placeholder">
            <i data-lucide="image" style="width:36px;height:36px;"></i></div>`;
 
-    const stockBadge = p.in_stock
-      ? `<span class="stock-badge badge-green">In Stock</span>`
-      : `<span class="stock-badge badge-red">Out of Stock</span>`;
+      const stockBadge = p.in_stock
+        ? `<span class="stock-badge badge-green">In Stock</span>`
+        : `<span class="stock-badge badge-red">Out of Stock</span>`;
 
-    return `
+      return `
       <div class="product-card">
         ${img}
         ${stockBadge}
@@ -793,392 +891,392 @@
           ${p.category ? `<div class="product-card-category">${p.category}</div>` : ''}
           <div class="product-card-name">${p.name}</div>
           <div class="product-card-price">GH₵ ${Number(p.price).toFixed(2)}</div>
-          ${p.description ? `<p style="font-size:0.78rem;color:var(--text-muted);margin-top:6px;line-height:1.4;">${p.description.slice(0,70)}${p.description.length>70?'…':''}</p>` : ''}
+          ${p.description ? `<p style="font-size:0.78rem;color:var(--text-muted);margin-top:6px;line-height:1.4;">${p.description.slice(0, 70)}${p.description.length > 70 ? '…' : ''}</p>` : ''}
         </div>
       </div>`;
-  }
+    }
 
-  // ── Realtime ─────────────────────────────────────────────────
-  function setupRealtime() {
-    listenToProducts(currentStore.id, (payload) => {
-      if (payload.eventType === 'INSERT') {
-        // Only add if not already in local array (avoids duplicate after manual add)
-        if (!allProducts.find(p => p.id === payload.new.id)) {
-          allProducts.unshift(payload.new);
+    // ── Realtime ─────────────────────────────────────────────────
+    function setupRealtime() {
+      listenToProducts(currentStore.id, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          // Only add if not already in local array (avoids duplicate after manual add)
+          if (!allProducts.find(p => p.id === payload.new.id)) {
+            allProducts.unshift(payload.new);
+          }
+        } else if (payload.eventType === 'UPDATE') {
+          const idx = allProducts.findIndex(p => p.id === payload.new.id);
+          if (idx !== -1) allProducts[idx] = payload.new;
+        } else if (payload.eventType === 'DELETE') {
+          allProducts = allProducts.filter(p => p.id !== payload.old.id);
         }
-      } else if (payload.eventType === 'UPDATE') {
-        const idx = allProducts.findIndex(p => p.id === payload.new.id);
-        if (idx !== -1) allProducts[idx] = payload.new;
-      } else if (payload.eventType === 'DELETE') {
-        allProducts = allProducts.filter(p => p.id !== payload.old.id);
-      }
-      renderProducts();
-      updateStats();
-    });
+        renderProducts();
+        updateStats();
+      });
 
-    // Realtime new orders
-    listenToOrders(currentStore.id, () => {
-      loadOrders();
-      showToast('🛍️ New order received!', 'success');
-    });
-  }
-
-  // ── Add / Edit Product Modal ──────────────────────────────────
-  window.openProductModal = () => {
-    if (!currentProfile.subscription_active) {
-      showToast('Please activate your subscription first.', 'error');
-      return;
+      // Realtime new orders
+      listenToOrders(currentStore.id, () => {
+        loadOrders();
+        showToast('🛍️ New order received!', 'success');
+      });
     }
-    editingId = null;
-    document.getElementById('modalTitle').textContent = 'Add New Product';
-    document.getElementById('btnSaveTxt').textContent = 'Add Product';
-    ['p_name','p_price','p_wholesale','p_image','p_desc'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('p_category').selectedIndex = 0;
-    document.getElementById('p_instock').checked = true;
-    resetImageUpload();
-    clearProductAlert();
-    document.getElementById('productModal').classList.add('active');
-    lucide.createIcons();
-  };
 
-  window.openEditProduct = (id) => {
-    const p = allProducts.find(x => x.id === id);
-    if (!p) return;
-    editingId = id;
-    document.getElementById('modalTitle').textContent = 'Edit Product';
-    document.getElementById('btnSaveTxt').textContent = 'Save Changes';
-    document.getElementById('p_name').value      = p.name             || '';
-    document.getElementById('p_price').value     = p.price            || '';
-    document.getElementById('p_wholesale').value = p.wholesale_price   || '';
-    document.getElementById('p_image').value     = p.image_url         || '';
-    document.getElementById('p_desc').value     = p.description || '';
-    document.getElementById('p_instock').checked = p.in_stock !== false;
-    // Set category dropdown
-    const sel = document.getElementById('p_category');
-    for (let i = 0; i < sel.options.length; i++) {
-      if (sel.options[i].value === p.category) { sel.selectedIndex = i; break; }
-    }
-    // Show existing image preview
-    resetImageUpload();
-    if (p.image_url) {
-      document.getElementById('p_image').value = p.image_url;
-      document.getElementById('imagePreview').src = p.image_url;
-      document.getElementById('imagePreviewWrap').style.display = 'block';
-      document.getElementById('imageUploadPrompt').style.display = 'none';
-    }
-    clearProductAlert();
-    document.getElementById('productModal').classList.add('active');
-    lucide.createIcons();
-  };
-
-
-  // ── Image Upload Handlers ─────────────────────────────────────
-  let selectedImageFile = null;
-
-  window.handleImageSelect = (event) => {
-    const file = event.target.files[0];
-    if (file) previewImageFile(file);
-  };
-
-  window.handleImageDrop = (event) => {
-    event.preventDefault();
-    document.getElementById('imageUploadArea').style.borderColor = 'rgba(255,255,255,0.18)';
-    const file = event.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) previewImageFile(file);
-  };
-
-  function previewImageFile(file) {
-    selectedImageFile = file;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      document.getElementById('imagePreview').src = e.target.result;
-      document.getElementById('imagePreviewWrap').style.display = 'block';
-      document.getElementById('imageUploadPrompt').style.display = 'none';
-      document.getElementById('p_image').value = '';
-    };
-    reader.readAsDataURL(file);
-  }
-
-  window.previewUrlImage = () => {
-    const url = document.getElementById('p_image').value.trim();
-    if (url) {
-      selectedImageFile = null;
-      document.getElementById('imagePreview').src = url;
-      document.getElementById('imagePreviewWrap').style.display = 'block';
-      document.getElementById('imageUploadPrompt').style.display = 'none';
-    }
-  };
-
-  function resetImageUpload() {
-    selectedImageFile = null;
-    document.getElementById('p_image_file').value = '';
-    document.getElementById('p_image').value = '';
-    document.getElementById('imagePreviewWrap').style.display = 'none';
-    document.getElementById('imageUploadPrompt').style.display = 'block';
-    document.getElementById('uploadProgress').style.display = 'none';
-    document.getElementById('uploadProgressBar').style.width = '0%';
-    document.getElementById('imageUploadArea').style.borderColor = 'rgba(255,255,255,0.18)';
-  }
-
-  window.closeProductModal = () => {
-    document.getElementById('productModal').classList.remove('active');
-    editingId = null;
-    resetImageUpload();
-  };
-
-  window.submitProduct = async () => {
-    const name      = document.getElementById('p_name').value.trim();
-    const price     = parseFloat(document.getElementById('p_price').value);
-    const wholesale = parseFloat(document.getElementById('p_wholesale').value) || null;
-    let   img       = document.getElementById('p_image').value.trim();
-    const desc      = document.getElementById('p_desc').value.trim();
-    const cat       = document.getElementById('p_category').value;
-    const inStock   = document.getElementById('p_instock').checked;
-
-    if (!name)             return showProductAlert('Product name is required.', 'error');
-    if (!price || price <= 0) return showProductAlert('Enter a valid price greater than 0.', 'error');
-    if (wholesale && wholesale >= price) return showProductAlert('Wholesale price must be less than regular price.', 'error');
-
-    const btn = document.getElementById('btnSaveProduct');
-    const txt = document.getElementById('btnSaveTxt');
-    btn.disabled = true;
-    txt.textContent = editingId ? 'Saving…' : 'Adding…';
-
-    try {
-      if (selectedImageFile) {
-        document.getElementById('uploadProgress').style.display = 'block';
-        document.getElementById('uploadProgressBar').style.width = '40%';
-        document.getElementById('uploadProgressText').textContent = 'Uploading image…';
-        img = await uploadProductImage(selectedImageFile, currentStore.id);
-        document.getElementById('uploadProgressBar').style.width = '100%';
-        document.getElementById('uploadProgressText').textContent = 'Upload complete!';
-      }
-
-      if (editingId) {
-        await updateProduct(editingId, {
-          name, price, wholesale_price: wholesale, image_url: img, description: desc, category: cat, in_stock: inStock,
-        });
-        showToast(`"${name}" updated!`, 'success');
-      } else {
-        await addProduct(currentStore.id, name, price, img, desc, cat, wholesale);
-        showToast(`"${name}" added!`, 'success');
-      }
-      closeProductModal();
-      await loadProducts();
-    } catch (e) {
-      showProductAlert(e.message, 'error');
-    } finally {
-      btn.disabled = false;
-      txt.textContent = editingId ? 'Save Changes' : 'Add Product';
-    }
-  };
-
-  // ── Delete Product ────────────────────────────────────────────
-  window.removeProduct = async (id) => {
-    const p = allProducts.find(x => x.id === id);
-    if (!confirm(`Delete "${p?.name || 'this product'}"? This cannot be undone.`)) return;
-    try {
-      await deleteProduct(id);
-      showToast('Product deleted.', 'success');
-      await loadProducts();
-    } catch (e) { showToast(e.message, 'error'); }
-  };
-
-  // Paystack requires plain named window functions (not async arrows)
-  window._psCallback = function(response) {
-    if (response.status === 'success') {
-      activateSubscription(currentUser.id, response.reference).then(function() {
-        currentProfile.subscription_active = true;
-        document.getElementById('payGate').style.display = 'none';
-        const badge = document.getElementById('subBadge');
-        badge.className = 'badge badge-green mb-16';
-        badge.innerHTML = '<i data-lucide="shield-check" style="width:12px;height:12px;"></i> Active';
-        document.querySelectorAll('.add-product-btn').forEach(function(b) { b.disabled = false; });
-        showToast('Subscription activated! You can now add products.', 'success');
-        lucide.createIcons();
-      }).catch(function(e) { showToast(e.message, 'error'); });
-    }
-  };
-
-  window._psOnClose = function() {
-    showToast('Payment cancelled.', 'error');
-  };
-
-  window.initiatePayment = function() {
-    const handler = PaystackPop.setup({
-      key:      PAYSTACK_KEY,
-      email:    currentUser.email,
-      amount:   9000,
-      currency: 'GHS',
-      ref:      'CITYSHOP_' + Date.now(),
-      callback: window._psCallback,
-      onClose:  window._psOnClose,
-    });
-    handler.openIframe();
-  };
-
-  // ── Store Logo & Banner Upload ───────────────────────────────────
-  window.uploadStoreLogo = async (e) => {
-    const file = e.target.files[0]; if (!file) return;
-    const spinner = document.getElementById('storeLogoSpinner');
-    spinner.style.display = 'flex';
-    try {
-      const url = await uploadProductImage(file, currentStore.id);
-      currentStore = await updateStore(currentStore.id, { logo_url: url });
-      document.getElementById('set_logo').value = url;
-      const img = document.getElementById('storeLogoImg');
-      img.src = url; img.style.display = 'block';
-      document.getElementById('storeLogoPlaceholder').style.display = 'none';
-      showToast('Store logo updated! ✅', 'success');
-    } catch(err) { showToast(err.message, 'error'); }
-    finally { spinner.style.display = 'none'; e.target.value = ''; }
-  };
-
-  window.uploadStoreBanner = async (e) => {
-    const file = e.target.files[0]; if (!file) return;
-    const spinner = document.getElementById('storeBannerSpinner');
-    spinner.style.display = 'flex';
-    try {
-      const url = await uploadProductImage(file, currentStore.id);
-      currentStore = await updateStore(currentStore.id, { banner_url: url });
-      const img = document.getElementById('storeBannerImg');
-      img.src = url; img.style.display = 'block';
-      document.getElementById('storeBannerPlaceholder').style.display = 'none';
-      showToast('Store banner updated! ✅', 'success');
-    } catch(err) { showToast(err.message, 'error'); }
-    finally { spinner.style.display = 'none'; e.target.value = ''; }
-  };
-
-  // ── Store Settings ─────────────────────────────────────────────
-  window.slugifyInput = () => {
-    const input = document.getElementById('set_slug_input');
-    input.value = input.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-');
-  };
-
-  window.checkSlug = async () => {
-    const slug = document.getElementById('set_slug_input').value.trim();
-    if (!slug) return;
-    try {
-      const available = await isSlugAvailable(slug, currentStore.id);
-      const hint = document.getElementById('slugHint');
-      if (available) {
-        hint.textContent = '✓ Slug is available!';
-        hint.style.color = '#4ade80';
-      } else {
-        hint.textContent = '✗ Slug is already taken. Choose another.';
-        hint.style.color = '#f87171';
-      }
-    } catch (e) { showToast(e.message, 'error'); }
-  };
-
-  window.saveStoreSettings = async () => {
-    const name     = document.getElementById('set_name').value.trim();
-    const desc     = document.getElementById('set_desc').value.trim();
-    const logo     = document.getElementById('set_logo').value.trim();
-    const whatsapp = document.getElementById('set_whatsapp').value.trim();
-    const phone    = document.getElementById('set_phone').value.trim();
-    const newSlug  = document.getElementById('set_slug_input').value.trim().toLowerCase();
-
-    if (!name) return showToast('Store name cannot be empty.', 'error');
-
-    // Check slug availability if it changed
-    if (newSlug && newSlug !== currentStore.slug) {
-      const available = await isSlugAvailable(newSlug, currentStore.id);
-      if (!available) {
-        showToast('That slug is already taken. Choose a different one.', 'error');
+    // ── Add / Edit Product Modal ──────────────────────────────────
+    window.openProductModal = () => {
+      if (!currentProfile.subscription_active) {
+        showToast('Please activate your subscription first.', 'error');
         return;
       }
-    }
-
-    try {
-      const updates = { name, description: desc, logo_url: logo, whatsapp, phone };
-      if (newSlug && newSlug !== currentStore.slug) updates.slug = newSlug;
-
-      currentStore = await updateStore(currentStore.id, updates);
-      document.getElementById('topSubtitle').textContent = `Managing: ${currentStore.name}`;
-      refreshStoreUrlDisplay();
-      document.getElementById('set_slug_input').value = currentStore.slug;
-      document.getElementById('slugHint').textContent = 'Lowercase letters, numbers, and hyphens only.';
-      document.getElementById('slugHint').style.color = '';
-      showToast('Store settings saved!', 'success');
-    } catch (e) { showToast(e.message, 'error'); }
-  };
-
-  window.copyStoreUrl = () => {
-    navigator.clipboard.writeText(document.getElementById('set_slug_display').value);
-    showToast('Store URL copied to clipboard!', 'success');
-  };
-
-  // ── Section Switcher ───────────────────────────────────────────
-  window.showSection = (section) => {
-    ['overview','orders','reviews','products','store-settings','profile'].forEach(s => {
-      const key = s.split('-').map((w,i) => i===0 ? w : w[0].toUpperCase()+w.slice(1)).join('');
-      document.getElementById(`section${key[0].toUpperCase()}${key.slice(1)}`).style.display = s === section ? 'block' : 'none';
-    });
-    document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
-    const map = { overview: 'navOverview', orders: 'navOrders', reviews: 'navReviews', products: 'navProducts', 'store-settings': 'navSettings', profile: 'navProfile' };
-    if (map[section]) document.getElementById(map[section]).classList.add('active');
-    if (section === 'orders') loadOrders();
-    if (section === 'reviews') loadDashReviews();
-    if (section === 'profile') initProfileSection();
-    closeSidebar();
-  };
-
-  // ── Mobile Sidebar ─────────────────────────────────────────────
-  window.openSidebar  = () => {
-    document.getElementById('sidebar').classList.add('open');
-    document.getElementById('sidebarOverlay').classList.add('open');
-  };
-  window.closeSidebar = () => {
-    document.getElementById('sidebar').classList.remove('open');
-    document.getElementById('sidebarOverlay').classList.remove('open');
-  };
-
-  // ── Orders ─────────────────────────────────────────────────────
-  let allOrders     = [];
-  let activeFilter  = 'all';
-
-  async function loadOrders() {
-    try {
-      allOrders = await getOrdersByStore(currentStore.id);
-      renderOrders();
-      updateNewOrdersBadge();
-    } catch(e) { console.error(e); }
-  }
-
-  function renderOrders() {
-    const grid = document.getElementById('ordersGrid');
-    const list = activeFilter === 'all' ? allOrders : allOrders.filter(o => o.status === activeFilter);
-    if (!list.length) {
-      grid.innerHTML = `<div style="text-align:center;padding:60px;color:var(--text-muted);">
-        <i data-lucide="shopping-bag" style="width:40px;height:40px;display:block;margin:0 auto 16px;"></i>
-        <p>No orders yet${activeFilter !== 'all' ? ' with status "'+activeFilter+'"' : ''}.</p>
-      </div>`;
-      lucide.createIcons(); return;
-    }
-    const statusColors = {
-      pending:    'rgba(245,158,11,0.18);color:#fbbf24;border:1px solid rgba(245,158,11,0.30)',
-      confirmed:  'rgba(59,130,246,0.18);color:#60a5fa;border:1px solid rgba(59,130,246,0.30)',
-      processing: 'rgba(139,92,246,0.18);color:#c4b5fd;border:1px solid rgba(139,92,246,0.30)',
-      shipped:    'rgba(6,182,212,0.18);color:#22d3ee;border:1px solid rgba(6,182,212,0.30)',
-      delivered:  'rgba(34,197,94,0.18);color:#4ade80;border:1px solid rgba(34,197,94,0.30)',
-      cancelled:  'rgba(239,68,68,0.18);color:#f87171;border:1px solid rgba(239,68,68,0.30)',
+      editingId = null;
+      document.getElementById('modalTitle').textContent = 'Add New Product';
+      document.getElementById('btnSaveTxt').textContent = 'Add Product';
+      ['p_name', 'p_price', 'p_wholesale', 'p_image', 'p_desc'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('p_category').selectedIndex = 0;
+      document.getElementById('p_instock').checked = true;
+      resetImageUpload();
+      clearProductAlert();
+      document.getElementById('productModal').classList.add('active');
+      lucide.createIcons();
     };
-    const nextStatus = { pending:'confirmed', confirmed:'processing', processing:'shipped', shipped:'delivered' };
-    const nextLabel  = { pending:'Confirm', confirmed:'Processing', processing:'Ship', shipped:'Delivered' };
 
-    grid.innerHTML = list.map(o => {
-      const sc  = statusColors[o.status] || statusColors.pending;
-      const img = o.products?.image_url ? `<img src="${o.products.image_url}" style="width:52px;height:52px;border-radius:var(--radius-xs);object-fit:cover;flex-shrink:0;" />` : `<div style="width:52px;height:52px;border-radius:var(--radius-xs);background:rgba(255,255,255,0.07);display:grid;place-items:center;flex-shrink:0;"><i data-lucide="package" style="width:20px;height:20px;color:var(--text-muted);"></i></div>`;
-      const next = nextStatus[o.status];
-      return `
+    window.openEditProduct = (id) => {
+      const p = allProducts.find(x => x.id === id);
+      if (!p) return;
+      editingId = id;
+      document.getElementById('modalTitle').textContent = 'Edit Product';
+      document.getElementById('btnSaveTxt').textContent = 'Save Changes';
+      document.getElementById('p_name').value = p.name || '';
+      document.getElementById('p_price').value = p.price || '';
+      document.getElementById('p_wholesale').value = p.wholesale_price || '';
+      document.getElementById('p_image').value = p.image_url || '';
+      document.getElementById('p_desc').value = p.description || '';
+      document.getElementById('p_instock').checked = p.in_stock !== false;
+      // Set category dropdown
+      const sel = document.getElementById('p_category');
+      for (let i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].value === p.category) { sel.selectedIndex = i; break; }
+      }
+      // Show existing image preview
+      resetImageUpload();
+      if (p.image_url) {
+        document.getElementById('p_image').value = p.image_url;
+        document.getElementById('imagePreview').src = p.image_url;
+        document.getElementById('imagePreviewWrap').style.display = 'block';
+        document.getElementById('imageUploadPrompt').style.display = 'none';
+      }
+      clearProductAlert();
+      document.getElementById('productModal').classList.add('active');
+      lucide.createIcons();
+    };
+
+
+    // ── Image Upload Handlers ─────────────────────────────────────
+    let selectedImageFile = null;
+
+    window.handleImageSelect = (event) => {
+      const file = event.target.files[0];
+      if (file) previewImageFile(file);
+    };
+
+    window.handleImageDrop = (event) => {
+      event.preventDefault();
+      document.getElementById('imageUploadArea').style.borderColor = 'rgba(255,255,255,0.18)';
+      const file = event.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) previewImageFile(file);
+    };
+
+    function previewImageFile(file) {
+      selectedImageFile = file;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById('imagePreview').src = e.target.result;
+        document.getElementById('imagePreviewWrap').style.display = 'block';
+        document.getElementById('imageUploadPrompt').style.display = 'none';
+        document.getElementById('p_image').value = '';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    window.previewUrlImage = () => {
+      const url = document.getElementById('p_image').value.trim();
+      if (url) {
+        selectedImageFile = null;
+        document.getElementById('imagePreview').src = url;
+        document.getElementById('imagePreviewWrap').style.display = 'block';
+        document.getElementById('imageUploadPrompt').style.display = 'none';
+      }
+    };
+
+    function resetImageUpload() {
+      selectedImageFile = null;
+      document.getElementById('p_image_file').value = '';
+      document.getElementById('p_image').value = '';
+      document.getElementById('imagePreviewWrap').style.display = 'none';
+      document.getElementById('imageUploadPrompt').style.display = 'block';
+      document.getElementById('uploadProgress').style.display = 'none';
+      document.getElementById('uploadProgressBar').style.width = '0%';
+      document.getElementById('imageUploadArea').style.borderColor = 'rgba(255,255,255,0.18)';
+    }
+
+    window.closeProductModal = () => {
+      document.getElementById('productModal').classList.remove('active');
+      editingId = null;
+      resetImageUpload();
+    };
+
+    window.submitProduct = async () => {
+      const name = document.getElementById('p_name').value.trim();
+      const price = parseFloat(document.getElementById('p_price').value);
+      const wholesale = parseFloat(document.getElementById('p_wholesale').value) || null;
+      let img = document.getElementById('p_image').value.trim();
+      const desc = document.getElementById('p_desc').value.trim();
+      const cat = document.getElementById('p_category').value;
+      const inStock = document.getElementById('p_instock').checked;
+
+      if (!name) return showProductAlert('Product name is required.', 'error');
+      if (!price || price <= 0) return showProductAlert('Enter a valid price greater than 0.', 'error');
+      if (wholesale && wholesale >= price) return showProductAlert('Wholesale price must be less than regular price.', 'error');
+
+      const btn = document.getElementById('btnSaveProduct');
+      const txt = document.getElementById('btnSaveTxt');
+      btn.disabled = true;
+      txt.textContent = editingId ? 'Saving…' : 'Adding…';
+
+      try {
+        if (selectedImageFile) {
+          document.getElementById('uploadProgress').style.display = 'block';
+          document.getElementById('uploadProgressBar').style.width = '40%';
+          document.getElementById('uploadProgressText').textContent = 'Uploading image…';
+          img = await uploadProductImage(selectedImageFile, currentStore.id);
+          document.getElementById('uploadProgressBar').style.width = '100%';
+          document.getElementById('uploadProgressText').textContent = 'Upload complete!';
+        }
+
+        if (editingId) {
+          await updateProduct(editingId, {
+            name, price, wholesale_price: wholesale, image_url: img, description: desc, category: cat, in_stock: inStock,
+          });
+          showToast(`"${name}" updated!`, 'success');
+        } else {
+          await addProduct(currentStore.id, name, price, img, desc, cat, wholesale);
+          showToast(`"${name}" added!`, 'success');
+        }
+        closeProductModal();
+        await loadProducts();
+      } catch (e) {
+        showProductAlert(e.message, 'error');
+      } finally {
+        btn.disabled = false;
+        txt.textContent = editingId ? 'Save Changes' : 'Add Product';
+      }
+    };
+
+    // ── Delete Product ────────────────────────────────────────────
+    window.removeProduct = async (id) => {
+      const p = allProducts.find(x => x.id === id);
+      if (!confirm(`Delete "${p?.name || 'this product'}"? This cannot be undone.`)) return;
+      try {
+        await deleteProduct(id);
+        showToast('Product deleted.', 'success');
+        await loadProducts();
+      } catch (e) { showToast(e.message, 'error'); }
+    };
+
+    // Paystack requires plain named window functions (not async arrows)
+    window._psCallback = function (response) {
+      if (response.status === 'success') {
+        activateSubscription(currentUser.id, response.reference).then(function () {
+          currentProfile.subscription_active = true;
+          document.getElementById('payGate').style.display = 'none';
+          const badge = document.getElementById('subBadge');
+          badge.className = 'badge badge-green mb-16';
+          badge.innerHTML = '<i data-lucide="shield-check" style="width:12px;height:12px;"></i> Active';
+          document.querySelectorAll('.add-product-btn').forEach(function (b) { b.disabled = false; });
+          showToast('Subscription activated! You can now add products.', 'success');
+          lucide.createIcons();
+        }).catch(function (e) { showToast(e.message, 'error'); });
+      }
+    };
+
+    window._psOnClose = function () {
+      showToast('Payment cancelled.', 'error');
+    };
+
+    window.initiatePayment = function () {
+      const handler = PaystackPop.setup({
+        key: PAYSTACK_KEY,
+        email: currentUser.email,
+        amount: 9000,
+        currency: 'GHS',
+        ref: 'CITYSHOP_' + Date.now(),
+        callback: window._psCallback,
+        onClose: window._psOnClose,
+      });
+      handler.openIframe();
+    };
+
+    // ── Store Logo & Banner Upload ───────────────────────────────────
+    window.uploadStoreLogo = async (e) => {
+      const file = e.target.files[0]; if (!file) return;
+      const spinner = document.getElementById('storeLogoSpinner');
+      spinner.style.display = 'flex';
+      try {
+        const url = await uploadProductImage(file, currentStore.id);
+        currentStore = await updateStore(currentStore.id, { logo_url: url });
+        document.getElementById('set_logo').value = url;
+        const img = document.getElementById('storeLogoImg');
+        img.src = url; img.style.display = 'block';
+        document.getElementById('storeLogoPlaceholder').style.display = 'none';
+        showToast('Store logo updated! ✅', 'success');
+      } catch (err) { showToast(err.message, 'error'); }
+      finally { spinner.style.display = 'none'; e.target.value = ''; }
+    };
+
+    window.uploadStoreBanner = async (e) => {
+      const file = e.target.files[0]; if (!file) return;
+      const spinner = document.getElementById('storeBannerSpinner');
+      spinner.style.display = 'flex';
+      try {
+        const url = await uploadProductImage(file, currentStore.id);
+        currentStore = await updateStore(currentStore.id, { banner_url: url });
+        const img = document.getElementById('storeBannerImg');
+        img.src = url; img.style.display = 'block';
+        document.getElementById('storeBannerPlaceholder').style.display = 'none';
+        showToast('Store banner updated! ✅', 'success');
+      } catch (err) { showToast(err.message, 'error'); }
+      finally { spinner.style.display = 'none'; e.target.value = ''; }
+    };
+
+    // ── Store Settings ─────────────────────────────────────────────
+    window.slugifyInput = () => {
+      const input = document.getElementById('set_slug_input');
+      input.value = input.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-');
+    };
+
+    window.checkSlug = async () => {
+      const slug = document.getElementById('set_slug_input').value.trim();
+      if (!slug) return;
+      try {
+        const available = await isSlugAvailable(slug, currentStore.id);
+        const hint = document.getElementById('slugHint');
+        if (available) {
+          hint.textContent = '✓ Slug is available!';
+          hint.style.color = '#4ade80';
+        } else {
+          hint.textContent = '✗ Slug is already taken. Choose another.';
+          hint.style.color = '#f87171';
+        }
+      } catch (e) { showToast(e.message, 'error'); }
+    };
+
+    window.saveStoreSettings = async () => {
+      const name = document.getElementById('set_name').value.trim();
+      const desc = document.getElementById('set_desc').value.trim();
+      const logo = document.getElementById('set_logo').value.trim();
+      const whatsapp = document.getElementById('set_whatsapp').value.trim();
+      const phone = document.getElementById('set_phone').value.trim();
+      const newSlug = document.getElementById('set_slug_input').value.trim().toLowerCase();
+
+      if (!name) return showToast('Store name cannot be empty.', 'error');
+
+      // Check slug availability if it changed
+      if (newSlug && newSlug !== currentStore.slug) {
+        const available = await isSlugAvailable(newSlug, currentStore.id);
+        if (!available) {
+          showToast('That slug is already taken. Choose a different one.', 'error');
+          return;
+        }
+      }
+
+      try {
+        const updates = { name, description: desc, logo_url: logo, whatsapp, phone };
+        if (newSlug && newSlug !== currentStore.slug) updates.slug = newSlug;
+
+        currentStore = await updateStore(currentStore.id, updates);
+        document.getElementById('topSubtitle').textContent = `Managing: ${currentStore.name}`;
+        refreshStoreUrlDisplay();
+        document.getElementById('set_slug_input').value = currentStore.slug;
+        document.getElementById('slugHint').textContent = 'Lowercase letters, numbers, and hyphens only.';
+        document.getElementById('slugHint').style.color = '';
+        showToast('Store settings saved!', 'success');
+      } catch (e) { showToast(e.message, 'error'); }
+    };
+
+    window.copyStoreUrl = () => {
+      navigator.clipboard.writeText(document.getElementById('set_slug_display').value);
+      showToast('Store URL copied to clipboard!', 'success');
+    };
+
+    // ── Section Switcher ───────────────────────────────────────────
+    window.showSection = (section) => {
+      ['overview', 'orders', 'reviews', 'products', 'store-settings', 'profile'].forEach(s => {
+        const key = s.split('-').map((w, i) => i === 0 ? w : w[0].toUpperCase() + w.slice(1)).join('');
+        document.getElementById(`section${key[0].toUpperCase()}${key.slice(1)}`).style.display = s === section ? 'block' : 'none';
+      });
+      document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+      const map = { overview: 'navOverview', orders: 'navOrders', reviews: 'navReviews', products: 'navProducts', 'store-settings': 'navSettings', profile: 'navProfile' };
+      if (map[section]) document.getElementById(map[section]).classList.add('active');
+      if (section === 'orders') loadOrders();
+      if (section === 'reviews') loadDashReviews();
+      if (section === 'profile') initProfileSection();
+      closeSidebar();
+    };
+
+    // ── Mobile Sidebar ─────────────────────────────────────────────
+    window.openSidebar = () => {
+      document.getElementById('sidebar').classList.add('open');
+      document.getElementById('sidebarOverlay').classList.add('open');
+    };
+    window.closeSidebar = () => {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebarOverlay').classList.remove('open');
+    };
+
+    // ── Orders ─────────────────────────────────────────────────────
+    let allOrders = [];
+    let activeFilter = 'all';
+
+    async function loadOrders() {
+      try {
+        allOrders = await getOrdersByStore(currentStore.id);
+        renderOrders();
+        updateNewOrdersBadge();
+      } catch (e) { console.error(e); }
+    }
+
+    function renderOrders() {
+      const grid = document.getElementById('ordersGrid');
+      const list = activeFilter === 'all' ? allOrders : allOrders.filter(o => o.status === activeFilter);
+      if (!list.length) {
+        grid.innerHTML = `<div style="text-align:center;padding:60px;color:var(--text-muted);">
+        <i data-lucide="shopping-bag" style="width:40px;height:40px;display:block;margin:0 auto 16px;"></i>
+        <p>No orders yet${activeFilter !== 'all' ? ' with status "' + activeFilter + '"' : ''}.</p>
+      </div>`;
+        lucide.createIcons(); return;
+      }
+      const statusColors = {
+        pending: 'rgba(245,158,11,0.18);color:#fbbf24;border:1px solid rgba(245,158,11,0.30)',
+        confirmed: 'rgba(59,130,246,0.18);color:#60a5fa;border:1px solid rgba(59,130,246,0.30)',
+        processing: 'rgba(139,92,246,0.18);color:#c4b5fd;border:1px solid rgba(139,92,246,0.30)',
+        shipped: 'rgba(6,182,212,0.18);color:#22d3ee;border:1px solid rgba(6,182,212,0.30)',
+        delivered: 'rgba(34,197,94,0.18);color:#4ade80;border:1px solid rgba(34,197,94,0.30)',
+        cancelled: 'rgba(239,68,68,0.18);color:#f87171;border:1px solid rgba(239,68,68,0.30)',
+      };
+      const nextStatus = { pending: 'confirmed', confirmed: 'processing', processing: 'shipped', shipped: 'delivered' };
+      const nextLabel = { pending: 'Confirm', confirmed: 'Processing', processing: 'Ship', shipped: 'Delivered' };
+
+      grid.innerHTML = list.map(o => {
+        const sc = statusColors[o.status] || statusColors.pending;
+        const img = o.products?.image_url ? `<img src="${o.products.image_url}" style="width:52px;height:52px;border-radius:var(--radius-xs);object-fit:cover;flex-shrink:0;" />` : `<div style="width:52px;height:52px;border-radius:var(--radius-xs);background:rgba(255,255,255,0.07);display:grid;place-items:center;flex-shrink:0;"><i data-lucide="package" style="width:20px;height:20px;color:var(--text-muted);"></i></div>`;
+        const next = nextStatus[o.status];
+        return `
       <div class="glass" style="padding:20px 22px;">
         <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
           ${img}
           <div style="flex:1;min-width:200px;">
             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px;">
               <span style="font-weight:700;font-size:0.95rem;">${o.products?.name || 'Product'}</span>
-              <span style="padding:3px 10px;border-radius:999px;font-size:0.70rem;font-weight:700;background:${sc};">${o.status.charAt(0).toUpperCase()+o.status.slice(1)}</span>
+              <span style="padding:3px 10px;border-radius:999px;font-size:0.70rem;font-weight:700;background:${sc};">${o.status.charAt(0).toUpperCase() + o.status.slice(1)}</span>
               ${o.promoter_id ? `<span style="padding:3px 8px;border-radius:999px;font-size:0.68rem;font-weight:700;background:rgba(139,92,246,0.15);color:#c4b5fd;border:1px solid rgba(139,92,246,0.25);">Via Promoter</span>` : ''}
             </div>
             <div style="font-size:0.78rem;color:var(--text-muted);display:flex;gap:14px;flex-wrap:wrap;">
@@ -1191,11 +1289,11 @@
             <div style="font-size:0.78rem;color:var(--text-muted);margin-top:6px;display:flex;gap:14px;flex-wrap:wrap;">
               <span>👤 ${o.buyer_name}</span>
               <span>📞 ${o.buyer_phone}</span>
-              <span>📍 ${o.buyer_city}${o.buyer_address ? ' — '+o.buyer_address : ''}</span>
+              <span>📍 ${o.buyer_city}${o.buyer_address ? ' — ' + o.buyer_address : ''}</span>
             </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;">
-            <span style="font-size:0.72rem;color:var(--text-muted);">${new Date(o.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</span>
+            <span style="font-size:0.72rem;color:var(--text-muted);">${new Date(o.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
             ${next ? `<button class="btn btn-primary btn-sm" onclick="advanceOrder('${o.id}','${next}')">
               <i data-lucide="check" style="width:13px;height:13px;"></i> ${nextLabel[o.status]}
             </button>` : ''}
@@ -1205,73 +1303,73 @@
           </div>
         </div>
       </div>`;
-    }).join('');
-    lucide.createIcons();
-  }
+      }).join('');
+      lucide.createIcons();
+    }
 
-  window.filterOrders = (status) => {
-    activeFilter = status;
-    document.querySelectorAll('.order-filter').forEach(b => b.classList.toggle('active', b.dataset.status === status));
-    renderOrders();
-  };
-
-  window.advanceOrder = async (id, status) => {
-    try {
-      await updateOrderStatus(id, status);
-      allOrders = allOrders.map(o => o.id === id ? { ...o, status } : o);
+    window.filterOrders = (status) => {
+      activeFilter = status;
+      document.querySelectorAll('.order-filter').forEach(b => b.classList.toggle('active', b.dataset.status === status));
       renderOrders();
-      updateNewOrdersBadge();
-      showToast(`Order marked as ${status} ✅`, 'success');
-    } catch(e) { showToast(e.message, 'error'); }
-  };
+    };
 
-  window.whatsappBuyer = (phone, ref, status) => {
-    const msg = `Hello! This is an update on your City Shop order *${ref}*. Status: *${status.toUpperCase()}*. Thank you for shopping with us! 🛍️`;
-    window.open(`https://wa.me/${phone.replace(/[^0-9]/g,'')}?text=${encodeURIComponent(msg)}`, '_blank');
-  };
+    window.advanceOrder = async (id, status) => {
+      try {
+        await updateOrderStatus(id, status);
+        allOrders = allOrders.map(o => o.id === id ? { ...o, status } : o);
+        renderOrders();
+        updateNewOrdersBadge();
+        showToast(`Order marked as ${status} ✅`, 'success');
+      } catch (e) { showToast(e.message, 'error'); }
+    };
 
-  function updateNewOrdersBadge() {
-    const pending = allOrders.filter(o => o.status === 'pending').length;
-    const badge   = document.getElementById('newOrdersBadge');
-    if (pending > 0) { badge.textContent = pending; badge.style.display = 'inline-block'; }
-    else badge.style.display = 'none';
-  }
+    window.whatsappBuyer = (phone, ref, status) => {
+      const msg = `Hello! This is an update on your City Shop order *${ref}*. Status: *${status.toUpperCase()}*. Thank you for shopping with us! 🛍️`;
+      window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+    };
 
-  // ── Reviews (agent view + reply) ───────────────────────────────
-  let dashReviews    = [];
-  let replyingReviewId = null;
+    function updateNewOrdersBadge() {
+      const pending = allOrders.filter(o => o.status === 'pending').length;
+      const badge = document.getElementById('newOrdersBadge');
+      if (pending > 0) { badge.textContent = pending; badge.style.display = 'inline-block'; }
+      else badge.style.display = 'none';
+    }
 
-  async function loadDashReviews() {
-    try {
-      dashReviews = await getReviewsByStore(currentStore.id);
-      renderDashReviews();
-    } catch(e) { console.error(e); }
-  }
+    // ── Reviews (agent view + reply) ───────────────────────────────
+    let dashReviews = [];
+    let replyingReviewId = null;
 
-  function starsHtml(rating) {
-    return Array.from({length:5}, (_,i) =>
-      `<span style="color:${i < rating ? '#fbbf24' : 'rgba(255,255,255,0.18)'};">★</span>`
-    ).join('');
-  }
+    async function loadDashReviews() {
+      try {
+        dashReviews = await getReviewsByStore(currentStore.id);
+        renderDashReviews();
+      } catch (e) { console.error(e); }
+    }
 
-  function renderDashReviews() {
-    const grid = document.getElementById('reviewsDashGrid');
-    const total = dashReviews.length;
-    const avg   = total ? (dashReviews.reduce((s,r) => s + r.rating, 0) / total) : 0;
+    function starsHtml(rating) {
+      return Array.from({ length: 5 }, (_, i) =>
+        `<span style="color:${i < rating ? '#fbbf24' : 'rgba(255,255,255,0.18)'};">★</span>`
+      ).join('');
+    }
 
-    document.getElementById('reviewStatsLine').textContent = total
-      ? `${avg.toFixed(1)} ★ average · ${total} review${total !== 1 ? 's' : ''}`
-      : 'No reviews yet';
+    function renderDashReviews() {
+      const grid = document.getElementById('reviewsDashGrid');
+      const total = dashReviews.length;
+      const avg = total ? (dashReviews.reduce((s, r) => s + r.rating, 0) / total) : 0;
 
-    if (!total) {
-      grid.innerHTML = `<div style="text-align:center;padding:60px;color:var(--text-muted);">
+      document.getElementById('reviewStatsLine').textContent = total
+        ? `${avg.toFixed(1)} ★ average · ${total} review${total !== 1 ? 's' : ''}`
+        : 'No reviews yet';
+
+      if (!total) {
+        grid.innerHTML = `<div style="text-align:center;padding:60px;color:var(--text-muted);">
         <i data-lucide="star" style="width:40px;height:40px;display:block;margin:0 auto 16px;"></i>
         <p>No reviews yet. Reviews from buyers will appear here.</p>
       </div>`;
-      lucide.createIcons(); return;
-    }
+        lucide.createIcons(); return;
+      }
 
-    grid.innerHTML = dashReviews.map(r => `
+      grid.innerHTML = dashReviews.map(r => `
       <div class="glass" style="padding:20px 22px;">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
           <div>
@@ -1283,7 +1381,7 @@
             <div style="font-size:0.95rem;">${starsHtml(r.rating)}</div>
           </div>
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-            <span style="font-size:0.72rem;color:var(--text-muted);">${new Date(r.created_at).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})}</span>
+            <span style="font-size:0.72rem;color:var(--text-muted);">${new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
             ${!r.reply ? `<button class="btn btn-glass btn-sm" onclick="openReplyModal('${r.id}')">
               <i data-lucide="corner-down-right" style="width:13px;height:13px;"></i> Reply
             </button>` : `<span style="font-size:0.72rem;color:#4ade80;">✓ Replied</span>`}
@@ -1296,163 +1394,164 @@
             <p style="margin:0;color:var(--text-muted);">${r.reply}</p>
           </div>` : ''}
       </div>`).join('');
-    lucide.createIcons();
-  }
+      lucide.createIcons();
+    }
 
-  window.openReplyModal = (reviewId) => {
-    replyingReviewId = reviewId;
-    const r = dashReviews.find(rv => rv.id === reviewId);
-    if (!r) return;
-    document.getElementById('replyReviewPreview').innerHTML = `
+    window.openReplyModal = (reviewId) => {
+      replyingReviewId = reviewId;
+      const r = dashReviews.find(rv => rv.id === reviewId);
+      if (!r) return;
+      document.getElementById('replyReviewPreview').innerHTML = `
       <div style="margin-bottom:6px;">${starsHtml(r.rating)} <strong>${r.buyer_name}</strong></div>
       ${r.body ? `<p style="margin:0;color:var(--text-muted);">"${r.body}"</p>` : ''}`;
-    document.getElementById('replyText').value = '';
-    document.getElementById('replyModal').classList.add('active');
-    lucide.createIcons();
-  };
+      document.getElementById('replyText').value = '';
+      document.getElementById('replyModal').classList.add('active');
+      lucide.createIcons();
+    };
 
-  window.closeReplyModal = () => {
-    document.getElementById('replyModal').classList.remove('active');
-    replyingReviewId = null;
-  };
+    window.closeReplyModal = () => {
+      document.getElementById('replyModal').classList.remove('active');
+      replyingReviewId = null;
+    };
 
-  window.sendReply = async () => {
-    const reply = document.getElementById('replyText').value.trim();
-    if (!reply) { showToast('Please write a reply first.', 'error'); return; }
-    const btn = document.getElementById('btnSendReply');
-    btn.disabled = true;
-    try {
-      await replyToReview(replyingReviewId, reply);
-      dashReviews = dashReviews.map(r => r.id === replyingReviewId ? { ...r, reply } : r);
-      renderDashReviews();
-      closeReplyModal();
-      showToast('Reply sent! ✅', 'success');
-    } catch(e) { showToast(e.message, 'error'); }
-    finally { btn.disabled = false; }
-  };
+    window.sendReply = async () => {
+      const reply = document.getElementById('replyText').value.trim();
+      if (!reply) { showToast('Please write a reply first.', 'error'); return; }
+      const btn = document.getElementById('btnSendReply');
+      btn.disabled = true;
+      try {
+        await replyToReview(replyingReviewId, reply);
+        dashReviews = dashReviews.map(r => r.id === replyingReviewId ? { ...r, reply } : r);
+        renderDashReviews();
+        closeReplyModal();
+        showToast('Reply sent! ✅', 'success');
+      } catch (e) { showToast(e.message, 'error'); }
+      finally { btn.disabled = false; }
+    };
 
-  // ── Profile (avatar + banner) ──────────────────────────────────
-  function renderSidebarAvatar() {
-    const el   = document.getElementById('sidebarAvatar');
-    const name = document.getElementById('sidebarName');
-    if (name) name.textContent = currentProfile.full_name || 'My Profile';
-    if (!el) return;
-    if (currentProfile.avatar_url) {
-      el.innerHTML = `<img src="${currentProfile.avatar_url}" style="width:100%;height:100%;object-fit:cover;" />`;
-    } else {
-      el.textContent = (currentProfile.full_name || 'A')[0].toUpperCase();
+    // ── Profile (avatar + banner) ──────────────────────────────────
+    function renderSidebarAvatar() {
+      const el = document.getElementById('sidebarAvatar');
+      const name = document.getElementById('sidebarName');
+      if (name) name.textContent = currentProfile.full_name || 'My Profile';
+      if (!el) return;
+      if (currentProfile.avatar_url) {
+        el.innerHTML = `<img src="${currentProfile.avatar_url}" style="width:100%;height:100%;object-fit:cover;" />`;
+      } else {
+        el.textContent = (currentProfile.full_name || 'A')[0].toUpperCase();
+      }
     }
-  }
 
-  function initProfileSection() {
-    // Banner
-    const bannerImg = document.getElementById('profileBannerImg');
-    const bannerPlaceholder = document.getElementById('profileBannerPlaceholder');
-    if (currentProfile.profile_banner_url) {
-      bannerImg.src = currentProfile.profile_banner_url;
-      bannerImg.style.display = 'block';
-      bannerPlaceholder.style.display = 'none';
-    } else {
-      bannerImg.style.display = 'none';
-      bannerPlaceholder.style.display = 'flex';
-    }
-    // Avatar
-    const avatarImg     = document.getElementById('profileAvatarImg');
-    const avatarInitial = document.getElementById('profileAvatarInitial');
-    if (currentProfile.avatar_url) {
-      avatarImg.src = currentProfile.avatar_url;
-      avatarImg.style.display = 'block';
-      avatarInitial.style.display = 'none';
-    } else {
-      avatarImg.style.display = 'none';
-      avatarInitial.style.display = 'block';
-      avatarInitial.textContent = (currentProfile.full_name || 'A')[0].toUpperCase();
-    }
-    // Fields
-    document.getElementById('profileName').value  = currentProfile.full_name || '';
-    document.getElementById('profileEmail').value = currentProfile.email || '';
-
-    // Hover overlay on avatar
-    const wrap = document.getElementById('profileAvatarWrap');
-    const overlay = document.getElementById('profileAvatarOverlay');
-    wrap.addEventListener('mouseenter', () => overlay.style.display = 'flex');
-    wrap.addEventListener('mouseleave', () => overlay.style.display = 'none');
-    lucide.createIcons();
-  }
-
-  window.uploadProfileAvatar = async (e) => {
-    const file = e.target.files[0]; if (!file) return;
-    const spinner = document.getElementById('profileAvatarSpinner');
-    spinner.style.display = 'flex';
-    try {
-      const url = await uploadProfileMedia(file, currentUser.id, 'avatar');
-      currentProfile = await updateProfile(currentUser.id, { avatar_url: url });
-      // Also sync to store logo so it shows on public store page
-      if (currentStore?.id) await updateStore(currentStore.id, { logo_url: url });
-      const avatarImg = document.getElementById('profileAvatarImg');
-      avatarImg.src = url; avatarImg.style.display = 'block';
-      document.getElementById('profileAvatarInitial').style.display = 'none';
-      renderSidebarAvatar();
-      showToast('Profile picture updated! ✅', 'success');
-    } catch(err) { showToast(err.message, 'error'); }
-    finally { spinner.style.display = 'none'; e.target.value = ''; }
-  };
-
-  window.uploadProfileBanner = async (e) => {
-    const file = e.target.files[0]; if (!file) return;
-    const spinner = document.getElementById('profileBannerSpinner');
-    spinner.style.display = 'flex';
-    try {
-      const url = await uploadProfileMedia(file, currentUser.id, 'banner');
-      currentProfile = await updateProfile(currentUser.id, { profile_banner_url: url });
-      // Also sync to store banner so it shows on public store page
-      if (currentStore?.id) await updateStore(currentStore.id, { banner_url: url });
+    function initProfileSection() {
+      // Banner
       const bannerImg = document.getElementById('profileBannerImg');
-      bannerImg.src = url; bannerImg.style.display = 'block';
-      document.getElementById('profileBannerPlaceholder').style.display = 'none';
-      showToast('Profile banner updated! ✅', 'success');
-    } catch(err) { showToast(err.message, 'error'); }
-    finally { spinner.style.display = 'none'; e.target.value = ''; }
-  };
+      const bannerPlaceholder = document.getElementById('profileBannerPlaceholder');
+      if (currentProfile.profile_banner_url) {
+        bannerImg.src = currentProfile.profile_banner_url;
+        bannerImg.style.display = 'block';
+        bannerPlaceholder.style.display = 'none';
+      } else {
+        bannerImg.style.display = 'none';
+        bannerPlaceholder.style.display = 'flex';
+      }
+      // Avatar
+      const avatarImg = document.getElementById('profileAvatarImg');
+      const avatarInitial = document.getElementById('profileAvatarInitial');
+      if (currentProfile.avatar_url) {
+        avatarImg.src = currentProfile.avatar_url;
+        avatarImg.style.display = 'block';
+        avatarInitial.style.display = 'none';
+      } else {
+        avatarImg.style.display = 'none';
+        avatarInitial.style.display = 'block';
+        avatarInitial.textContent = (currentProfile.full_name || 'A')[0].toUpperCase();
+      }
+      // Fields
+      document.getElementById('profileName').value = currentProfile.full_name || '';
+      document.getElementById('profileEmail').value = currentProfile.email || '';
 
-  window.saveProfile = async () => {
-    const name = document.getElementById('profileName').value.trim();
-    if (!name) { showToast('Name cannot be empty.', 'error'); return; }
-    const btn = document.getElementById('btnSaveProfile');
-    btn.disabled = true;
-    try {
-      currentProfile = await updateProfile(currentUser.id, { full_name: name });
-      renderSidebarAvatar();
-      showToast('Profile saved! ✅', 'success');
-    } catch(err) { showToast(err.message, 'error'); }
-    finally { btn.disabled = false; }
-  };
+      // Hover overlay on avatar
+      const wrap = document.getElementById('profileAvatarWrap');
+      const overlay = document.getElementById('profileAvatarOverlay');
+      wrap.addEventListener('mouseenter', () => overlay.style.display = 'flex');
+      wrap.addEventListener('mouseleave', () => overlay.style.display = 'none');
+      lucide.createIcons();
+    }
 
-  // ── Sign Out ───────────────────────────────────────────────────
-  window.handleSignOut = async () => { await signOut(); location.href = 'auth.html'; };
+    window.uploadProfileAvatar = async (e) => {
+      const file = e.target.files[0]; if (!file) return;
+      const spinner = document.getElementById('profileAvatarSpinner');
+      spinner.style.display = 'flex';
+      try {
+        const url = await uploadProfileMedia(file, currentUser.id, 'avatar');
+        currentProfile = await updateProfile(currentUser.id, { avatar_url: url });
+        // Also sync to store logo so it shows on public store page
+        if (currentStore?.id) await updateStore(currentStore.id, { logo_url: url });
+        const avatarImg = document.getElementById('profileAvatarImg');
+        avatarImg.src = url; avatarImg.style.display = 'block';
+        document.getElementById('profileAvatarInitial').style.display = 'none';
+        renderSidebarAvatar();
+        showToast('Profile picture updated! ✅', 'success');
+      } catch (err) { showToast(err.message, 'error'); }
+      finally { spinner.style.display = 'none'; e.target.value = ''; }
+    };
 
-  // ── Toast ──────────────────────────────────────────────────────
-  window.showToast = (msg, type = 'success') => {
-    const tc = document.getElementById('toastContainer');
-    const t  = document.createElement('div');
-    t.className = `toast toast-${type}`;
-    t.innerHTML = `<i data-lucide="${type==='success'?'check-circle':'alert-circle'}" style="width:18px;height:18px;"></i>${msg}`;
-    tc.appendChild(t);
-    lucide.createIcons();
-    setTimeout(() => t.remove(), 4200);
-  };
+    window.uploadProfileBanner = async (e) => {
+      const file = e.target.files[0]; if (!file) return;
+      const spinner = document.getElementById('profileBannerSpinner');
+      spinner.style.display = 'flex';
+      try {
+        const url = await uploadProfileMedia(file, currentUser.id, 'banner');
+        currentProfile = await updateProfile(currentUser.id, { profile_banner_url: url });
+        // Also sync to store banner so it shows on public store page
+        if (currentStore?.id) await updateStore(currentStore.id, { banner_url: url });
+        const bannerImg = document.getElementById('profileBannerImg');
+        bannerImg.src = url; bannerImg.style.display = 'block';
+        document.getElementById('profileBannerPlaceholder').style.display = 'none';
+        showToast('Profile banner updated! ✅', 'success');
+      } catch (err) { showToast(err.message, 'error'); }
+      finally { spinner.style.display = 'none'; e.target.value = ''; }
+    };
 
-  function showProductAlert(msg, type) {
-    const el = document.getElementById('productAlert');
-    el.className = `alert alert-${type}`;
-    el.innerHTML = `<i data-lucide="alert-circle" style="width:16px;height:16px;flex-shrink:0;"></i>${msg}`;
-    lucide.createIcons();
-  }
-  function clearProductAlert() {
-    const el = document.getElementById('productAlert');
-    el.className = 'hidden';
-    el.textContent = '';
-  }
-</script>
+    window.saveProfile = async () => {
+      const name = document.getElementById('profileName').value.trim();
+      if (!name) { showToast('Name cannot be empty.', 'error'); return; }
+      const btn = document.getElementById('btnSaveProfile');
+      btn.disabled = true;
+      try {
+        currentProfile = await updateProfile(currentUser.id, { full_name: name });
+        renderSidebarAvatar();
+        showToast('Profile saved! ✅', 'success');
+      } catch (err) { showToast(err.message, 'error'); }
+      finally { btn.disabled = false; }
+    };
+
+    // ── Sign Out ───────────────────────────────────────────────────
+    window.handleSignOut = async () => { await signOut(); location.href = 'auth.html'; };
+
+    // ── Toast ──────────────────────────────────────────────────────
+    window.showToast = (msg, type = 'success') => {
+      const tc = document.getElementById('toastContainer');
+      const t = document.createElement('div');
+      t.className = `toast toast-${type}`;
+      t.innerHTML = `<i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" style="width:18px;height:18px;"></i>${msg}`;
+      tc.appendChild(t);
+      lucide.createIcons();
+      setTimeout(() => t.remove(), 4200);
+    };
+
+    function showProductAlert(msg, type) {
+      const el = document.getElementById('productAlert');
+      el.className = `alert alert-${type}`;
+      el.innerHTML = `<i data-lucide="alert-circle" style="width:16px;height:16px;flex-shrink:0;"></i>${msg}`;
+      lucide.createIcons();
+    }
+    function clearProductAlert() {
+      const el = document.getElementById('productAlert');
+      el.className = 'hidden';
+      el.textContent = '';
+    }
+  </script>
 </body>
+
 </html>
