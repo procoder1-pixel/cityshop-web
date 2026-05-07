@@ -9,31 +9,39 @@ serve(async (req) => {
   try {
     const payload = await req.json()
     const order   = payload.record
+    if (!order) return new Response('No order', { status: 400 })
 
-    if (!order) return new Response('No order data', { status: 400 })
-
-    // Get Supabase client
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
 
-    // Fetch store + owner email + product name
+    // Get store + owner_id
     const { data: store } = await supabase
       .from('stores')
-      .select('name, owner_id, whatsapp, profiles(email, full_name)')
+      .select('name, owner_id')
       .eq('id', order.store_id)
       .single()
 
+    if (!store) return new Response('Store not found', { status: 200 })
+
+    // Get agent profile separately
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('email, full_name')
+      .eq('id', store.owner_id)
+      .single()
+
+    // Get product name
     const { data: product } = await supabase
       .from('products')
       .select('name')
       .eq('id', order.product_id)
       .single()
 
-    const agentEmail = store?.profiles?.email
-    const agentName  = store?.profiles?.full_name
-    const storeName  = store?.name
+    const agentEmail  = profile?.email
+    const agentName   = profile?.full_name || 'Agent'
+    const storeName   = store.name
     const productName = product?.name || 'Product'
 
-    if (!agentEmail) return new Response('No agent email', { status: 200 })
+    if (!agentEmail) return new Response('No agent email found', { status: 200 })
 
     // Send email via Resend
     const emailRes = await fetch('https://api.resend.com/emails', {
@@ -75,7 +83,7 @@ serve(async (req) => {
                   <td style="padding:10px 0;text-align:right;">${order.buyer_city || 'Not specified'}</td>
                 </tr>
                 <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
-                  <td style="padding:10px 0;color:rgba(255,255,255,0.5);font-size:0.85rem;">Delivery</td>
+                  <td style="padding:10px 0;color:rgba(255,255,255,0.5);font-size:0.85rem;">Fulfillment</td>
                   <td style="padding:10px 0;text-align:right;">${order.fulfillment}</td>
                 </tr>
                 <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
@@ -87,19 +95,17 @@ serve(async (req) => {
                   <td style="padding:16px 0 0;font-size:1.1rem;font-weight:700;color:#EF4444;text-align:right;">GH₵ ${order.total}</td>
                 </tr>
               </table>
-
-              ${order.buyer_address ? `<div style="margin-top:20px;padding:14px;background:rgba(255,255,255,0.05);border-radius:10px;">
+              ${order.buyer_address ? `
+              <div style="margin-top:20px;padding:14px;background:rgba(255,255,255,0.05);border-radius:10px;">
                 <p style="margin:0;font-size:0.8rem;color:rgba(255,255,255,0.5);">Delivery Address</p>
                 <p style="margin:4px 0 0;">${order.buyer_address}</p>
               </div>` : ''}
-
               <div style="margin-top:28px;text-align:center;">
                 <a href="https://cityshop-web.vercel.app/dashboard-agent.html"
                   style="background:#EF4444;color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:600;display:inline-block;">
                   View Order in Dashboard →
                 </a>
               </div>
-
               <p style="margin-top:24px;font-size:0.75rem;color:rgba(255,255,255,0.3);text-align:center;">
                 City Shop Ghana · You received this because you have an active store
               </p>
@@ -110,11 +116,13 @@ serve(async (req) => {
     })
 
     const result = await emailRes.json()
+    console.log('Email sent:', JSON.stringify(result))
     return new Response(JSON.stringify({ success: true, result }), {
       headers: { 'Content-Type': 'application/json' },
     })
 
   } catch (err) {
+    console.error('Error:', String(err))
     return new Response(JSON.stringify({ error: String(err) }), { status: 500 })
   }
 })

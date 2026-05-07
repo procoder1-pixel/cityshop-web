@@ -619,6 +619,22 @@
   };
 
   // ── Section Switcher ───────────────────────────────────────────
+  window.deleteAccount = async () => {
+    const confirmed = confirm(
+      '⚠️ Delete your account?\n\nThis will permanently delete your promoter account and all data. This cannot be undone.\n\nType DELETE in the next prompt to confirm.'
+    );
+    if (!confirmed) return;
+    const typed = prompt('Type DELETE to confirm:');
+    if (typed !== 'DELETE') return showToast('Cancelled.', 'info');
+    try {
+      await supabase.from('profiles').delete().eq('id', currentUser.id);
+      await signOut();
+      location.href = 'auth.html';
+    } catch(e) {
+      showToast('Failed: ' + e.message, 'error');
+    }
+  };
+
   window.showSec = (sec) => {
     document.getElementById('secBrowse').style.display    = sec === 'browse'   ? 'block' : 'none';
     document.getElementById('secEarnings').style.display  = sec === 'earnings' ? 'block' : 'none';
