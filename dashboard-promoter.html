@@ -621,7 +621,7 @@
       ? `https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`
       : `https://wa.me/?text=${encodeURIComponent(msg)}`;
 
-    window.open(waUrl, '_blank');
+    location.href = waUrl;
 
     sharedCount++;
     totalEarnings = parseFloat((totalEarnings + markup).toFixed(2));
