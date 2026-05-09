@@ -176,6 +176,9 @@
     <div class="sidebar-item" id="navSettings" onclick="showSec('settings')">
       <i data-lucide="settings" style="width:18px;height:18px;"></i> Settings
     </div>
+    <div class="sidebar-item" onclick="openCashout()" style="color:#4ade80;">
+      <i data-lucide="banknote" style="width:18px;height:18px;"></i> Cash Out
+    </div>
     <div class="sidebar-item" onclick="handleSignOut()">
       <i data-lucide="log-out" style="width:18px;height:18px;"></i> Sign Out
     </div>
@@ -621,7 +624,14 @@
       ? `https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`
       : `https://wa.me/?text=${encodeURIComponent(msg)}`;
 
-    location.href = waUrl;
+    // Open WhatsApp without popup blocker
+    const a = document.createElement('a');
+    a.href = waUrl;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 
     sharedCount++;
     totalEarnings = parseFloat((totalEarnings + markup).toFixed(2));
