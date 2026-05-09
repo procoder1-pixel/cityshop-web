@@ -773,18 +773,10 @@
     // Apply markup to product cards
     const mkInput = document.getElementById('globalMarkup');
     if (mkInput && markup) { mkInput.value = markup; applyGlobalMarkup(); }
-    // Save whatsapp to profile
-    try {
-      await updateProfile(currentUser.id, { whatsapp: wa });
-      alert.style.display = 'block';
-      alert.className = 'alert alert-success';
-      alert.textContent = 'Settings saved! ✅';
-      setTimeout(() => { alert.style.display = 'none'; }, 2500);
-    } catch(e) {
-      alert.style.display = 'block';
-      alert.className = 'alert alert-error';
-      alert.textContent = 'Saved locally. Profile update failed: ' + e.message;
-    }
+    alert.style.display = 'block';
+    alert.className = 'alert alert-success';
+    alert.textContent = 'Settings saved! ✅';
+    setTimeout(() => { alert.style.display = 'none'; }, 2500);
     lucide.createIcons();
   };
 
