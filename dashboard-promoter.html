@@ -173,6 +173,9 @@
     <div class="sidebar-item" id="navProfile" onclick="showSec('profile')">
       <i data-lucide="user-circle" style="width:18px;height:18px;"></i> My Profile
     </div>
+    <div class="sidebar-item" id="navSettings" onclick="showSec('settings')">
+      <i data-lucide="settings" style="width:18px;height:18px;"></i> Settings
+    </div>
     <div class="sidebar-item" onclick="handleSignOut()">
       <i data-lucide="log-out" style="width:18px;height:18px;"></i> Sign Out
     </div>
@@ -382,6 +385,30 @@
         </button>
       </div>
     </div>
+
+    <!-- ── Settings Section ── -->
+    <div id="secSettings" style="display:none;">
+      <h3 class="mb-8">Settings</h3>
+      <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:24px;">Configure your promoter preferences</p>
+      <div class="glass" style="padding:28px;max-width:500px;margin-bottom:24px;">
+        <h4 class="mb-16">Contact &amp; Share Settings</h4>
+        <div class="form-group mb-16">
+          <label>Your WhatsApp Number <span style="font-size:0.75rem;color:var(--text-muted);">(with country code)</span></label>
+          <input type="tel" id="set_whatsapp" placeholder="+233XXXXXXXXX" />
+          <p style="font-size:0.75rem;color:var(--text-muted);margin-top:6px;">Buyers will message you directly when ordering via your shared links</p>
+        </div>
+        <div class="form-group mb-16">
+          <label>Default Markup (GH₵)</label>
+          <input type="number" id="set_markup" placeholder="e.g. 20" min="0" step="0.01" />
+          <p style="font-size:0.75rem;color:var(--text-muted);margin-top:6px;">Auto-applied to all products when you share</p>
+        </div>
+        <div id="settingsAlert" style="display:none;" class="alert"></div>
+        <button class="btn btn-primary" onclick="saveSettings()">
+          <i data-lucide="save" style="width:16px;height:16px;"></i> Save Settings
+        </button>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -587,8 +614,11 @@
       `_Powered by City Shop Ghana — Ghana's #1 Marketplace_`,
     ].filter(l => l !== null).join('\n');
 
-    const waUrl = whatsapp
-      ? `https://wa.me/${whatsapp.replace(/[^0-9]/g,'')}?text=${encodeURIComponent(msg)}`
+    // Use promoter's own WhatsApp if store has none
+    const promoterWa = localStorage.getItem('cs_promoter_whatsapp') || '';
+    const waNumber   = (whatsapp || promoterWa).replace(/[^0-9]/g, '');
+    const waUrl = waNumber
+      ? `https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`
       : `https://wa.me/?text=${encodeURIComponent(msg)}`;
 
     window.open(waUrl, '_blank');
@@ -709,15 +739,53 @@
   };
 
   window.showSec = (sec) => {
-    document.getElementById('secBrowse').style.display    = sec === 'browse'   ? 'block' : 'none';
-    document.getElementById('secEarnings').style.display  = sec === 'earnings' ? 'block' : 'none';
+    document.getElementById('secBrowse').style.display      = sec === 'browse'   ? 'block' : 'none';
+    document.getElementById('secEarnings').style.display    = sec === 'earnings' ? 'block' : 'none';
     document.getElementById('sectionProfile').style.display = sec === 'profile'  ? 'block' : 'none';
-    document.getElementById('navBrowse').classList.toggle('active',   sec === 'browse');
-    document.getElementById('navEarnings').classList.toggle('active', sec === 'earnings');
-    document.getElementById('navProfile').classList.toggle('active',  sec === 'profile');
-    if (sec === 'profile') initProfileSection();
+    document.getElementById('secSettings').style.display    = sec === 'settings' ? 'block' : 'none';
+    document.getElementById('navBrowse').classList.toggle('active',    sec === 'browse');
+    document.getElementById('navEarnings').classList.toggle('active',  sec === 'earnings');
+    document.getElementById('navProfile').classList.toggle('active',   sec === 'profile');
+    document.getElementById('navSettings').classList.toggle('active',  sec === 'settings');
+    if (sec === 'profile')  initProfileSection();
     if (sec === 'earnings') loadEarningsStats();
+    if (sec === 'settings') loadSettings();
     closeSidebar();
+  };
+
+  // ── Settings ──────────────────────────────────────────────────
+  function loadSettings() {
+    const wa     = localStorage.getItem('cs_promoter_whatsapp') || '';
+    const markup = localStorage.getItem('cs_markup') || '';
+    const waEl   = document.getElementById('set_whatsapp');
+    const mkEl   = document.getElementById('set_markup');
+    if (waEl) waEl.value = wa;
+    if (mkEl) mkEl.value = markup;
+  }
+
+  window.saveSettings = async () => {
+    const wa     = document.getElementById('set_whatsapp').value.trim();
+    const markup = document.getElementById('set_markup').value;
+    const alert  = document.getElementById('settingsAlert');
+    // Save to localStorage
+    if (wa)     localStorage.setItem('cs_promoter_whatsapp', wa);
+    if (markup) localStorage.setItem('cs_markup', markup);
+    // Apply markup to product cards
+    const mkInput = document.getElementById('globalMarkup');
+    if (mkInput && markup) { mkInput.value = markup; applyGlobalMarkup(); }
+    // Save whatsapp to profile
+    try {
+      await updateProfile(currentUser.id, { whatsapp: wa });
+      alert.style.display = 'block';
+      alert.className = 'alert alert-success';
+      alert.textContent = 'Settings saved! ✅';
+      setTimeout(() => { alert.style.display = 'none'; }, 2500);
+    } catch(e) {
+      alert.style.display = 'block';
+      alert.className = 'alert alert-error';
+      alert.textContent = 'Saved locally. Profile update failed: ' + e.message;
+    }
+    lucide.createIcons();
   };
 
   async function loadEarningsStats() {
