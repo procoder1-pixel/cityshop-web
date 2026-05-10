@@ -550,8 +550,8 @@
         </div>
         <div class="product-card-actions" style="padding:10px 14px 14px;display:flex;gap:7px;">
           <button class="btn btn-primary btn-sm" style="flex:1;"
-            onclick="shareOnWhatsApp('${p.id}','${encodeURIComponent(p.name)}',${p.price},'${storeSlug}','${encodeURIComponent(storeName)}','${storeObj?.whatsapp || ''}')">
-            <i data-lucide="message-circle" style="width:14px;height:14px;"></i> Share
+            onclick="openShareModal('${p.id}','${encodeURIComponent(p.name)}',${p.price},'${storeSlug}','${encodeURIComponent(storeName)}','${storeObj?.whatsapp || ''}')">
+            <i data-lucide="share-2" style="width:14px;height:14px;"></i> Share
           </button>
           <button class="copy-btn" onclick="copyProductLink('${storeUrl}','${encodeURIComponent(p.name)}')">
             <i data-lucide="copy" style="width:12px;height:12px;"></i> Copy
@@ -595,7 +595,100 @@
   const savedMarkup = localStorage.getItem('cs_markup');
   if (savedMarkup) document.getElementById('globalMarkup').value = savedMarkup;
 
-  // ── WhatsApp Share ────────────────────────────────────────────
+  // ── Social Share Modal ──────────────────────────────────────────
+  let _shareData = {};
+
+  window.openShareModal = (id, encodedName, basePrice, storeSlug, encodedStoreName, whatsapp) => {
+    const name      = decodeURIComponent(encodedName);
+    const storeName = decodeURIComponent(encodedStoreName);
+    const markup    = parseFloat(document.getElementById(`markup_${id}`)?.value) || 0;
+    const final     = (basePrice + markup).toFixed(2);
+    const productUrl = `${location.origin}/product-view.html?product=${id}&ref=${currentUser.id}&markup=${markup}&slug=${storeSlug}`;
+    const promoterWa = localStorage.getItem('cs_promoter_whatsapp') || '';
+    const waNumber   = (whatsapp || promoterWa).replace(/[^0-9]/g, '');
+
+    const msg = [
+      `🛍️ *${name}*`,
+      ``,
+      `💰 *Price: GH₵ ${final}*`,
+      markup > 0 ? `   (Includes delivery commission)` : null,
+      ``,
+      `🏪 Store: *${storeName}*`,
+      `🔗 Order here: ${productUrl}`,
+      ``,
+      `_Powered by City Shop Ghana — Ghana's #1 Marketplace_`,
+    ].filter(Boolean).join('\n');
+
+    _shareData = { id, name, storeName, final, markup, productUrl, waNumber, msg };
+
+    document.getElementById('shareUrlDisplay').textContent = productUrl;
+    document.getElementById('shareModal').style.display = 'flex';
+    lucide.createIcons();
+
+    // Track share
+    sharedCount++;
+    totalEarnings = parseFloat((totalEarnings + markup).toFixed(2));
+    sessionStorage.setItem('cs_shared',   sharedCount);
+    sessionStorage.setItem('cs_earnings', totalEarnings);
+    updateSharedUI();
+  };
+
+  window.closeShareModal = () => {
+    document.getElementById('shareModal').style.display = 'none';
+  };
+
+  window.copyShareUrl = () => {
+    navigator.clipboard.writeText(_shareData.productUrl);
+    showToast('Link copied! 📋', 'success');
+  };
+
+  window.shareVia = (platform) => {
+    const { msg, productUrl, waNumber, name, storeName, final } = _shareData;
+    const encoded = encodeURIComponent(msg);
+    const urlEncoded = encodeURIComponent(productUrl);
+
+    let url = '';
+    switch(platform) {
+      case 'whatsapp':
+        url = waNumber
+          ? `https://wa.me/${waNumber}?text=${encoded}`
+          : `https://wa.me/?text=${encoded}`;
+        break;
+      case 'whatsapp_status':
+        // Copy message then open WhatsApp — user pastes to status
+        navigator.clipboard.writeText(msg);
+        showToast('Message copied! Open WhatsApp → Status → paste ✅', 'success');
+        url = 'https://wa.me/';
+        break;
+      case 'facebook':
+        url = `https://www.facebook.com/sharer/sharer.php?u=${urlEncoded}`;
+        break;
+      case 'twitter':
+        url = `https://twitter.com/intent/tweet?text=${encoded}`;
+        break;
+      case 'telegram':
+        url = `https://t.me/share/url?url=${urlEncoded}&text=${encodeURIComponent(`🛍️ ${name} — GH₵ ${final}`)}`;
+        break;
+      case 'copy_caption':
+        const caption = `🛍️ ${name}\n💰 GH₵ ${final}\n🏪 ${storeName}\n\n🔗 Link in bio or: ${productUrl}\n\n#CityShopGhana #Ghana #Shopping`;
+        navigator.clipboard.writeText(caption);
+        showToast('Caption copied for TikTok/Instagram! 📸', 'success');
+        return;
+      case 'sms':
+        url = `sms:?body=${encoded}`;
+        break;
+      case 'email':
+        url = `mailto:?subject=${encodeURIComponent(`Check out ${name} on City Shop Ghana`)}&body=${encoded}`;
+        break;
+    }
+    if (url) {
+      const a = document.createElement('a');
+      a.href = url; a.target = '_blank'; a.rel = 'noopener';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+  };
+
+  // ── WhatsApp Share (legacy - kept for compatibility) ──────────────────────────────────────────
   window.shareOnWhatsApp = (id, encodedName, basePrice, storeSlug, encodedStoreName, whatsapp) => {
     const name      = decodeURIComponent(encodedName);
     const storeName = decodeURIComponent(encodedStoreName);
@@ -933,6 +1026,65 @@
     setTimeout(() => t.remove(), 4200);
   };
 </script>
+<!-- ── Social Share Modal ── -->
+<div class="modal-overlay" id="shareModal" style="display:none;">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header">
+      <h3><i data-lucide="share-2" style="width:20px;height:20px;display:inline;margin-right:8px;color:var(--red);"></i>Share Product</h3>
+      <button class="btn btn-glass btn-icon" onclick="closeShareModal()">
+        <i data-lucide="x" style="width:18px;height:18px;"></i>
+      </button>
+    </div>
+    <div style="padding:8px 0 16px;">
+      <!-- Product link -->
+      <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+        <span id="shareUrlDisplay" style="flex:1;font-size:0.78rem;color:rgba(255,255,255,0.7);word-break:break-all;"></span>
+        <button onclick="copyShareUrl()" style="background:var(--red);border:none;color:#fff;padding:6px 12px;border-radius:8px;font-size:0.78rem;cursor:pointer;white-space:nowrap;flex-shrink:0;">
+          Copy Link
+        </button>
+      </div>
+      <!-- Social platforms grid -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <button onclick="shareVia('whatsapp')"
+          style="background:#25D366;border:none;color:#fff;padding:14px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;">
+          📱 WhatsApp
+        </button>
+        <button onclick="shareVia('whatsapp_status')"
+          style="background:#128C7E;border:none;color:#fff;padding:14px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;">
+          🟢 WA Status
+        </button>
+        <button onclick="shareVia('facebook')"
+          style="background:#1877f2;border:none;color:#fff;padding:14px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;">
+          📘 Facebook
+        </button>
+        <button onclick="shareVia('twitter')"
+          style="background:#000;border:none;color:#fff;padding:14px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;">
+          𝕏 Twitter/X
+        </button>
+        <button onclick="shareVia('telegram')"
+          style="background:#2CA5E0;border:none;color:#fff;padding:14px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;">
+          ✈️ Telegram
+        </button>
+        <button onclick="shareVia('copy_caption')"
+          style="background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);border:none;color:#fff;padding:14px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;">
+          📸 TikTok/Instagram
+        </button>
+        <button onclick="shareVia('sms')"
+          style="background:#34C759;border:none;color:#fff;padding:14px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;">
+          💬 SMS
+        </button>
+        <button onclick="shareVia('email')"
+          style="background:#EA4335;border:none;color:#fff;padding:14px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;">
+          📧 Email
+        </button>
+      </div>
+      <p style="font-size:0.72rem;color:rgba(255,255,255,0.35);text-align:center;margin:0;">
+        💡 TikTok/Instagram: copies caption — paste it in your post or bio
+      </p>
+    </div>
+  </div>
+</div>
+
 <!-- ── Cashout Modal ── -->
 <div class="modal-overlay" id="cashoutModal" style="display:none;">
   <div class="modal" style="max-width:440px;">
