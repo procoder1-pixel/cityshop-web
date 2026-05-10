@@ -550,7 +550,9 @@
         </div>
         <div class="product-card-actions" style="padding:10px 14px 14px;display:flex;gap:7px;">
           <button class="btn btn-primary btn-sm" style="flex:1;"
-            onclick="openShareModal('${p.id}','${encodeURIComponent(p.name)}',${p.price},'${storeSlug}','${encodeURIComponent(storeName)}','${storeObj?.whatsapp || ''}')">
+            data-pid="${p.id}" data-name="${encodeURIComponent(p.name)}" data-price="${p.price}"
+            data-slug="${storeSlug}" data-store="${encodeURIComponent(storeName)}" data-wa="${storeObj?.whatsapp || ''}"
+            onclick="openShareModal(this.dataset.pid,this.dataset.name,parseFloat(this.dataset.price),this.dataset.slug,this.dataset.store,this.dataset.wa)">
             <i data-lucide="share-2" style="width:14px;height:14px;"></i> Share
           </button>
           <button class="copy-btn" onclick="copyProductLink('${storeUrl}','${encodeURIComponent(p.name)}')">
