@@ -645,9 +645,33 @@
   };
 
   window.shareVia = (platform) => {
-    const { msg, productUrl, waNumber, name, storeName, final } = _shareData;
-    const encoded = encodeURIComponent(msg);
-    const urlEncoded = encodeURIComponent(productUrl);
+    const { msg, productUrl, waNumber, name, storeName, final, markup } = _shareData;
+
+    // Craft platform-specific messages
+    const fullMsg = [
+      `🔥 Amazing Deal Alert! 🔥`,
+      ``,
+      `📦 *${name}*`,
+      `💰 Price: *GH₵ ${final}*`,
+      markup > 0 ? `✅ Includes all charges` : ``,
+      ``,
+      `🏪 Sold by: ${storeName}`,
+      `📍 Available on City Shop Ghana`,
+      ``,
+      `👇 Order now — Pay with MoMo or Card:`,
+      `${productUrl}`,
+      ``,
+      `⚡ Fast delivery across Ghana!`,
+      `_City Shop Ghana — Shop Smart, Shop Local 🇬🇭_`,
+    ].filter(Boolean).join('\n');
+
+    const shortMsg = `🔥 ${name} for GH₵ ${final}! Shop now 👉 ${productUrl}`;
+    const tiktokCaption = `🛍️ ${name}\n💰 Only GH₵ ${final}\n\n✅ Legit seller on City Shop Ghana\n📲 Order link in bio\n\n${productUrl}\n\n#Ghana #GhanaTwitter #GhanaTikTok #Shopping #CityShopGhana #GhanaMarket #Accra #Kumasi`;
+    const emailBody = `Hi there,\n\nI found this amazing product on City Shop Ghana and thought you'd love it!\n\n📦 Product: ${name}\n💰 Price: GH₵ ${final}\n🏪 Store: ${storeName}\n\n🔗 Order here: ${productUrl}\n\nYou can pay with MTN MoMo, Telecel Cash, or Card. Fast delivery across Ghana!\n\nCheck it out! 🛍️\n\n_Powered by City Shop Ghana_`;
+
+    const encoded     = encodeURIComponent(fullMsg);
+    const shortEnc    = encodeURIComponent(shortMsg);
+    const urlEncoded  = encodeURIComponent(productUrl);
 
     let url = '';
     switch(platform) {
@@ -659,30 +683,29 @@
         url = `https://wa.me/${waNumber}?text=${encoded}`;
         break;
       case 'whatsapp_status':
-        // Copy message then open WhatsApp — user pastes to status
-        navigator.clipboard.writeText(msg);
-        showToast('Message copied! Open WhatsApp → Status → paste ✅', 'success');
-        url = 'https://wa.me/';
-        break;
+        navigator.clipboard.writeText(fullMsg);
+        showToast('✅ Message copied! Open WhatsApp → My Status → paste & share', 'success');
+        setTimeout(() => window.open('https://wa.me/', '_blank', 'noopener'), 1000);
+        return;
       case 'facebook':
-        url = `https://www.facebook.com/sharer/sharer.php?u=${urlEncoded}`;
+        // Facebook sharer with quote
+        url = `https://www.facebook.com/sharer/sharer.php?u=${urlEncoded}&quote=${encodeURIComponent(`🔥 ${name} for GH₵ ${final}! Shop on City Shop Ghana 🇬🇭`)}`;
         break;
       case 'twitter':
-        url = `https://twitter.com/intent/tweet?text=${encoded}`;
+        url = `https://twitter.com/intent/tweet?text=${shortEnc}&hashtags=Ghana,CityShopGhana,Shopping`;
         break;
       case 'telegram':
-        url = `https://t.me/share/url?url=${urlEncoded}&text=${encodeURIComponent(`🛍️ ${name} — GH₵ ${final}`)}`;
+        url = `https://t.me/share/url?url=${urlEncoded}&text=${encodeURIComponent(`🔥 ${name} — GH₵ ${final}\n🏪 ${storeName}\n⚡ Fast delivery across Ghana!`)}`;
         break;
       case 'copy_caption':
-        const caption = `🛍️ ${name}\n💰 GH₵ ${final}\n🏪 ${storeName}\n\n🔗 Link in bio or: ${productUrl}\n\n#CityShopGhana #Ghana #Shopping`;
-        navigator.clipboard.writeText(caption);
-        showToast('Caption copied for TikTok/Instagram! 📸', 'success');
+        navigator.clipboard.writeText(tiktokCaption);
+        showToast('📸 TikTok/Instagram caption copied! Paste in your post', 'success');
         return;
       case 'sms':
-        url = `sms:?body=${encoded}`;
+        url = `sms:?body=${encodeURIComponent(shortMsg)}`;
         break;
       case 'email':
-        url = `mailto:?subject=${encodeURIComponent(`Check out ${name} on City Shop Ghana`)}&body=${encoded}`;
+        url = `mailto:?subject=${encodeURIComponent(`🛍️ Check out ${name} on City Shop Ghana — GH₵ ${final}`)}&body=${encodeURIComponent(emailBody)}`;
         break;
     }
     if (url) {
