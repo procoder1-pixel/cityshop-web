@@ -24,7 +24,7 @@
       box-shadow: 0 18px 50px rgba(139,92,246,0.18);
     }
 
-    /* ── Markup row at the bottom of each card ── */
+    /* ── Markup row ── */
     .markup-row {
       display: flex;
       align-items: center;
@@ -90,29 +90,7 @@
     }
     .global-markup-bar label { font-size:0.88rem; font-weight:600; white-space:nowrap; }
 
-    /* ── Mobile sidebar toggle ── */
-    .mobile-menu-btn {
-      display: none;
-      background: var(--glass-bg2);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius-xs);
-      padding: 8px;
-      cursor: pointer;
-      color: var(--text-primary);
-    }
-    .sidebar-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.55);
-      z-index: 199;
-    }
-    @media (max-width: 900px) {
-      .mobile-menu-btn { display: grid; place-items: center; }
-      .sidebar-overlay.open { display: block; }
-    }
-
-    /* ── Copy link btn on card ── */
+    /* ── Copy link btn ── */
     .copy-btn {
       background: rgba(255,255,255,0.07);
       border: 1px solid rgba(255,255,255,0.14);
@@ -128,6 +106,106 @@
       gap: 4px;
     }
     .copy-btn:hover { background: rgba(255,255,255,0.14); color: #fff; }
+
+    /* ════════════════════════════════════════════════════
+       MOBILE SIDEBAR — proper slide-in drawer
+       ════════════════════════════════════════════════════ */
+
+    /* Hamburger button — hidden on desktop */
+    .mobile-menu-btn {
+      display: none;
+      background: var(--glass-bg2);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xs);
+      padding: 9px;
+      cursor: pointer;
+      color: var(--text-primary);
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+      flex-shrink: 0;
+    }
+
+    /* Full-screen scrim — blocks ALL taps behind sidebar */
+    .sidebar-overlay {
+      display: none;           /* hidden by default */
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      z-index: 299;            /* below sidebar (300), above everything else */
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    /* Only show scrim when sidebar is open on mobile */
+    .sidebar-overlay.open {
+      display: block;
+    }
+
+    @media (max-width: 900px) {
+      .mobile-menu-btn {
+        display: flex;
+      }
+
+      /* Sidebar becomes a fixed off-screen drawer */
+      .sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        height: 100vh !important;
+        height: 100dvh !important;   /* uses dynamic viewport height on mobile */
+        width: 280px !important;
+        max-width: 85vw !important;
+        z-index: 300 !important;     /* above scrim */
+
+        /* START off-screen to the left */
+        transform: translateX(-110%) !important;
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        will-change: transform;
+      }
+
+      /* Slide IN when open class is applied */
+      .sidebar.open {
+        transform: translateX(0) !important;
+      }
+
+      /* Push main content full-width on mobile */
+      .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+      }
+
+      /* Close button inside sidebar */
+      .sidebar-close-btn {
+        display: flex !important;
+      }
+    }
+
+    /* Close (X) button inside sidebar — only visible on mobile */
+    .sidebar-close-btn {
+      display: none;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 8px;
+      padding: 7px;
+      cursor: pointer;
+      color: var(--text-muted);
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+      flex-shrink: 0;
+    }
+    .sidebar-close-btn:hover { color: #fff; background: rgba(255,255,255,0.14); }
+
+    /* Sidebar top row: logo + close btn */
+    .sidebar-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
   </style>
 </head>
 <body>
@@ -135,21 +213,32 @@
 <div class="loading-overlay" id="pageLoader"><div class="spinner"></div></div>
 <div class="toast-container" id="toastContainer"></div>
 <div id="announcementBanner" style="display:none;width:100%;padding:10px 20px;font-size:0.88rem;font-weight:500;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);"></div>
+
+<!-- Scrim: covers entire screen behind sidebar, blocks all taps -->
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
 <div class="dashboard-layout" id="app" style="display:none;">
 
-  <!-- ── Sidebar ── -->
+  <!-- ══════════════════════════════════════════════
+       SIDEBAR
+       ══════════════════════════════════════════════ -->
   <aside class="sidebar" id="sidebar">
-    <div style="margin-bottom:24px;">
+
+    <!-- Logo row + close button -->
+    <div class="sidebar-top-row">
       <a class="navbar-brand" href="index.html" style="text-decoration:none;">
         <div class="brand-logo">C</div>
         <span class="brand-name">City<span>Shop</span></span>
       </a>
+      <!-- X only renders on mobile via CSS -->
+      <button class="sidebar-close-btn" onclick="closeSidebar()" aria-label="Close menu">
+        <i data-lucide="x" style="width:18px;height:18px;"></i>
+      </button>
     </div>
 
-    <!-- Profile card in sidebar -->
-    <div style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:var(--radius-sm);background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);margin-bottom:16px;cursor:pointer;" onclick="showSec('profile')">
+    <!-- Profile card -->
+    <div style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:var(--radius-sm);background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);margin-bottom:16px;cursor:pointer;"
+         onclick="showSec('profile');closeSidebar()">
       <div id="sidebarAvatar" style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#1d4ed8);display:grid;place-items:center;font-weight:800;color:#fff;font-size:0.95rem;flex-shrink:0;overflow:hidden;border:2px solid rgba(59,130,246,0.4);"></div>
       <div style="min-width:0;">
         <div id="sidebarName" style="font-size:0.82rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
@@ -162,21 +251,21 @@
     </span>
 
     <div class="sidebar-section-label">Workspace</div>
-    <div class="sidebar-item active" id="navBrowse" onclick="showSec('browse')">
+    <div class="sidebar-item active" id="navBrowse" onclick="showSec('browse');closeSidebar()">
       <i data-lucide="layout-grid" style="width:18px;height:18px;"></i> Browse Products
     </div>
-    <div class="sidebar-item" id="navEarnings" onclick="showSec('earnings')">
+    <div class="sidebar-item" id="navEarnings" onclick="showSec('earnings');closeSidebar()">
       <i data-lucide="banknote" style="width:18px;height:18px;"></i> Earnings Tracker
     </div>
 
     <div class="sidebar-section-label mt-16">Account</div>
-    <div class="sidebar-item" id="navProfile" onclick="showSec('profile')">
+    <div class="sidebar-item" id="navProfile" onclick="showSec('profile');closeSidebar()">
       <i data-lucide="user-circle" style="width:18px;height:18px;"></i> My Profile
     </div>
-    <div class="sidebar-item" id="navSettings" onclick="showSec('settings')">
+    <div class="sidebar-item" id="navSettings" onclick="showSec('settings');closeSidebar()">
       <i data-lucide="settings" style="width:18px;height:18px;"></i> Settings
     </div>
-    <div class="sidebar-item" onclick="openCashout()" style="color:#4ade80;">
+    <div class="sidebar-item" onclick="openCashout();closeSidebar();" style="color:#4ade80;">
       <i data-lucide="banknote" style="width:18px;height:18px;"></i> Cash Out
     </div>
     <div class="sidebar-item" onclick="handleSignOut()">
@@ -191,14 +280,17 @@
     </div>
   </aside>
 
-  <!-- ── Main Content ── -->
+  <!-- ══════════════════════════════════════════════
+       MAIN CONTENT
+       ══════════════════════════════════════════════ -->
   <main class="main-content">
 
     <!-- Topbar -->
     <div class="flex-between mb-24">
       <div style="display:flex;align-items:center;gap:14px;">
-        <button class="mobile-menu-btn" onclick="openSidebar()">
-          <i data-lucide="menu" style="width:20px;height:20px;"></i>
+        <!-- Hamburger — only visible on mobile via CSS -->
+        <button class="mobile-menu-btn" onclick="openSidebar()" aria-label="Open menu">
+          <i data-lucide="menu" style="width:22px;height:22px;"></i>
         </button>
         <div>
           <h2 id="topGreeting">Hello, Promoter 👋</h2>
@@ -209,8 +301,6 @@
 
     <!-- ─ BROWSE SECTION ─ -->
     <div id="secBrowse">
-
-      <!-- Stats -->
       <div class="stats-grid mb-28">
         <div class="stat-card">
           <div class="stat-icon"><i data-lucide="package" style="width:22px;height:22px;"></i></div>
@@ -251,9 +341,7 @@
 
       <!-- Filter / Search -->
       <div class="filter-bar">
-        <input type="text" id="searchInput"
-               placeholder="🔍  Search products, stores, categories…"
-               oninput="filterProducts()" />
+        <input type="text" id="searchInput" placeholder="🔍  Search products, stores, categories…" oninput="filterProducts()" />
         <select id="filterCategory" onchange="filterProducts()">
           <option value="">All Categories</option>
           <option>Fashion</option>
@@ -277,7 +365,6 @@
           <p style="margin-top:16px;">Loading products…</p>
         </div>
       </div>
-
     </div>
 
     <!-- ─ EARNINGS SECTION ─ -->
@@ -319,7 +406,7 @@
         <p style="line-height:1.8;margin-bottom:16px;">When you share a product with a markup, you earn the markup amount as commission when a buyer purchases through your link.</p>
         <ol style="color:var(--text-muted);font-size:0.9rem;line-height:2;padding-left:20px;">
           <li>Browse products and set your desired markup price</li>
-          <li>Click "Share on WhatsApp" to generate your sales message</li>
+          <li>Click "Share" to generate your sales message</li>
           <li>Buyers contact the store with the marked-up price</li>
           <li>You collect the markup as your commission</li>
         </ol>
@@ -332,8 +419,6 @@
         <h3>My Profile</h3>
         <p style="font-size:0.85rem;margin-top:4px;color:var(--text-muted);">Your personal profile picture and banner</p>
       </div>
-
-      <!-- Profile banner -->
       <div style="position:relative;margin-bottom:60px;">
         <div id="profileBannerPreview" style="width:100%;height:160px;border-radius:var(--radius);background:linear-gradient(135deg,rgba(59,130,246,0.3),rgba(139,92,246,0.3));border:2px dashed rgba(255,255,255,0.15);overflow:hidden;cursor:pointer;position:relative;" onclick="document.getElementById('profileBannerInput').click()">
           <img id="profileBannerImg" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none;" />
@@ -346,8 +431,6 @@
           </div>
         </div>
         <input type="file" id="profileBannerInput" accept="image/*" style="display:none;" onchange="uploadProfileBanner(event)" />
-
-        <!-- Avatar overlapping banner -->
         <div style="position:absolute;bottom:-44px;left:24px;">
           <div id="profileAvatarWrap" style="width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#1d4ed8);border:4px solid var(--bg-primary);display:grid;place-items:center;font-weight:800;color:#fff;font-size:1.8rem;overflow:hidden;cursor:pointer;position:relative;" onclick="document.getElementById('profileAvatarInput').click()">
             <img id="profileAvatarImg" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none;" />
@@ -362,8 +445,6 @@
           <input type="file" id="profileAvatarInput" accept="image/*" style="display:none;" onchange="uploadProfileAvatar(event)" />
         </div>
       </div>
-
-      <!-- Profile details -->
       <div class="glass" style="padding:24px;max-width:520px;">
         <div class="form-group" style="margin-bottom:14px;">
           <label>Full Name</label>
@@ -377,19 +458,16 @@
           <i data-lucide="save" style="width:15px;height:15px;"></i> Save Changes
         </button>
       </div>
-
-      <!-- Danger Zone -->
       <div style="margin-top:32px;padding:20px;border:1px solid rgba(239,68,68,0.25);border-radius:14px;background:rgba(239,68,68,0.04);">
         <h4 style="color:#ef4444;margin:0 0 6px;font-size:0.95rem;">⚠️ Danger Zone</h4>
         <p style="font-size:0.82rem;color:var(--text-muted);margin:0 0 14px;">Permanently delete your promoter account. This cannot be undone.</p>
-        <button class="btn" onclick="deleteAccount()"
-          style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#ef4444;font-weight:600;">
+        <button class="btn" onclick="deleteAccount()" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#ef4444;font-weight:600;">
           <i data-lucide="trash-2" style="width:16px;height:16px;"></i> Delete My Account
         </button>
       </div>
     </div>
 
-    <!-- ── Settings Section ── -->
+    <!-- ─ SETTINGS SECTION ─ -->
     <div id="secSettings" style="display:none;">
       <h3 class="mb-8">Settings</h3>
       <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:24px;">Configure your promoter preferences</p>
@@ -413,6 +491,67 @@
     </div>
 
   </main>
+</div>
+
+<!-- ── Social Share Modal ── -->
+<div class="modal-overlay" id="shareModal" style="display:none;">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header">
+      <h3><i data-lucide="share-2" style="width:20px;height:20px;display:inline;margin-right:8px;color:var(--red);"></i>Share Product</h3>
+      <button class="btn btn-glass btn-icon" onclick="closeShareModal()">
+        <i data-lucide="x" style="width:18px;height:18px;"></i>
+      </button>
+    </div>
+    <div style="padding:8px 0 16px;">
+      <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
+        <span id="shareUrlDisplay" style="flex:1;font-size:0.78rem;color:rgba(255,255,255,0.7);word-break:break-all;"></span>
+        <button onclick="copyShareUrl()" style="background:var(--red);border:none;color:#fff;padding:6px 12px;border-radius:8px;font-size:0.78rem;cursor:pointer;white-space:nowrap;flex-shrink:0;">Copy Link</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+        <button onclick="shareVia('whatsapp')"         style="background:#25D366;border:none;color:#fff;padding:14px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;">📱 WhatsApp</button>
+        <button onclick="shareVia('whatsapp_status')"  style="background:#128C7E;border:none;color:#fff;padding:14px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;">🟢 WA Status</button>
+        <button onclick="shareVia('facebook')"         style="background:#1877f2;border:none;color:#fff;padding:14px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;">📘 Facebook</button>
+        <button onclick="shareVia('twitter')"          style="background:#000;border:none;color:#fff;padding:14px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;">𝕏 Twitter/X</button>
+        <button onclick="shareVia('telegram')"         style="background:#2CA5E0;border:none;color:#fff;padding:14px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;">✈️ Telegram</button>
+        <button onclick="shareVia('copy_caption')"     style="background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);border:none;color:#fff;padding:14px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;">📸 TikTok/IG</button>
+        <button onclick="shareVia('sms')"              style="background:#34C759;border:none;color:#fff;padding:14px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;">💬 SMS</button>
+        <button onclick="shareVia('email')"            style="background:#EA4335;border:none;color:#fff;padding:14px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;">📧 Email</button>
+      </div>
+      <p style="font-size:0.72rem;color:rgba(255,255,255,0.35);text-align:center;margin:0;">💡 TikTok/Instagram: copies caption — paste it in your post or bio</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── Cashout Modal ── -->
+<div class="modal-overlay" id="cashoutModal" style="display:none;">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header">
+      <h3><i data-lucide="banknote" style="width:20px;height:20px;display:inline;margin-right:8px;color:var(--red);"></i>Request Cashout</h3>
+      <button class="btn btn-glass btn-icon" onclick="closeCashout()">
+        <i data-lucide="x" style="width:18px;height:18px;"></i>
+      </button>
+    </div>
+    <div class="flex-col gap-16" style="padding:8px 0;">
+      <div class="form-group"><label>Full Name</label><input type="text" id="wo_name" placeholder="Your full name" /></div>
+      <div class="form-group"><label>Email</label><input type="email" id="wo_email" placeholder="your@email.com" /></div>
+      <div class="form-group">
+        <label>Network</label>
+        <select id="wo_network" style="width:100%;padding:12px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-xs);color:var(--text-primary);font-family:Inter,sans-serif;font-size:0.9rem;outline:none;color-scheme:dark;">
+          <option value="">Select network...</option>
+          <option value="MTN">MTN MoMo</option>
+          <option value="Telecel">Telecel Cash</option>
+          <option value="AirtelTigo">AirtelTigo Money</option>
+        </select>
+      </div>
+      <div class="form-group"><label>MoMo Number</label><input type="tel" id="wo_momo" placeholder="+233XXXXXXXXX" /></div>
+      <div class="form-group"><label>Amount (GH₵)</label><input type="number" id="wo_amount" placeholder="Minimum GH₵ 10" min="10" step="0.01" /></div>
+      <div id="cashoutAlert" style="display:none;" class="alert"></div>
+      <button class="btn btn-primary w-full" onclick="submitCashout()">
+        <i data-lucide="send" style="width:16px;height:16px;"></i>
+        <span id="cashoutBtnTxt">Submit Request</span>
+      </button>
+    </div>
+  </div>
 </div>
 
 <script type="module">
@@ -443,33 +582,34 @@
       `Hello, ${currentProfile.full_name.split(' ')[0]} 👋`;
 
     renderSidebarAvatar();
-
     await loadAllProducts();
     loadAnnouncements('promoter');
+
     document.getElementById('pageLoader').style.display = 'none';
-    document.getElementById('app').style.display = 'grid';
+    document.getElementById('app').style.display        = 'grid';
     lucide.createIcons();
     updateSharedUI();
+
+    // Restore saved global markup
+    const saved = localStorage.getItem('cs_markup');
+    if (saved) { document.getElementById('globalMarkup').value = saved; }
   })();
 
   async function loadAnnouncements(role) {
     try {
       const { data } = await supabase
-        .from('announcements')
-        .select('*')
-        .eq('is_active', true)
+        .from('announcements').select('*').eq('is_active', true)
         .or(`target_role.eq.all,target_role.eq.${role}`)
-        .order('created_at', { ascending: false })
-        .limit(1);
+        .order('created_at', { ascending: false }).limit(1);
       if (!data?.length) return;
       const a = data[0];
-      const colors = { info:'rgba(59,130,246,0.15)', warning:'rgba(234,179,8,0.15)', success:'rgba(74,222,128,0.15)', error:'rgba(239,68,68,0.15)' };
+      const colors     = { info:'rgba(59,130,246,0.15)', warning:'rgba(234,179,8,0.15)', success:'rgba(74,222,128,0.15)', error:'rgba(239,68,68,0.15)' };
       const textColors = { info:'#93c5fd', warning:'#fde047', success:'#4ade80', error:'#fca5a5' };
       const banner = document.getElementById('announcementBanner');
       banner.textContent = a.message;
-      banner.style.display = 'block';
-      banner.style.background = colors[a.type] || colors.info;
-      banner.style.color = textColors[a.type] || textColors.info;
+      banner.style.display    = 'block';
+      banner.style.background = colors[a.type]     || colors.info;
+      banner.style.color      = textColors[a.type] || textColors.info;
     } catch(e) { /* silent */ }
   }
 
@@ -479,23 +619,18 @@
       allProducts   = await getAllProducts();
       filteredProds = [...allProducts];
 
-      // Populate store filter
       const storeMap = {};
-      allProducts.forEach(p => {
-        if (p.stores) storeMap[p.store_id] = p.stores.name;
-      });
+      allProducts.forEach(p => { if (p.stores) storeMap[p.store_id] = p.stores.name; });
       const sel = document.getElementById('filterStore');
       Object.entries(storeMap).forEach(([id, name]) => {
         const o = document.createElement('option');
-        o.value = id; o.textContent = name;
-        sel.appendChild(o);
+        o.value = id; o.textContent = name; sel.appendChild(o);
       });
 
       const storeCount = new Set(allProducts.map(p => p.store_id)).size;
       document.getElementById('stTotal').textContent      = allProducts.length;
       document.getElementById('sidebarCount').textContent = allProducts.length;
       document.getElementById('stStores').textContent     = storeCount;
-
       renderGrid();
     } catch (e) {
       console.error(e);
@@ -511,13 +646,11 @@
       grid.innerHTML = `<div style="text-align:center;padding:60px;grid-column:1/-1;">
         <div style="width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,0.06);display:grid;place-items:center;margin:0 auto 16px;color:var(--text-muted);">
           <i data-lucide="search-x" style="width:28px;height:28px;"></i></div>
-        <h3>No products found</h3>
-        <p style="margin-top:8px;">Try adjusting your search or filters</p>
+        <h3>No products found</h3><p style="margin-top:8px;">Try adjusting your search or filters</p>
       </div>`;
       lucide.createIcons();
       return;
     }
-
     grid.innerHTML = filteredProds.map(p => {
       const storeObj  = Array.isArray(p.stores) ? p.stores[0] : p.stores;
       const storeName = storeObj?.name || 'Unknown Store';
@@ -530,7 +663,6 @@
              <i data-lucide="image" style="width:32px;height:32px;"></i></div>`
         : `<div class="product-card-img-placeholder">
              <i data-lucide="image" style="width:32px;height:32px;"></i></div>`;
-
       return `<div class="promo-card">
         ${img}
         <div class="product-card-body" style="flex:1;">
@@ -550,8 +682,12 @@
         </div>
         <div class="product-card-actions" style="padding:10px 14px 14px;display:flex;gap:7px;">
           <button class="btn btn-primary btn-sm" style="flex:1;"
-            data-pid="${p.id}" data-name="${encodeURIComponent(p.name)}" data-price="${p.price}"
-            data-slug="${storeSlug}" data-store="${encodeURIComponent(storeName)}" data-wa="${storeObj?.whatsapp || ''}"
+            data-pid="${p.id}"
+            data-name="${encodeURIComponent(p.name)}"
+            data-price="${p.price}"
+            data-slug="${storeSlug}"
+            data-store="${encodeURIComponent(storeName)}"
+            data-wa="${storeObj?.whatsapp || ''}"
             onclick="openShareModal(this.dataset.pid,this.dataset.name,parseFloat(this.dataset.price),this.dataset.slug,this.dataset.store,this.dataset.wa)">
             <i data-lucide="share-2" style="width:14px;height:14px;"></i> Share
           </button>
@@ -562,42 +698,31 @@
       </div>`;
     }).join('');
     lucide.createIcons();
-
-    // Re-apply global markup if set
     const gm = parseFloat(document.getElementById('globalMarkup').value) || 0;
     if (gm > 0) applyGlobalMarkup();
   }
 
-  // ── Markup Calculation ────────────────────────────────────────
+  // ── Markup ────────────────────────────────────────────────────
   window.recalc = (id, basePrice) => {
     const markup = parseFloat(document.getElementById(`markup_${id}`)?.value) || 0;
     const el     = document.getElementById(`final_${id}`);
     if (el) el.textContent = `= GH₵ ${(basePrice + markup).toFixed(2)}`;
   };
-
   window.applyGlobalMarkup = () => {
     const gm = parseFloat(document.getElementById('globalMarkup').value) || 0;
     filteredProds.forEach(p => {
       const inp = document.getElementById(`markup_${p.id}`);
       const lbl = document.getElementById(`final_${p.id}`);
-      if (inp && lbl) {
-        inp.value = gm > 0 ? gm : '';
-        lbl.textContent = `= GH₵ ${(p.price + gm).toFixed(2)}`;
-      }
+      if (inp && lbl) { inp.value = gm > 0 ? gm : ''; lbl.textContent = `= GH₵ ${(p.price + gm).toFixed(2)}`; }
     });
   };
-
   window.clearGlobalMarkup = () => {
     document.getElementById('globalMarkup').value = '';
     localStorage.removeItem('cs_markup');
     applyGlobalMarkup();
   };
 
-  // Restore saved markup on load
-  const savedMarkup = localStorage.getItem('cs_markup');
-  if (savedMarkup) document.getElementById('globalMarkup').value = savedMarkup;
-
-  // ── Social Share Modal ──────────────────────────────────────────
+  // ── Share Modal ───────────────────────────────────────────────
   let _shareData = {};
 
   window.openShareModal = (id, encodedName, basePrice, storeSlug, encodedStoreName, whatsapp) => {
@@ -609,25 +734,12 @@
     const promoterWa = localStorage.getItem('cs_promoter_whatsapp') || '';
     const waNumber   = (whatsapp || promoterWa).replace(/[^0-9]/g, '');
 
-    const msg = [
-      `🛍️ *${name}*`,
-      ``,
-      `💰 *Price: GH₵ ${final}*`,
-      markup > 0 ? `   (Includes delivery commission)` : null,
-      ``,
-      `🏪 Store: *${storeName}*`,
-      `🔗 Order here: ${productUrl}`,
-      ``,
-      `_Powered by City Shop Ghana — Ghana's #1 Marketplace_`,
-    ].filter(Boolean).join('\n');
-
-    _shareData = { id, name, storeName, final, markup, productUrl, waNumber, msg };
+    _shareData = { id, name, storeName, final, markup, productUrl, waNumber };
 
     document.getElementById('shareUrlDisplay').textContent = productUrl;
     document.getElementById('shareModal').style.display = 'flex';
     lucide.createIcons();
 
-    // Track share
     sharedCount++;
     totalEarnings = parseFloat((totalEarnings + markup).toFixed(2));
     sessionStorage.setItem('cs_shared',   sharedCount);
@@ -635,52 +747,35 @@
     updateSharedUI();
   };
 
-  window.closeShareModal = () => {
-    document.getElementById('shareModal').style.display = 'none';
-  };
-
-  window.copyShareUrl = () => {
-    navigator.clipboard.writeText(_shareData.productUrl);
-    showToast('Link copied! 📋', 'success');
-  };
+  window.closeShareModal = () => { document.getElementById('shareModal').style.display = 'none'; };
+  window.copyShareUrl    = () => { navigator.clipboard.writeText(_shareData.productUrl); showToast('Link copied! 📋', 'success'); };
 
   window.shareVia = (platform) => {
-    const { msg, productUrl, waNumber, name, storeName, final, markup } = _shareData;
-
-    // Craft platform-specific messages
+    const { name, storeName, final, markup, productUrl, waNumber } = _shareData;
     const fullMsg = [
-      `🔥 Amazing Deal Alert! 🔥`,
-      ``,
+      `🔥 Amazing Deal Alert! 🔥`, ``,
       `📦 *${name}*`,
       `💰 Price: *GH₵ ${final}*`,
       markup > 0 ? `✅ Includes all charges` : ``,
       ``,
       `🏪 Sold by: ${storeName}`,
-      `📍 Available on City Shop Ghana`,
-      ``,
+      `📍 Available on City Shop Ghana`, ``,
       `👇 Order now — Pay with MoMo or Card:`,
-      `${productUrl}`,
-      ``,
+      productUrl, ``,
       `⚡ Fast delivery across Ghana!`,
       `_City Shop Ghana — Shop Smart, Shop Local 🇬🇭_`,
     ].filter(Boolean).join('\n');
 
-    const shortMsg = `🔥 ${name} for GH₵ ${final}! Shop now 👉 ${productUrl}`;
+    const shortMsg     = `🔥 ${name} for GH₵ ${final}! Shop now 👉 ${productUrl}`;
     const tiktokCaption = `🛍️ ${name}\n💰 Only GH₵ ${final}\n\n✅ Legit seller on City Shop Ghana\n📲 Order link in bio\n\n${productUrl}\n\n#Ghana #GhanaTwitter #GhanaTikTok #Shopping #CityShopGhana #GhanaMarket #Accra #Kumasi`;
-    const emailBody = `Hi there,\n\nI found this amazing product on City Shop Ghana and thought you'd love it!\n\n📦 Product: ${name}\n💰 Price: GH₵ ${final}\n🏪 Store: ${storeName}\n\n🔗 Order here: ${productUrl}\n\nYou can pay with MTN MoMo, Telecel Cash, or Card. Fast delivery across Ghana!\n\nCheck it out! 🛍️\n\n_Powered by City Shop Ghana_`;
+    const emailBody    = `Hi there,\n\nI found this amazing product on City Shop Ghana!\n\n📦 Product: ${name}\n💰 Price: GH₵ ${final}\n🏪 Store: ${storeName}\n\n🔗 Order here: ${productUrl}\n\nPay with MoMo or Card. Fast delivery across Ghana!\n\n_City Shop Ghana_`;
 
-    const encoded     = encodeURIComponent(fullMsg);
-    const shortEnc    = encodeURIComponent(shortMsg);
-    const urlEncoded  = encodeURIComponent(productUrl);
-
+    const urlEncoded = encodeURIComponent(productUrl);
     let url = '';
-    switch(platform) {
+    switch (platform) {
       case 'whatsapp':
-        if (!waNumber) {
-          showToast('Add your WhatsApp number in Settings first!', 'error');
-          return;
-        }
-        url = `https://wa.me/${waNumber}?text=${encoded}`;
+        if (!waNumber) { showToast('Add your WhatsApp number in Settings first!', 'error'); return; }
+        url = `https://wa.me/${waNumber}?text=${encodeURIComponent(fullMsg)}`;
         break;
       case 'whatsapp_status':
         navigator.clipboard.writeText(fullMsg);
@@ -688,11 +783,10 @@
         setTimeout(() => window.open('https://wa.me/', '_blank', 'noopener'), 1000);
         return;
       case 'facebook':
-        // Facebook sharer with quote
         url = `https://www.facebook.com/sharer/sharer.php?u=${urlEncoded}&quote=${encodeURIComponent(`🔥 ${name} for GH₵ ${final}! Shop on City Shop Ghana 🇬🇭`)}`;
         break;
       case 'twitter':
-        url = `https://twitter.com/intent/tweet?text=${shortEnc}&hashtags=Ghana,CityShopGhana,Shopping`;
+        url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shortMsg)}&hashtags=Ghana,CityShopGhana,Shopping`;
         break;
       case 'telegram':
         url = `https://t.me/share/url?url=${urlEncoded}&text=${encodeURIComponent(`🔥 ${name} — GH₵ ${final}\n🏪 ${storeName}\n⚡ Fast delivery across Ghana!`)}`;
@@ -708,72 +802,14 @@
         url = `mailto:?subject=${encodeURIComponent(`🛍️ Check out ${name} on City Shop Ghana — GH₵ ${final}`)}&body=${encodeURIComponent(emailBody)}`;
         break;
     }
-    if (url) {
-      window.open(url, '_blank', 'noopener,noreferrer');
-    }
+    if (url) window.open(url, '_blank', 'noopener,noreferrer');
   };
 
-  // ── WhatsApp Share (legacy - kept for compatibility) ──────────────────────────────────────────
-  window.shareOnWhatsApp = (id, encodedName, basePrice, storeSlug, encodedStoreName, whatsapp) => {
-    const name      = decodeURIComponent(encodedName);
-    const storeName = decodeURIComponent(encodedStoreName);
-    const markup    = parseFloat(document.getElementById(`markup_${id}`)?.value) || 0;
-    const final     = (basePrice + markup).toFixed(2);
-
-    // Build product-view URL with promoter ref + markup baked in
-    const productUrl = `${location.origin}/product-view.html?product=${id}&ref=${currentUser.id}&markup=${markup}&slug=${storeSlug}`;
-
-    const msg = [
-      `🛍️ *${name}*`,
-      ``,
-      `💰 *Price: GH₵ ${final}*`,
-      markup > 0 ? `   (Includes delivery commission)` : null,
-      ``,
-      `🏪 Store: *${storeName}*`,
-      `🔗 Order here: ${productUrl}`,
-      ``,
-      `_Powered by City Shop Ghana — Ghana's #1 Marketplace_`,
-    ].filter(l => l !== null).join('\n');
-
-    // Use promoter's own WhatsApp if store has none
-    const promoterWa = localStorage.getItem('cs_promoter_whatsapp') || '';
-    const waNumber   = (whatsapp || promoterWa).replace(/[^0-9]/g, '');
-    const waUrl = waNumber
-      ? `https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`
-      : `https://wa.me/?text=${encodeURIComponent(msg)}`;
-
-    // Open WhatsApp without popup blocker
-    const a = document.createElement('a');
-    a.href = waUrl;
-    a.target = '_blank';
-    a.rel = 'noopener';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-
-    sharedCount++;
-    totalEarnings = parseFloat((totalEarnings + markup).toFixed(2));
-    sessionStorage.setItem('cs_shared',   sharedCount);
-    sessionStorage.setItem('cs_earnings', totalEarnings);
-    updateSharedUI();
-    showToast(`"${name}" shared on WhatsApp! 🎉`, 'success');
-  };
-
-  // ── Copy product link ────────────────────────────────────────
-  window.copyProductLink = (storeUrl, encodedName) => {
-    navigator.clipboard.writeText(storeUrl);
-    showToast('Store link copied!', 'success');
-  };
+  window.copyProductLink = (storeUrl) => { navigator.clipboard.writeText(storeUrl); showToast('Store link copied!', 'success'); };
 
   function updateSharedUI() {
-    ['stShared','stShared2'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = sharedCount;
-    });
-    ['stEarnings','stEarnings2'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = `GH₵ ${totalEarnings.toFixed(2)}`;
-    });
+    ['stShared','stShared2'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = sharedCount; });
+    ['stEarnings','stEarnings2'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = `GH₵ ${totalEarnings.toFixed(2)}`; });
   }
 
   // ── Filter / Search ───────────────────────────────────────────
@@ -781,9 +817,8 @@
     const query = document.getElementById('searchInput').value.toLowerCase();
     const cat   = document.getElementById('filterCategory').value;
     const store = document.getElementById('filterStore').value;
-
     filteredProds = allProducts.filter(p => {
-      const matchText  = !query  || p.name.toLowerCase().includes(query) || (p.stores?.name||'').toLowerCase().includes(query) || (p.category||'').toLowerCase().includes(query);
+      const matchText  = !query || p.name.toLowerCase().includes(query) || (p.stores?.name||'').toLowerCase().includes(query) || (p.category||'').toLowerCase().includes(query);
       const matchCat   = !cat   || p.category === cat;
       const matchStore = !store || p.store_id === store;
       return matchText && matchCat && matchStore;
@@ -791,10 +826,40 @@
     renderGrid();
   };
 
-  // ── Section Switcher ───────────────────────────────────────────
+  // ── Section switcher ──────────────────────────────────────────
+  window.showSec = (sec) => {
+    document.getElementById('secBrowse').style.display      = sec === 'browse'   ? 'block' : 'none';
+    document.getElementById('secEarnings').style.display    = sec === 'earnings' ? 'block' : 'none';
+    document.getElementById('sectionProfile').style.display = sec === 'profile'  ? 'block' : 'none';
+    document.getElementById('secSettings').style.display    = sec === 'settings' ? 'block' : 'none';
+    document.getElementById('navBrowse').classList.toggle('active',   sec === 'browse');
+    document.getElementById('navEarnings').classList.toggle('active', sec === 'earnings');
+    document.getElementById('navProfile').classList.toggle('active',  sec === 'profile');
+    document.getElementById('navSettings').classList.toggle('active', sec === 'settings');
+    if (sec === 'profile')  initProfileSection();
+    if (sec === 'earnings') loadEarningsStats();
+    if (sec === 'settings') loadSettings();
+  };
+
+  // ══════════════════════════════════════════════════════════════
+  //  SIDEBAR — open / close (the real fix)
+  // ══════════════════════════════════════════════════════════════
+  window.openSidebar = () => {
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('sidebarOverlay').classList.add('open');
+    // Prevent body scroll while sidebar is open
+    document.body.style.overflow = 'hidden';
+  };
+  window.closeSidebar = () => {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+  };
+  // Close on Escape key
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
+
   // ── Cashout ───────────────────────────────────────────────────
   window.openCashout = () => {
-    // Pre-fill name and email from profile
     if (currentProfile) {
       document.getElementById('wo_name').value  = currentProfile.full_name || '';
       document.getElementById('wo_email').value = currentProfile.email || '';
@@ -802,112 +867,57 @@
     document.getElementById('cashoutModal').style.display = 'flex';
     lucide.createIcons();
   };
-
   window.closeCashout = () => {
     document.getElementById('cashoutModal').style.display = 'none';
     document.getElementById('cashoutAlert').style.display = 'none';
   };
-
   window.submitCashout = async () => {
     const name    = document.getElementById('wo_name').value.trim();
     const email   = document.getElementById('wo_email').value.trim();
     const network = document.getElementById('wo_network').value;
     const momo    = document.getElementById('wo_momo').value.trim();
     const amount  = parseFloat(document.getElementById('wo_amount').value);
-    const alert   = document.getElementById('cashoutAlert');
-
+    const alertEl = document.getElementById('cashoutAlert');
     if (!name || !email || !network || !momo || !amount) {
-      alert.style.display = 'block';
-      alert.className = 'alert alert-error';
-      alert.textContent = 'Please fill in all fields.';
-      return;
+      alertEl.style.display = 'block'; alertEl.className = 'alert alert-error'; alertEl.textContent = 'Please fill in all fields.'; return;
     }
     if (amount < 10) {
-      alert.style.display = 'block';
-      alert.className = 'alert alert-error';
-      alert.textContent = 'Minimum cashout amount is GH₵ 10.';
-      return;
+      alertEl.style.display = 'block'; alertEl.className = 'alert alert-error'; alertEl.textContent = 'Minimum cashout amount is GH₵ 10.'; return;
     }
-
     const btn = document.getElementById('cashoutBtnTxt');
     btn.textContent = 'Submitting…';
-
     try {
-      await submitWithdrawal(currentUser.id, 'promoter', {
-        fullName: name, email, network, momoNumber: momo, amount
-      });
-      alert.style.display = 'block';
-      alert.className = 'alert alert-success';
-      alert.textContent = 'Cashout request submitted! Admin will process within 24 hours.';
+      await submitWithdrawal(currentUser.id, 'promoter', { fullName: name, email, network, momoNumber: momo, amount });
+      alertEl.style.display = 'block'; alertEl.className = 'alert alert-success';
+      alertEl.textContent = 'Cashout request submitted! Admin will process within 24 hours.';
       setTimeout(closeCashout, 2500);
       showToast('Cashout request submitted! 💰', 'success');
     } catch(e) {
-      alert.style.display = 'block';
-      alert.className = 'alert alert-error';
-      alert.textContent = e.message || 'Failed to submit. Please try again.';
-    } finally {
-      btn.textContent = 'Submit Request';
-    }
-  };
-
-  window.deleteAccount = async () => {
-    const confirmed = confirm(
-      '⚠️ Delete your account?\n\nThis will permanently delete your promoter account and all data. This cannot be undone.\n\nType DELETE in the next prompt to confirm.'
-    );
-    if (!confirmed) return;
-    const typed = prompt('Type DELETE to confirm:');
-    if (typed !== 'DELETE') return showToast('Cancelled.', 'info');
-    try {
-      await supabase.from('profiles').delete().eq('id', currentUser.id);
-      await signOut();
-      location.href = 'auth.html';
-    } catch(e) {
-      showToast('Failed: ' + e.message, 'error');
-    }
-  };
-
-  window.showSec = (sec) => {
-    document.getElementById('secBrowse').style.display      = sec === 'browse'   ? 'block' : 'none';
-    document.getElementById('secEarnings').style.display    = sec === 'earnings' ? 'block' : 'none';
-    document.getElementById('sectionProfile').style.display = sec === 'profile'  ? 'block' : 'none';
-    document.getElementById('secSettings').style.display    = sec === 'settings' ? 'block' : 'none';
-    document.getElementById('navBrowse').classList.toggle('active',    sec === 'browse');
-    document.getElementById('navEarnings').classList.toggle('active',  sec === 'earnings');
-    document.getElementById('navProfile').classList.toggle('active',   sec === 'profile');
-    document.getElementById('navSettings').classList.toggle('active',  sec === 'settings');
-    if (sec === 'profile')  initProfileSection();
-    if (sec === 'earnings') loadEarningsStats();
-    if (sec === 'settings') loadSettings();
-    closeSidebar();
+      alertEl.style.display = 'block'; alertEl.className = 'alert alert-error'; alertEl.textContent = e.message || 'Failed to submit. Please try again.';
+    } finally { btn.textContent = 'Submit Request'; }
   };
 
   // ── Settings ──────────────────────────────────────────────────
   function loadSettings() {
-    const wa     = localStorage.getItem('cs_promoter_whatsapp') || '';
-    const markup = localStorage.getItem('cs_markup') || '';
-    const waEl   = document.getElementById('set_whatsapp');
-    const mkEl   = document.getElementById('set_markup');
-    if (waEl) waEl.value = wa;
-    if (mkEl) mkEl.value = markup;
+    const waEl = document.getElementById('set_whatsapp');
+    const mkEl = document.getElementById('set_markup');
+    if (waEl) waEl.value = localStorage.getItem('cs_promoter_whatsapp') || '';
+    if (mkEl) mkEl.value = localStorage.getItem('cs_markup') || '';
   }
-
   window.saveSettings = async () => {
     const wa     = document.getElementById('set_whatsapp').value.trim();
     const markup = document.getElementById('set_markup').value;
-    const alert  = document.getElementById('settingsAlert');
-    // Save to localStorage
+    const alertEl = document.getElementById('settingsAlert');
     if (wa)     localStorage.setItem('cs_promoter_whatsapp', wa);
     if (markup) localStorage.setItem('cs_markup', markup);
-    // Apply markup to product cards
     const mkInput = document.getElementById('globalMarkup');
     if (mkInput && markup) { mkInput.value = markup; applyGlobalMarkup(); }
-    alert.style.display = 'block';
-    alert.className = 'alert alert-success';
-    alert.textContent = 'Settings saved! ✅';
-    setTimeout(() => { alert.style.display = 'none'; }, 2500);
+    alertEl.style.display = 'block'; alertEl.className = 'alert alert-success'; alertEl.textContent = 'Settings saved! ✅';
+    setTimeout(() => { alertEl.style.display = 'none'; }, 2500);
     lucide.createIcons();
   };
 
+  // ── Earnings ──────────────────────────────────────────────────
   async function loadEarningsStats() {
     try {
       const [clicks, orders] = await Promise.all([
@@ -915,41 +925,29 @@
         getOrdersByPromoter(currentUser.id)
       ]);
       document.getElementById('stClicks').textContent = clicks.length;
-      // Render orders table
       const ordersEl = document.getElementById('promoterOrdersList');
-      if (ordersEl) {
-        if (!orders.length) {
-          ordersEl.innerHTML = `<p style="color:var(--text-muted);text-align:center;padding:20px;">No orders yet from your links.</p>`;
-        } else {
-          const totalComm = orders.reduce((s,o) => s + (Number(o.markup)||0), 0);
-          document.getElementById('stEarnings2').textContent = `GH₵ ${totalComm.toFixed(2)}`;
-          ordersEl.innerHTML = orders.map(o => `
-            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.07);">
-              <div>
-                <div style="font-weight:600;font-size:0.9rem;">${o.products?.name || 'Product'}</div>
-                <div style="font-size:0.78rem;color:var(--text-muted);">${o.stores?.name || ''} · ${new Date(o.created_at).toLocaleDateString()}</div>
-              </div>
-              <div style="text-align:right;">
-                <div style="color:#4ade80;font-weight:700;">+GH₵ ${Number(o.markup||0).toFixed(2)}</div>
-                <div class="badge badge-${o.status === 'delivered' ? 'green' : 'yellow'}" style="font-size:0.7rem;">${o.status}</div>
-              </div>
-            </div>`).join('');
-        }
+      if (!ordersEl) return;
+      if (!orders.length) {
+        ordersEl.innerHTML = `<p style="color:var(--text-muted);text-align:center;padding:20px;">No orders yet from your links.</p>`;
+      } else {
+        const totalComm = orders.reduce((s,o) => s + (Number(o.markup)||0), 0);
+        document.getElementById('stEarnings2').textContent = `GH₵ ${totalComm.toFixed(2)}`;
+        ordersEl.innerHTML = orders.map(o => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.07);">
+            <div>
+              <div style="font-weight:600;font-size:0.9rem;">${o.products?.name || 'Product'}</div>
+              <div style="font-size:0.78rem;color:var(--text-muted);">${o.stores?.name || ''} · ${new Date(o.created_at).toLocaleDateString()}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="color:#4ade80;font-weight:700;">+GH₵ ${Number(o.markup||0).toFixed(2)}</div>
+              <div class="badge badge-${o.status === 'delivered' ? 'green' : 'yellow'}" style="font-size:0.7rem;">${o.status}</div>
+            </div>
+          </div>`).join('');
       }
     } catch(e) { console.warn('Earnings stats error:', e.message); }
   }
 
-  // ── Mobile Sidebar ─────────────────────────────────────────────
-  window.openSidebar  = () => {
-    document.getElementById('sidebar').classList.add('open');
-    document.getElementById('sidebarOverlay').classList.add('open');
-  };
-  window.closeSidebar = () => {
-    document.getElementById('sidebar').classList.remove('open');
-    document.getElementById('sidebarOverlay').classList.remove('open');
-  };
-
-  // ── Profile (avatar + banner) ──────────────────────────────────
+  // ── Profile ───────────────────────────────────────────────────
   function renderSidebarAvatar() {
     const el   = document.getElementById('sidebarAvatar');
     const name = document.getElementById('sidebarName');
@@ -964,32 +962,21 @@
 
   function initProfileSection() {
     const bannerImg = document.getElementById('profileBannerImg');
-    const bannerPlaceholder = document.getElementById('profileBannerPlaceholder');
+    const bannerPh  = document.getElementById('profileBannerPlaceholder');
     if (currentProfile.profile_banner_url) {
-      bannerImg.src = currentProfile.profile_banner_url;
-      bannerImg.style.display = 'block';
-      bannerPlaceholder.style.display = 'none';
-    } else {
-      bannerImg.style.display = 'none';
-      bannerPlaceholder.style.display = 'flex';
-    }
+      bannerImg.src = currentProfile.profile_banner_url; bannerImg.style.display = 'block'; bannerPh.style.display = 'none';
+    } else { bannerImg.style.display = 'none'; bannerPh.style.display = 'flex'; }
     const avatarImg     = document.getElementById('profileAvatarImg');
     const avatarInitial = document.getElementById('profileAvatarInitial');
     if (currentProfile.avatar_url) {
-      avatarImg.src = currentProfile.avatar_url;
-      avatarImg.style.display = 'block';
-      avatarInitial.style.display = 'none';
-    } else {
-      avatarImg.style.display = 'none';
-      avatarInitial.style.display = 'block';
-      avatarInitial.textContent = (currentProfile.full_name || 'P')[0].toUpperCase();
-    }
+      avatarImg.src = currentProfile.avatar_url; avatarImg.style.display = 'block'; avatarInitial.style.display = 'none';
+    } else { avatarImg.style.display = 'none'; avatarInitial.style.display = 'block'; avatarInitial.textContent = (currentProfile.full_name || 'P')[0].toUpperCase(); }
     document.getElementById('profileName').value  = currentProfile.full_name || '';
     document.getElementById('profileEmail').value = currentProfile.email || '';
     const wrap = document.getElementById('profileAvatarWrap');
     const overlay = document.getElementById('profileAvatarOverlay');
-    wrap.addEventListener('mouseenter', () => overlay.style.display = 'flex');
-    wrap.addEventListener('mouseleave', () => overlay.style.display = 'none');
+    wrap.onmouseenter = () => overlay.style.display = 'flex';
+    wrap.onmouseleave = () => overlay.style.display = 'none';
     lucide.createIcons();
   }
 
@@ -1003,8 +990,7 @@
       const avatarImg = document.getElementById('profileAvatarImg');
       avatarImg.src = url; avatarImg.style.display = 'block';
       document.getElementById('profileAvatarInitial').style.display = 'none';
-      renderSidebarAvatar();
-      showToast('Profile picture updated! ✅', 'success');
+      renderSidebarAvatar(); showToast('Profile picture updated! ✅', 'success');
     } catch(err) { showToast(err.message, 'error'); }
     finally { spinner.style.display = 'none'; e.target.value = ''; }
   };
@@ -1031,10 +1017,18 @@
     btn.disabled = true;
     try {
       currentProfile = await updateProfile(currentUser.id, { full_name: name });
-      renderSidebarAvatar();
-      showToast('Profile saved! ✅', 'success');
+      renderSidebarAvatar(); showToast('Profile saved! ✅', 'success');
     } catch(err) { showToast(err.message, 'error'); }
     finally { btn.disabled = false; }
+  };
+
+  window.deleteAccount = async () => {
+    if (!confirm('⚠️ Delete your account?\n\nThis cannot be undone.\n\nType DELETE in the next prompt to confirm.')) return;
+    if (prompt('Type DELETE to confirm:') !== 'DELETE') return showToast('Cancelled.', 'info');
+    try {
+      await supabase.from('profiles').delete().eq('id', currentUser.id);
+      await signOut(); location.href = 'auth.html';
+    } catch(e) { showToast('Failed: ' + e.message, 'error'); }
   };
 
   // ── Sign Out ───────────────────────────────────────────────────
@@ -1046,113 +1040,9 @@
     const t  = document.createElement('div');
     t.className = `toast toast-${type}`;
     t.innerHTML = `<i data-lucide="${type==='success'?'check-circle':'alert-circle'}" style="width:18px;height:18px;"></i>${msg}`;
-    tc.appendChild(t);
-    lucide.createIcons();
+    tc.appendChild(t); lucide.createIcons();
     setTimeout(() => t.remove(), 4200);
   };
 </script>
-<!-- ── Social Share Modal ── -->
-<div class="modal-overlay" id="shareModal" style="display:none;">
-  <div class="modal" style="max-width:460px;">
-    <div class="modal-header">
-      <h3><i data-lucide="share-2" style="width:20px;height:20px;display:inline;margin-right:8px;color:var(--red);"></i>Share Product</h3>
-      <button class="btn btn-glass btn-icon" onclick="closeShareModal()">
-        <i data-lucide="x" style="width:18px;height:18px;"></i>
-      </button>
-    </div>
-    <div style="padding:8px 0 16px;">
-      <!-- Product link -->
-      <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
-        <span id="shareUrlDisplay" style="flex:1;font-size:0.78rem;color:rgba(255,255,255,0.7);word-break:break-all;"></span>
-        <button onclick="copyShareUrl()" style="background:var(--red);border:none;color:#fff;padding:6px 12px;border-radius:8px;font-size:0.78rem;cursor:pointer;white-space:nowrap;flex-shrink:0;">
-          Copy Link
-        </button>
-      </div>
-      <!-- Social platforms grid -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
-        <button onclick="shareVia('whatsapp')"
-          style="background:#25D366;border:none;color:#fff;padding:14px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;">
-          📱 WhatsApp
-        </button>
-        <button onclick="shareVia('whatsapp_status')"
-          style="background:#128C7E;border:none;color:#fff;padding:14px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;">
-          🟢 WA Status
-        </button>
-        <button onclick="shareVia('facebook')"
-          style="background:#1877f2;border:none;color:#fff;padding:14px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;">
-          📘 Facebook
-        </button>
-        <button onclick="shareVia('twitter')"
-          style="background:#000;border:none;color:#fff;padding:14px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;">
-          𝕏 Twitter/X
-        </button>
-        <button onclick="shareVia('telegram')"
-          style="background:#2CA5E0;border:none;color:#fff;padding:14px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;">
-          ✈️ Telegram
-        </button>
-        <button onclick="shareVia('copy_caption')"
-          style="background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);border:none;color:#fff;padding:14px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;">
-          📸 TikTok/Instagram
-        </button>
-        <button onclick="shareVia('sms')"
-          style="background:#34C759;border:none;color:#fff;padding:14px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;">
-          💬 SMS
-        </button>
-        <button onclick="shareVia('email')"
-          style="background:#EA4335;border:none;color:#fff;padding:14px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;display:flex;align-items:center;justify-content:center;gap:8px;">
-          📧 Email
-        </button>
-      </div>
-      <p style="font-size:0.72rem;color:rgba(255,255,255,0.35);text-align:center;margin:0;">
-        💡 TikTok/Instagram: copies caption — paste it in your post or bio
-      </p>
-    </div>
-  </div>
-</div>
-
-<!-- ── Cashout Modal ── -->
-<div class="modal-overlay" id="cashoutModal" style="display:none;">
-  <div class="modal" style="max-width:440px;">
-    <div class="modal-header">
-      <h3><i data-lucide="banknote" style="width:20px;height:20px;display:inline;margin-right:8px;color:var(--red);"></i>Request Cashout</h3>
-      <button class="btn btn-glass btn-icon" onclick="closeCashout()">
-        <i data-lucide="x" style="width:18px;height:18px;"></i>
-      </button>
-    </div>
-    <div class="flex-col gap-16" style="padding:8px 0;">
-      <div class="form-group">
-        <label>Full Name</label>
-        <input type="text" id="wo_name" placeholder="Your full name" />
-      </div>
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="wo_email" placeholder="your@email.com" />
-      </div>
-      <div class="form-group">
-        <label>Network</label>
-        <select id="wo_network" style="width:100%;padding:12px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-xs);color:var(--text-primary);font-family:Inter,sans-serif;font-size:0.9rem;outline:none;color-scheme:dark;">
-          <option value="">Select network...</option>
-          <option value="MTN">MTN MoMo</option>
-          <option value="Telecel">Telecel Cash</option>
-          <option value="AirtelTigo">AirtelTigo Money</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>MoMo Number</label>
-        <input type="tel" id="wo_momo" placeholder="+233XXXXXXXXX" />
-      </div>
-      <div class="form-group">
-        <label>Amount (GH₵)</label>
-        <input type="number" id="wo_amount" placeholder="Minimum GH₵ 10" min="10" step="0.01" />
-      </div>
-      <div id="cashoutAlert" style="display:none;" class="alert"></div>
-      <button class="btn btn-primary w-full" onclick="submitCashout()">
-        <i data-lucide="send" style="width:16px;height:16px;"></i>
-        <span id="cashoutBtnTxt">Submit Request</span>
-      </button>
-    </div>
-  </div>
-</div>
-
 </body>
 </html>
