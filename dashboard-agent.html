@@ -85,9 +85,12 @@
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.55);
-      z-index: 199;
+      z-index: 190;
     }
-    @media (max-width: 900px) { #sidebar, .sidebar { z-index: 200 !important; } }
+    @media (max-width: 900px) {
+      .sidebar { z-index: 300 !important; }
+      .sidebar-overlay { z-index: 290; }
+    }
     @media (max-width: 900px) {
       .mobile-menu-btn  { display: grid; place-items: center; }
       .sidebar-overlay.open { display: block; }

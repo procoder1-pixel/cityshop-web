@@ -1,3 +1,4 @@
+
 /* ============================================================
    styles.css — City Shop Global Design System
    Palette: #EF4444 Red, Glassmorphism, 32px radius
@@ -337,7 +338,7 @@ p  { color: var(--text-muted); }
   font-weight: 600;
 }
 
-.badge-red    { background: rgba(239,68,68,0.20);  color: #f87171; border: 1px solid rgba(239,68,68,0.30); }
+.badge-red   { background: rgba(239,68,68,0.20);  color: #f87171; border: 1px solid rgba(239,68,68,0.30); }
 .badge-green { background: rgba(34,197,94,0.18);  color: #4ade80; border: 1px solid rgba(34,197,94,0.30); }
 .badge-amber { background: rgba(245,158,11,0.18); color: #fbbf24; border: 1px solid rgba(245,158,11,0.30); }
 .badge-blue  { background: rgba(59,130,246,0.18); color: #60a5fa; border: 1px solid rgba(59,130,246,0.30); }
@@ -391,12 +392,9 @@ p  { color: var(--text-muted); }
   display: none;
   position: fixed;
   inset: 0;
-  /* Darken the background color completely so contents behind are isolated */
-  background: rgba(10, 8, 24, 0.85); 
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  /* Step up layer sequencing rules to guarantee separation */
-  z-index: 99999;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(6px);
+  z-index: 999;
   place-items: center;
   padding: 20px;
 }
@@ -404,21 +402,15 @@ p  { color: var(--text-muted); }
 .modal-overlay.active { display: grid; }
 
 .modal {
-  /* Provide a highly solid foundational color background for weak GPUs */
-  background: #1b1737;
-  /* Use alpha gradients safe for hardware scaling structures */
-  background: linear-gradient(145deg, rgba(30, 26, 60, 0.98), rgba(20, 16, 40, 0.95));
+  background: linear-gradient(145deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
+  backdrop-filter: blur(30px);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius);
   padding: 36px;
   max-width: 500px;
   width: 100%;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.60);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.50);
   animation: scaleIn 0.28s ease;
-  
-  /* Fallback scroll configs for scaling variations */
-  max-height: 90vh;
-  overflow-y: auto;
 }
 
 @keyframes scaleIn { from { opacity:0; transform: scale(0.92); } to { opacity:1; transform: scale(1); } }
@@ -572,8 +564,21 @@ p  { color: var(--text-muted); }
 /* ── Responsive ─────────────────────────────────────────────── */
 @media (max-width: 900px) {
   .dashboard-layout { grid-template-columns: 1fr; }
-  .sidebar { position: fixed; left: -280px; z-index: 200; height: 100vh; transition: left 0.3s ease; }
-  .sidebar.open { left: 0; }
+  .sidebar {
+    position: fixed;
+    left: -300px;
+    top: 0;
+    height: 100vh;
+    width: 260px;
+    z-index: 300;
+    transition: left 0.28s cubic-bezier(0.4,0,0.2,1);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    pointer-events: all;
+  }
+  .sidebar.open { left: 0; box-shadow: 4px 0 40px rgba(0,0,0,0.6); }
+  .sidebar-item { cursor: pointer; pointer-events: all; touch-action: manipulation; }
+  .sidebar-item:active { background: rgba(255,255,255,0.1); }
   .main-content { padding: 20px 16px; }
   .navbar { padding: 14px 16px; }
 }
