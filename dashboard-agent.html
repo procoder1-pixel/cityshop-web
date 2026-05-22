@@ -70,41 +70,8 @@
       color: var(--text-muted);
     }
 
-    /* ════════════════════════════════════════════════════
-       MOBILE SIDEBAR — proper slide-in drawer
-       ════════════════════════════════════════════════════ */
-
-    /* Hamburger button — hidden on desktop */
+    /* ── Mobile sidebar toggle ── */
     .mobile-menu-btn {
-      display: none;
-      background: var(--glass-bg2);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius-xs);
-      padding: 9px;
-      cursor: pointer;
-      color: var(--text-primary);
-      align-items: center;
-      justify-content: center;
-      -webkit-tap-highlight-color: transparent;
-      flex-shrink: 0;
-    }
-
-    /* Full-screen scrim — blocks ALL taps behind sidebar */
-    .sidebar-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.72);
-      z-index: 299;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .sidebar-overlay.open {
-      display: block;
-    }
-
-    /* Close button inside sidebar — hidden on desktop */
-    .sidebar-close-btn {
       display: none;
       background: var(--glass-bg2);
       border: 1px solid var(--glass-border);
@@ -112,52 +79,17 @@
       padding: 8px;
       cursor: pointer;
       color: var(--text-primary);
-      align-items: center;
-      justify-content: center;
-      -webkit-tap-highlight-color: transparent;
     }
-
-    .sidebar-top-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 24px;
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 199;
     }
-
     @media (max-width: 900px) {
-      .mobile-menu-btn {
-        display: flex;
-      }
-
-      /* Sidebar becomes a fixed off-screen drawer */
-      .sidebar {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        height: 100vh !important;
-        height: 100dvh !important;
-        width: 280px !important;
-        max-width: 85vw !important;
-        z-index: 300 !important;
-        transform: translateX(-110%) !important;
-        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        will-change: transform;
-      }
-
-      .sidebar.open {
-        transform: translateX(0) !important;
-      }
-
-      .main-content {
-        margin-left: 0 !important;
-        width: 100% !important;
-      }
-
-      .sidebar-close-btn {
-        display: flex !important;
-      }
+      .mobile-menu-btn  { display: grid; place-items: center; }
+      .sidebar-overlay.open { display: block; }
     }
 
     /* ── In-stock toggle in card ── */
@@ -176,22 +108,17 @@
 <div class="loading-overlay" id="pageLoader"><div class="spinner"></div></div>
 <div class="toast-container" id="toastContainer"></div>
 <div id="announcementBanner" style="display:none;width:100%;padding:10px 20px;font-size:0.88rem;font-weight:500;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);"></div>
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="if(event.target===this)closeSidebar()"></div>
 
 <div class="dashboard-layout" id="app" style="display:none;">
 
   <!-- ── Sidebar ── -->
   <aside class="sidebar" id="sidebar">
-    <!-- Logo row + close button -->
-    <div class="sidebar-top-row">
+    <div style="margin-bottom:24px;">
       <a class="navbar-brand" href="index.html" style="text-decoration:none;">
         <div class="brand-logo">C</div>
         <span class="brand-name">City<span>Shop</span></span>
       </a>
-      <!-- X only renders on mobile via CSS -->
-      <button class="sidebar-close-btn" onclick="closeSidebar()" aria-label="Close menu">
-        <i data-lucide="x" style="width:18px;height:18px;"></i>
-      </button>
     </div>
 
     <!-- Profile card in sidebar -->
@@ -209,24 +136,24 @@
     </div>
 
     <div class="sidebar-section-label">Store</div>
-    <div class="sidebar-item active" id="navOverview" onclick="showSection('overview')">
-      <i data-lucide="layout-dashboard" style="width:18px;height:18px;"></i> Overview
+    <div class="sidebar-item active" id="navOverview" onclick="showSection('overview')" role="button" tabindex="0">
+      <i data-lucide="layout-dashboard" style="width:18px;height:18px;pointer-events:none;"></i> Overview
     </div>
-    <div class="sidebar-item" id="navOrders" onclick="showSection('orders')">
-      <i data-lucide="shopping-bag" style="width:18px;height:18px;"></i> Orders
+    <div class="sidebar-item" id="navOrders" onclick="showSection('orders')" role="button" tabindex="0">
+      <i data-lucide="shopping-bag" style="width:18px;height:18px;pointer-events:none;"></i> Orders
       <span id="newOrdersBadge" style="display:none;margin-left:auto;background:var(--red);color:#fff;font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:999px;"></span>
     </div>
-    <div class="sidebar-item" id="navReviews" onclick="showSection('reviews')">
-      <i data-lucide="star" style="width:18px;height:18px;"></i> Reviews
+    <div class="sidebar-item" id="navReviews" onclick="showSection('reviews')" role="button" tabindex="0">
+      <i data-lucide="star" style="width:18px;height:18px;pointer-events:none;"></i> Reviews
     </div>
-    <div class="sidebar-item" id="navProducts" onclick="showSection('products')">
-      <i data-lucide="package" style="width:18px;height:18px;"></i> Products
+    <div class="sidebar-item" id="navProducts" onclick="showSection('products')" role="button" tabindex="0">
+      <i data-lucide="package" style="width:18px;height:18px;pointer-events:none;"></i> Products
     </div>
-    <div class="sidebar-item" id="navSettings" onclick="showSection('store-settings')">
-      <i data-lucide="settings" style="width:18px;height:18px;"></i> Store Settings
+    <div class="sidebar-item" id="navSettings" onclick="showSection('store-settings')" role="button" tabindex="0">
+      <i data-lucide="settings" style="width:18px;height:18px;pointer-events:none;"></i> Store Settings
     </div>
-    <div class="sidebar-item" id="navProfile" onclick="showSection('profile')">
-      <i data-lucide="user-circle" style="width:18px;height:18px;"></i> My Profile
+    <div class="sidebar-item" id="navProfile" onclick="showSection('profile')" role="button" tabindex="0">
+      <i data-lucide="user-circle" style="width:18px;height:18px;pointer-events:none;"></i> My Profile
     </div>
 
     <div class="sidebar-section-label mt-16">Account</div>
@@ -1194,26 +1121,37 @@
 
   // ── Section Switcher ───────────────────────────────────────────
   window.showSection = (section) => {
+    // First switch the sections
     ['overview','orders','reviews','products','store-settings','profile'].forEach(s => {
       const key = s.split('-').map((w,i) => i===0 ? w : w[0].toUpperCase()+w.slice(1)).join('');
-      document.getElementById(`section${key[0].toUpperCase()}${key.slice(1)}`).style.display = s === section ? 'block' : 'none';
+      const el = document.getElementById(`section${key[0].toUpperCase()}${key.slice(1)}`);
+      if (el) el.style.display = s === section ? 'block' : 'none';
     });
+
+    // Update active state
     document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
     const map = { overview: 'navOverview', orders: 'navOrders', reviews: 'navReviews', products: 'navProducts', 'store-settings': 'navSettings', profile: 'navProfile' };
-    if (map[section]) document.getElementById(map[section]).classList.add('active');
+    if (map[section]) {
+      const navEl = document.getElementById(map[section]);
+      if (navEl) navEl.classList.add('active');
+    }
+
+    // Load section data
     if (section === 'orders') loadOrders();
     if (section === 'reviews') loadDashReviews();
     if (section === 'profile') initProfileSection();
-    closeSidebar();
+
+    // Close sidebar after a short delay to ensure click completes
+    setTimeout(() => closeSidebar(), 50);
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // ── Mobile Sidebar ─────────────────────────────────────────────
   window.openSidebar  = () => {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebarOverlay');
-    if (sidebar) sidebar.classList.add('open');
-    if (overlay) overlay.classList.add('open');
-    document.body.style.overflow = 'hidden';
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('sidebarOverlay').classList.add('open');
   };
   window.closeSidebar = () => {
     const sidebar = document.getElementById('sidebar');
@@ -1222,6 +1160,16 @@
     if (overlay) overlay.classList.remove('open');
     document.body.style.overflow = '';
   };
+
+  // Prevent overlay from closing when clicking sidebar items
+  document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+      sidebar.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+    }
+  });
 
   // ── Orders ─────────────────────────────────────────────────────
   let allOrders     = [];
