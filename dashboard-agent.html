@@ -90,6 +90,42 @@
     @media (max-width: 900px) {
       .mobile-menu-btn  { display: grid; place-items: center; }
       .sidebar-overlay.open { display: block; }
+
+      /* Sidebar becomes a fixed off-screen drawer */
+      .sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        width: 280px !important;
+        max-width: 85vw !important;
+        z-index: 300 !important;
+        transform: translateX(-110%) !important;
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        will-change: transform;
+        pointer-events: auto !important;
+      }
+
+      .sidebar.open {
+        transform: translateX(0) !important;
+      }
+
+      .sidebar-item {
+        position: relative;
+        z-index: 301;
+        cursor: pointer;
+        -webkit-tap-highlight-color: rgba(239,68,68,0.2);
+        touch-action: manipulation;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      .sidebar * {
+        pointer-events: auto;
+      }
     }
 
     /* ── In-stock toggle in card ── */
@@ -108,7 +144,7 @@
 <div class="loading-overlay" id="pageLoader"><div class="spinner"></div></div>
 <div class="toast-container" id="toastContainer"></div>
 <div id="announcementBanner" style="display:none;width:100%;padding:10px 20px;font-size:0.88rem;font-weight:500;text-align:center;border-bottom:1px solid rgba(255,255,255,0.1);"></div>
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="if(event.target===this)closeSidebar()"></div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
 <div class="dashboard-layout" id="app" style="display:none;">
 
@@ -136,23 +172,23 @@
     </div>
 
     <div class="sidebar-section-label">Store</div>
-    <div class="sidebar-item active" id="navOverview" onclick="showSection('overview')" role="button" tabindex="0">
+    <div class="sidebar-item active" id="navOverview" onclick="showSection('overview')" ontouchend="showSection('overview')" style="cursor:pointer;-webkit-tap-highlight-color:rgba(239,68,68,0.2);">
       <i data-lucide="layout-dashboard" style="width:18px;height:18px;pointer-events:none;"></i> Overview
     </div>
-    <div class="sidebar-item" id="navOrders" onclick="showSection('orders')" role="button" tabindex="0">
+    <div class="sidebar-item" id="navOrders" onclick="showSection('orders')" ontouchend="showSection('orders')" style="cursor:pointer;-webkit-tap-highlight-color:rgba(239,68,68,0.2);">
       <i data-lucide="shopping-bag" style="width:18px;height:18px;pointer-events:none;"></i> Orders
       <span id="newOrdersBadge" style="display:none;margin-left:auto;background:var(--red);color:#fff;font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:999px;"></span>
     </div>
-    <div class="sidebar-item" id="navReviews" onclick="showSection('reviews')" role="button" tabindex="0">
+    <div class="sidebar-item" id="navReviews" onclick="showSection('reviews')" ontouchend="showSection('reviews')" style="cursor:pointer;-webkit-tap-highlight-color:rgba(239,68,68,0.2);">
       <i data-lucide="star" style="width:18px;height:18px;pointer-events:none;"></i> Reviews
     </div>
-    <div class="sidebar-item" id="navProducts" onclick="showSection('products')" role="button" tabindex="0">
+    <div class="sidebar-item" id="navProducts" onclick="showSection('products')" ontouchend="showSection('products')" style="cursor:pointer;-webkit-tap-highlight-color:rgba(239,68,68,0.2);">
       <i data-lucide="package" style="width:18px;height:18px;pointer-events:none;"></i> Products
     </div>
-    <div class="sidebar-item" id="navSettings" onclick="showSection('store-settings')" role="button" tabindex="0">
+    <div class="sidebar-item" id="navSettings" onclick="showSection('store-settings')" ontouchend="showSection('store-settings')" style="cursor:pointer;-webkit-tap-highlight-color:rgba(239,68,68,0.2);">
       <i data-lucide="settings" style="width:18px;height:18px;pointer-events:none;"></i> Store Settings
     </div>
-    <div class="sidebar-item" id="navProfile" onclick="showSection('profile')" role="button" tabindex="0">
+    <div class="sidebar-item" id="navProfile" onclick="showSection('profile')" ontouchend="showSection('profile')" style="cursor:pointer;-webkit-tap-highlight-color:rgba(239,68,68,0.2);">
       <i data-lucide="user-circle" style="width:18px;height:18px;pointer-events:none;"></i> My Profile
     </div>
 
@@ -1121,30 +1157,25 @@
 
   // ── Section Switcher ───────────────────────────────────────────
   window.showSection = (section) => {
-    // First switch the sections
+    console.log('[CityShop] showSection called:', section);
     ['overview','orders','reviews','products','store-settings','profile'].forEach(s => {
       const key = s.split('-').map((w,i) => i===0 ? w : w[0].toUpperCase()+w.slice(1)).join('');
       const el = document.getElementById(`section${key[0].toUpperCase()}${key.slice(1)}`);
-      if (el) el.style.display = s === section ? 'block' : 'none';
+      if (el) {
+        el.style.display = s === section ? 'block' : 'none';
+        console.log('[CityShop] Section', s, '->', el.style.display);
+      }
     });
-
-    // Update active state
     document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
     const map = { overview: 'navOverview', orders: 'navOrders', reviews: 'navReviews', products: 'navProducts', 'store-settings': 'navSettings', profile: 'navProfile' };
     if (map[section]) {
       const navEl = document.getElementById(map[section]);
       if (navEl) navEl.classList.add('active');
     }
-
-    // Load section data
     if (section === 'orders') loadOrders();
     if (section === 'reviews') loadDashReviews();
     if (section === 'profile') initProfileSection();
-
-    // Close sidebar after a short delay to ensure click completes
-    setTimeout(() => closeSidebar(), 50);
-
-    // Scroll to top
+    setTimeout(() => closeSidebar(), 100);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -1154,22 +1185,9 @@
     document.getElementById('sidebarOverlay').classList.add('open');
   };
   window.closeSidebar = () => {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebarOverlay');
-    if (sidebar) sidebar.classList.remove('open');
-    if (overlay) overlay.classList.remove('open');
-    document.body.style.overflow = '';
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('open');
   };
-
-  // Prevent overlay from closing when clicking sidebar items
-  document.addEventListener('DOMContentLoaded', () => {
-    const sidebar = document.getElementById('sidebar');
-    if (sidebar) {
-      sidebar.addEventListener('click', (e) => {
-        e.stopPropagation();
-      });
-    }
-  });
 
   // ── Orders ─────────────────────────────────────────────────────
   let allOrders     = [];
