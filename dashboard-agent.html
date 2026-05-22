@@ -70,8 +70,41 @@
       color: var(--text-muted);
     }
 
-    /* ── Mobile sidebar toggle ── */
+    /* ════════════════════════════════════════════════════
+       MOBILE SIDEBAR — proper slide-in drawer
+       ════════════════════════════════════════════════════ */
+
+    /* Hamburger button — hidden on desktop */
     .mobile-menu-btn {
+      display: none;
+      background: var(--glass-bg2);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xs);
+      padding: 9px;
+      cursor: pointer;
+      color: var(--text-primary);
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+      flex-shrink: 0;
+    }
+
+    /* Full-screen scrim — blocks ALL taps behind sidebar */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      z-index: 299;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .sidebar-overlay.open {
+      display: block;
+    }
+
+    /* Close button inside sidebar — hidden on desktop */
+    .sidebar-close-btn {
       display: none;
       background: var(--glass-bg2);
       border: 1px solid var(--glass-border);
@@ -79,21 +112,52 @@
       padding: 8px;
       cursor: pointer;
       color: var(--text-primary);
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
     }
-    .sidebar-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.55);
-      z-index: 190;
+
+    .sidebar-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
     }
+
     @media (max-width: 900px) {
-      .sidebar { z-index: 300 !important; }
-      .sidebar-overlay { z-index: 290; }
-    }
-    @media (max-width: 900px) {
-      .mobile-menu-btn  { display: grid; place-items: center; }
-      .sidebar-overlay.open { display: block; }
+      .mobile-menu-btn {
+        display: flex;
+      }
+
+      /* Sidebar becomes a fixed off-screen drawer */
+      .sidebar {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        width: 280px !important;
+        max-width: 85vw !important;
+        z-index: 300 !important;
+        transform: translateX(-110%) !important;
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        will-change: transform;
+      }
+
+      .sidebar.open {
+        transform: translateX(0) !important;
+      }
+
+      .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+      }
+
+      .sidebar-close-btn {
+        display: flex !important;
+      }
     }
 
     /* ── In-stock toggle in card ── */
@@ -105,6 +169,7 @@
       border-radius: 999px;
     }
   </style>
+<base target="_blank">
 </head>
 <body>
 
@@ -117,11 +182,16 @@
 
   <!-- ── Sidebar ── -->
   <aside class="sidebar" id="sidebar">
-    <div style="margin-bottom:24px;">
+    <!-- Logo row + close button -->
+    <div class="sidebar-top-row">
       <a class="navbar-brand" href="index.html" style="text-decoration:none;">
         <div class="brand-logo">C</div>
         <span class="brand-name">City<span>Shop</span></span>
       </a>
+      <!-- X only renders on mobile via CSS -->
+      <button class="sidebar-close-btn" onclick="closeSidebar()" aria-label="Close menu">
+        <i data-lucide="x" style="width:18px;height:18px;"></i>
+      </button>
     </div>
 
     <!-- Profile card in sidebar -->
@@ -1139,12 +1209,18 @@
 
   // ── Mobile Sidebar ─────────────────────────────────────────────
   window.openSidebar  = () => {
-    document.getElementById('sidebar').classList.add('open');
-    document.getElementById('sidebarOverlay').classList.add('open');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    if (sidebar) sidebar.classList.add('open');
+    if (overlay) overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
   };
   window.closeSidebar = () => {
-    document.getElementById('sidebar').classList.remove('open');
-    document.getElementById('sidebarOverlay').classList.remove('open');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    if (sidebar) sidebar.classList.remove('open');
+    if (overlay) overlay.classList.remove('open');
+    document.body.style.overflow = '';
   };
 
   // ── Orders ─────────────────────────────────────────────────────

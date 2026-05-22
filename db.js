@@ -108,10 +108,10 @@ export async function uploadProfileMedia(file, userId, type) {
   const ext  = file.name.split('.').pop();
   const path = `profiles/${userId}-${type}.${ext}`;
   const { error: upErr } = await supabase.storage
-    .from('product-image')
+    .from('PRODUCT-IMAGE')
     .upload(path, file, { upsert: true, contentType: file.type });
   if (upErr) throw upErr;
-  const { data } = supabase.storage.from('product-image').getPublicUrl(path);
+  const { data } = supabase.storage.from('PRODUCT-IMAGE').getPublicUrl(path);
   return data.publicUrl;
 }
 
@@ -222,13 +222,13 @@ export async function uploadProductImage(file, storeId) {
   const fileName = `${storeId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
   const { error } = await supabase.storage
-    .from('product-image')
+    .from('PRODUCT-IMAGE')
     .upload(fileName, file, { upsert: false, contentType: file.type });
 
   if (error) throw error;
 
   const { data } = supabase.storage
-    .from('product-image')
+    .from('PRODUCT-IMAGE')
     .getPublicUrl(fileName);
 
   return data.publicUrl;
