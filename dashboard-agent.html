@@ -87,11 +87,32 @@
       background: rgba(0,0,0,0.55);
       z-index: 199;
     }
+    .sidebar-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .sidebar-close-btn {
+      display: none;
+      background: var(--glass-bg2);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-xs);
+      padding: 8px;
+      cursor: pointer;
+      color: var(--text-primary);
+      align-items: center;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+
     @media (max-width: 900px) {
       .mobile-menu-btn  { display: grid; place-items: center; }
       .sidebar-overlay.open { display: block; }
+      .sidebar-close-btn { display: flex !important; }
 
-      /* Sidebar becomes a fixed off-screen drawer */
+      /* Sidebar drawer */
       .sidebar {
         position: fixed !important;
         top: 0 !important;
@@ -106,16 +127,14 @@
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
         will-change: transform;
-        pointer-events: auto !important;
       }
 
       .sidebar.open {
         transform: translateX(0) !important;
       }
 
+      /* Ensure sidebar items are clickable */
       .sidebar-item {
-        position: relative;
-        z-index: 301;
         cursor: pointer;
         -webkit-tap-highlight-color: rgba(239,68,68,0.2);
         touch-action: manipulation;
@@ -123,8 +142,8 @@
         -webkit-user-select: none;
       }
 
-      .sidebar * {
-        pointer-events: auto;
+      .sidebar-item * {
+        pointer-events: none;
       }
     }
 
@@ -150,11 +169,16 @@
 
   <!-- ── Sidebar ── -->
   <aside class="sidebar" id="sidebar">
-    <div style="margin-bottom:24px;">
+    <!-- Logo row + close button -->
+    <div class="sidebar-top-row">
       <a class="navbar-brand" href="index.html" style="text-decoration:none;">
         <div class="brand-logo">C</div>
         <span class="brand-name">City<span>Shop</span></span>
       </a>
+      <!-- X only renders on mobile via CSS -->
+      <button class="sidebar-close-btn" onclick="closeSidebar()" aria-label="Close menu">
+        <i data-lucide="x" style="width:18px;height:18px;"></i>
+      </button>
     </div>
 
     <!-- Profile card in sidebar -->
@@ -172,23 +196,23 @@
     </div>
 
     <div class="sidebar-section-label">Store</div>
-    <div class="sidebar-item active" id="navOverview" onclick="showSection('overview')" ontouchend="showSection('overview')" style="cursor:pointer;-webkit-tap-highlight-color:rgba(239,68,68,0.2);">
+    <div class="sidebar-item active" id="navOverview" data-section="overview">
       <i data-lucide="layout-dashboard" style="width:18px;height:18px;pointer-events:none;"></i> Overview
     </div>
-    <div class="sidebar-item" id="navOrders" onclick="showSection('orders')" ontouchend="showSection('orders')" style="cursor:pointer;-webkit-tap-highlight-color:rgba(239,68,68,0.2);">
+    <div class="sidebar-item" id="navOrders" data-section="orders">
       <i data-lucide="shopping-bag" style="width:18px;height:18px;pointer-events:none;"></i> Orders
       <span id="newOrdersBadge" style="display:none;margin-left:auto;background:var(--red);color:#fff;font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:999px;"></span>
     </div>
-    <div class="sidebar-item" id="navReviews" onclick="showSection('reviews')" ontouchend="showSection('reviews')" style="cursor:pointer;-webkit-tap-highlight-color:rgba(239,68,68,0.2);">
+    <div class="sidebar-item" id="navReviews" data-section="reviews">
       <i data-lucide="star" style="width:18px;height:18px;pointer-events:none;"></i> Reviews
     </div>
-    <div class="sidebar-item" id="navProducts" onclick="showSection('products')" ontouchend="showSection('products')" style="cursor:pointer;-webkit-tap-highlight-color:rgba(239,68,68,0.2);">
+    <div class="sidebar-item" id="navProducts" data-section="products">
       <i data-lucide="package" style="width:18px;height:18px;pointer-events:none;"></i> Products
     </div>
-    <div class="sidebar-item" id="navSettings" onclick="showSection('store-settings')" ontouchend="showSection('store-settings')" style="cursor:pointer;-webkit-tap-highlight-color:rgba(239,68,68,0.2);">
+    <div class="sidebar-item" id="navSettings" data-section="store-settings">
       <i data-lucide="settings" style="width:18px;height:18px;pointer-events:none;"></i> Store Settings
     </div>
-    <div class="sidebar-item" id="navProfile" onclick="showSection('profile')" ontouchend="showSection('profile')" style="cursor:pointer;-webkit-tap-highlight-color:rgba(239,68,68,0.2);">
+    <div class="sidebar-item" id="navProfile" data-section="profile">
       <i data-lucide="user-circle" style="width:18px;height:18px;pointer-events:none;"></i> My Profile
     </div>
 
@@ -1158,24 +1182,37 @@
   // ── Section Switcher ───────────────────────────────────────────
   window.showSection = (section) => {
     console.log('[CityShop] showSection called:', section);
-    ['overview','orders','reviews','products','store-settings','profile'].forEach(s => {
+
+    // Switch sections
+    const sections = ['overview','orders','reviews','products','store-settings','profile'];
+    sections.forEach(s => {
       const key = s.split('-').map((w,i) => i===0 ? w : w[0].toUpperCase()+w.slice(1)).join('');
       const el = document.getElementById(`section${key[0].toUpperCase()}${key.slice(1)}`);
       if (el) {
         el.style.display = s === section ? 'block' : 'none';
-        console.log('[CityShop] Section', s, '->', el.style.display);
+        console.log('[CityShop] Section', s, 'display:', el.style.display);
+      } else {
+        console.warn('[CityShop] Section element not found:', `section${key[0].toUpperCase()}${key.slice(1)}`);
       }
     });
+
+    // Update active state
     document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
     const map = { overview: 'navOverview', orders: 'navOrders', reviews: 'navReviews', products: 'navProducts', 'store-settings': 'navSettings', profile: 'navProfile' };
     if (map[section]) {
       const navEl = document.getElementById(map[section]);
       if (navEl) navEl.classList.add('active');
     }
+
+    // Load section data
     if (section === 'orders') loadOrders();
     if (section === 'reviews') loadDashReviews();
     if (section === 'profile') initProfileSection();
-    setTimeout(() => closeSidebar(), 100);
+
+    // Close sidebar
+    closeSidebar();
+
+    // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -1188,6 +1225,35 @@
     document.getElementById('sidebar').classList.remove('open');
     document.getElementById('sidebarOverlay').classList.remove('open');
   };
+
+  // Event delegation for sidebar navigation (more reliable on mobile)
+  document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+      sidebar.addEventListener('click', (e) => {
+        const item = e.target.closest('.sidebar-item[data-section]');
+        if (item) {
+          e.preventDefault();
+          e.stopPropagation();
+          const section = item.getAttribute('data-section');
+          console.log('[CityShop] Navigating to:', section);
+          showSection(section);
+        }
+      });
+
+      // Also handle touch events for mobile
+      sidebar.addEventListener('touchend', (e) => {
+        const item = e.target.closest('.sidebar-item[data-section]');
+        if (item) {
+          e.preventDefault();
+          e.stopPropagation();
+          const section = item.getAttribute('data-section');
+          console.log('[CityShop] Touch navigating to:', section);
+          showSection(section);
+        }
+      });
+    }
+  });
 
   // ── Orders ─────────────────────────────────────────────────────
   let allOrders     = [];
