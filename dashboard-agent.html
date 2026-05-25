@@ -84,8 +84,8 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.55);
-      z-index: 199;
+      background: rgba(0,0,0,0.6);
+      z-index: 999;
     }
     .sidebar-top-row {
       display: flex;
@@ -154,6 +154,11 @@
       font-size: 0.68rem; font-weight: 700;
       padding: 3px 9px;
       border-radius: 999px;
+    }
+    @media (max-width: 900px) {
+      .sidebar { z-index: 1000 !important; pointer-events: all !important; }
+      .sidebar-item { pointer-events: all !important; touch-action: manipulation !important; min-height: 48px !important; -webkit-tap-highlight-color: rgba(239,68,68,0.2); }
+      .sidebar-item:active { background: rgba(239,68,68,0.25) !important; }
     }
   </style>
 <base target="_blank">
