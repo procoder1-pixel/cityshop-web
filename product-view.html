@@ -256,7 +256,7 @@
   <!-- Main layout -->
   <div class="pv-layout" id="pvLayout" style="display:none;">
 
-    <!-- Left — Image -->
+    <!-- Left — Image Gallery -->
     <div>
       <div class="pv-img-wrap" id="imgWrap" onclick="openFullscreen()" style="position:relative;overflow:hidden;">
         <div id="pvImgPlaceholder"
@@ -264,13 +264,20 @@
           <i data-lucide="package" style="width:60px;height:60px;color:rgba(255,255,255,0.15);"></i>
         </div>
         <img id="pvImage" src="" alt="" 
-          onload="this.style.opacity='1';document.getElementById('pvImgPlaceholder').style.opacity='0';setTimeout(()=>{const ph=document.getElementById('pvImgPlaceholder');if(ph)ph.style.display='none';},300);"
-          onerror="this.style.opacity='0';const ph=document.getElementById('pvImgPlaceholder');if(ph){ph.style.opacity='1';ph.style.display='grid';}console.error('[CityShop] Image failed:',this.src);"
+          onload="this.style.opacity='1';document.getElementById('pvImgPlaceholder').style.opacity='0';"
+          onerror="this.style.opacity='0';document.getElementById('pvImgPlaceholder').style.opacity='1';"
           style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 0.3s;z-index:1;" />
-        <div
-          style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.5);border-radius:8px;padding:6px 8px;cursor:pointer;">
+        <div style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.5);border-radius:8px;padding:6px 8px;pointer-events:none;">
           <i data-lucide="maximize-2" style="width:16px;height:16px;color:#fff;"></i>
         </div>
+      </div>
+
+      <!-- Thumbnail strip -->
+      <div id="thumbStrip" style="display:none;gap:8px;margin-top:8px;"></div>
+
+      <!-- Video player -->
+      <div id="pvVideoWrap" style="display:none;margin-top:8px;border-radius:var(--radius);overflow:hidden;">
+        <video id="pvVideo" controls style="width:100%;border-radius:var(--radius);max-height:300px;background:#000;"></video>
       </div>
 
       <!-- Store info card -->
@@ -739,21 +746,38 @@
       if (pvCategory) pvCategory.textContent = product.category || '';
       // Image handling with diagnostics
       const imgUrl = product.image_url || '';
-      console.log('[CityShop] Product image URL:', imgUrl);
-      console.log('[CityShop] Product data:', {id: product.id, name: product.name, store_id: product.store_id});
 
-      if (pvImage) { 
-        if (imgUrl) {
-          pvImage.src = imgUrl; 
-          pvImage.alt = product.name;
-        } else {
-          pvImage.style.opacity = '0';
-          const ph = document.getElementById('pvImgPlaceholder');
-          if (ph) { ph.style.opacity = '1'; ph.style.display = 'grid'; }
-          console.warn('[CityShop] No image_url for product:', product.id);
-        }
+      if (pvImage && imgUrl) {
+        pvImage.src = imgUrl;
+        pvImage.alt = product.name;
       }
       if (fsImg) fsImg.src = imgUrl;
+
+      // Build image gallery from images array
+      let allImages = [];
+      if (product.images) {
+        try { allImages = JSON.parse(product.images).filter(Boolean); } catch(e) {}
+      }
+      if (!allImages.length && imgUrl) allImages = [imgUrl];
+
+      // Show thumbnails if more than 1 image
+      const thumbStrip = document.getElementById('thumbStrip');
+      if (thumbStrip && allImages.length > 1) {
+        thumbStrip.style.display = 'flex';
+        thumbStrip.innerHTML = allImages.map((url, i) => `
+          <div onclick="switchMainImage('${url}')"
+            style="width:60px;height:60px;border-radius:8px;overflow:hidden;cursor:pointer;flex-shrink:0;
+              border:2px solid ${i===0?'var(--red)':'rgba(255,255,255,0.15)'};">
+            <img src="${url}" style="width:100%;height:100%;object-fit:cover;" />
+          </div>`).join('');
+      }
+
+      // Show video if exists
+      if (product.video_url) {
+        const vWrap = document.getElementById('pvVideoWrap');
+        const vEl   = document.getElementById('pvVideo');
+        if (vWrap && vEl) { vEl.src = product.video_url; vWrap.style.display = 'block'; }
+      }
 
       // Pricing
       document.getElementById('pvPriceFinal').textContent = `GH₵ ${final.toFixed(2)}`;

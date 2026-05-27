@@ -239,7 +239,7 @@ export async function uploadProductImage(file, storeId) {
 // ============================================================
 
 /** Add a new product to a store. */
-export async function addProduct(storeId, name, price, imageUrl, description, category, wholesalePrice = null) {
+export async function addProduct(storeId, name, price, imageUrl, description, category, wholesalePrice = null, images = null, videoUrl = null) {
   const { data, error } = await supabase
     .from('products')
     .insert({
@@ -248,6 +248,8 @@ export async function addProduct(storeId, name, price, imageUrl, description, ca
       price,
       wholesale_price: wholesalePrice,
       image_url:       imageUrl || '',
+      images:          images   || null,
+      video_url:       videoUrl || null,
       description:     description || '',
       category:        category || '',
     })

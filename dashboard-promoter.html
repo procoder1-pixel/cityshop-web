@@ -128,11 +128,13 @@
 
     /* Full-screen scrim — blocks ALL taps behind sidebar */
     .sidebar-overlay {
-      display: none;
+      display: none;           /* hidden by default */
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.6);
-      z-index: 999;
+      background: rgba(0, 0, 0, 0.72);
+      z-index: 299;            /* below sidebar (300), above everything else */
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
     }
     /* Only show scrim when sidebar is open on mobile */
     .sidebar-overlay.open {
@@ -204,13 +206,7 @@
       justify-content: space-between;
       margin-bottom: 24px;
     }
-    @media (max-width: 900px) {
-      .sidebar { z-index: 1000 !important; pointer-events: all !important; }
-      .sidebar-item { pointer-events: all !important; touch-action: manipulation !important; min-height: 48px !important; -webkit-tap-highlight-color: rgba(239,68,68,0.2); }
-      .sidebar-item:active { background: rgba(239,68,68,0.25) !important; }
-    }
   </style>
-<base target="_blank">
 </head>
 <body>
 
