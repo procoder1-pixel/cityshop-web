@@ -231,7 +231,6 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta id="twTitle" name="twitter:title" content="Product — City Shop Ghana" />
   <meta id="twImage" name="twitter:image" content="" />
-<base target="_blank">
 </head>
 
 <body>
@@ -256,28 +255,40 @@
   <!-- Main layout -->
   <div class="pv-layout" id="pvLayout" style="display:none;">
 
-    <!-- Left — Image Gallery -->
+    <!-- Left — Image -->
     <div>
-      <div class="pv-img-wrap" id="imgWrap" onclick="openFullscreen()" style="position:relative;overflow:hidden;">
+      <!-- Product Gallery -->
+      <div class="pv-img-wrap" id="imgWrap" style="position:relative;">
         <div id="pvImgPlaceholder"
-          style="position:absolute;inset:0;display:grid;place-items:center;opacity:1;transition:opacity 0.3s;z-index:2;pointer-events:none;background:rgba(255,255,255,0.04);">
+          style="position:absolute;inset:0;display:grid;place-items:center;opacity:1;transition:opacity 0.3s;z-index:2;pointer-events:none;">
           <i data-lucide="package" style="width:60px;height:60px;color:rgba(255,255,255,0.15);"></i>
         </div>
-        <img id="pvImage" src="" alt="" 
-          onload="this.style.opacity='1';document.getElementById('pvImgPlaceholder').style.opacity='0';"
-          onerror="this.style.opacity='0';document.getElementById('pvImgPlaceholder').style.opacity='1';"
-          style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 0.3s;z-index:1;" />
-        <div style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.5);border-radius:8px;padding:6px 8px;pointer-events:none;">
+
+        <!-- Main Image / Video Display -->
+        <div id="pvMainMedia" style="position:relative;width:100%;height:100%;">
+          <img id="pvImage" src="" alt="" 
+            onload="document.getElementById('pvImgPlaceholder').style.opacity='0';"
+            onerror="document.getElementById('pvImgPlaceholder').style.opacity='1';"
+            style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;cursor:pointer;"
+            onclick="openFullscreen()" />
+          <video id="pvVideo" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;" controls></video>
+        </div>
+
+        <!-- Fullscreen button -->
+        <div onclick="openFullscreen()"
+          style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.5);border-radius:8px;padding:6px 8px;cursor:pointer;z-index:3;">
           <i data-lucide="maximize-2" style="width:16px;height:16px;color:#fff;"></i>
+        </div>
+
+        <!-- Video toggle button (shows when video exists) -->
+        <div id="pvVideoToggle" onclick="toggleMainVideo()" style="display:none;position:absolute;top:12px;left:12px;background:rgba(239,68,68,0.85);border-radius:8px;padding:6px 8px;cursor:pointer;z-index:3;">
+          <i data-lucide="video" style="width:16px;height:16px;color:#fff;"></i>
         </div>
       </div>
 
-      <!-- Thumbnail strip -->
-      <div id="thumbStrip" style="display:none;gap:8px;margin-top:8px;"></div>
-
-      <!-- Video player -->
-      <div id="pvVideoWrap" style="display:none;margin-top:8px;border-radius:var(--radius);overflow:hidden;">
-        <video id="pvVideo" controls style="width:100%;border-radius:var(--radius);max-height:300px;background:#000;"></video>
+      <!-- Thumbnail Gallery -->
+      <div id="pvGallery" style="display:none;gap:8px;margin-top:12px;overflow-x:auto;padding:4px;">
+        <!-- Thumbnails injected by JS -->
       </div>
 
       <!-- Store info card -->
@@ -486,7 +497,7 @@
 
   <!-- Fullscreen image overlay -->
   <div id="fsOverlay"
-    style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.92);align-items:center;justify-content:center;"
+    style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.92);display:none;align-items:center;justify-content:center;"
     onclick="closeFullscreen()">
     <img id="fsImg" style="max-width:92vw;max-height:92vh;border-radius:var(--radius);object-fit:contain;" />
     <button onclick="closeFullscreen()"
@@ -744,40 +755,8 @@
       if (pvName) pvName.textContent = product.name;
       if (pvDesc) pvDesc.textContent = product.description || '';
       if (pvCategory) pvCategory.textContent = product.category || '';
-      // Image handling with diagnostics
-      const imgUrl = product.image_url || '';
-
-      if (pvImage && imgUrl) {
-        pvImage.src = imgUrl;
-        pvImage.alt = product.name;
-      }
-      if (fsImg) fsImg.src = imgUrl;
-
-      // Build image gallery from images array
-      let allImages = [];
-      if (product.images) {
-        try { allImages = JSON.parse(product.images).filter(Boolean); } catch(e) {}
-      }
-      if (!allImages.length && imgUrl) allImages = [imgUrl];
-
-      // Show thumbnails if more than 1 image
-      const thumbStrip = document.getElementById('thumbStrip');
-      if (thumbStrip && allImages.length > 1) {
-        thumbStrip.style.display = 'flex';
-        thumbStrip.innerHTML = allImages.map((url, i) => `
-          <div onclick="switchMainImage('${url}')"
-            style="width:60px;height:60px;border-radius:8px;overflow:hidden;cursor:pointer;flex-shrink:0;
-              border:2px solid ${i===0?'var(--red)':'rgba(255,255,255,0.15)'};">
-            <img src="${url}" style="width:100%;height:100%;object-fit:cover;" />
-          </div>`).join('');
-      }
-
-      // Show video if exists
-      if (product.video_url) {
-        const vWrap = document.getElementById('pvVideoWrap');
-        const vEl   = document.getElementById('pvVideo');
-        if (vWrap && vEl) { vEl.src = product.video_url; vWrap.style.display = 'block'; }
-      }
+      if (pvImage) { pvImage.src = product.image_url || ''; pvImage.alt = product.name; }
+      if (fsImg) fsImg.src = product.image_url || '';
 
       // Pricing
       document.getElementById('pvPriceFinal').textContent = `GH₵ ${final.toFixed(2)}`;
@@ -793,6 +772,9 @@
         ? `<span style="color:#4ade80;font-weight:600;">✓ In Stock</span>`
         : `<span style="color:#f87171;font-weight:600;">✗ Out of Stock</span>`;
 
+      // Gallery & Video
+      renderProductGallery();
+
       // Store info
       const logoEl = document.getElementById('storeLogo');
       if (storeData?.logo_url) {
@@ -805,6 +787,123 @@
 
       updateSummary();
     }
+
+    // ═══════════════════════════════════════════════════════════════
+    // PRODUCT GALLERY & VIDEO
+    // ═══════════════════════════════════════════════════════════════
+
+    let currentMediaIndex = 0;
+    let productMedia = [];
+
+    function renderProductGallery() {
+      // Check if product has media array
+      productMedia = product.media || [];
+
+      // Fallback: if no media array but has image_url, create single-item media
+      if (productMedia.length === 0 && product.image_url) {
+        productMedia = [{ media_type: 'image', media_url: product.image_url }];
+      }
+
+      const images = productMedia.filter(m => m.media_type === 'image');
+      const video = productMedia.find(m => m.media_type === 'video');
+
+      const pvImage = document.getElementById('pvImage');
+      const pvVideo = document.getElementById('pvVideo');
+      const pvVideoToggle = document.getElementById('pvVideoToggle');
+      const pvGallery = document.getElementById('pvGallery');
+      const fsImg = document.getElementById('fsImg');
+
+      // Show/hide video toggle
+      if (pvVideoToggle) {
+        pvVideoToggle.style.display = video ? 'flex' : 'none';
+      }
+
+      // Set main image
+      if (pvImage && images.length > 0) {
+        pvImage.src = images[0].media_url;
+        pvImage.alt = product.name;
+        pvImage.style.display = 'block';
+      }
+
+      // Set fullscreen image
+      if (fsImg && images.length > 0) {
+        fsImg.src = images[0].media_url;
+      }
+
+      // Hide video initially
+      if (pvVideo) {
+        pvVideo.style.display = 'none';
+        if (video) {
+          pvVideo.src = video.media_url;
+        }
+      }
+
+      // Render thumbnail gallery if multiple images
+      if (pvGallery && images.length > 1) {
+        pvGallery.style.display = 'flex';
+        pvGallery.innerHTML = images.map((img, idx) => `
+          <div onclick="switchGalleryImage(${idx})" 
+               style="flex-shrink:0;width:60px;height:60px;border-radius:8px;overflow:hidden;cursor:pointer;border:2px solid ${idx === 0 ? 'var(--red)' : 'transparent'};transition:border-color 0.2s;"
+               class="gallery-thumb" data-index="${idx}">
+            <img src="${img.media_url}" style="width:100%;height:100%;object-fit:cover;" />
+          </div>
+        `).join('');
+      } else if (pvGallery) {
+        pvGallery.style.display = 'none';
+      }
+
+      currentMediaIndex = 0;
+    }
+
+    window.switchGalleryImage = (index) => {
+      const images = productMedia.filter(m => m.media_type === 'image');
+      if (!images[index]) return;
+
+      const pvImage = document.getElementById('pvImage');
+      const pvVideo = document.getElementById('pvVideo');
+      const fsImg = document.getElementById('fsImg');
+
+      // Show image, hide video
+      if (pvImage) {
+        pvImage.src = images[index].media_url;
+        pvImage.style.display = 'block';
+      }
+      if (pvVideo) pvVideo.style.display = 'none';
+      if (fsImg) fsImg.src = images[index].media_url;
+
+      // Update active thumbnail
+      document.querySelectorAll('.gallery-thumb').forEach(thumb => {
+        thumb.style.borderColor = thumb.dataset.index == index ? 'var(--red)' : 'transparent';
+      });
+
+      currentMediaIndex = index;
+    };
+
+    window.toggleMainVideo = () => {
+      const pvImage = document.getElementById('pvImage');
+      const pvVideo = document.getElementById('pvVideo');
+      const video = productMedia.find(m => m.media_type === 'video');
+
+      if (!video || !pvVideo) return;
+
+      if (pvVideo.style.display === 'none') {
+        // Show video
+        if (pvImage) pvImage.style.display = 'none';
+        pvVideo.style.display = 'block';
+        pvVideo.play();
+      } else {
+        // Show current image
+        pvVideo.pause();
+        pvVideo.style.display = 'none';
+        if (pvImage) {
+          const images = productMedia.filter(m => m.media_type === 'image');
+          if (images[currentMediaIndex]) {
+            pvImage.src = images[currentMediaIndex].media_url;
+          }
+          pvImage.style.display = 'block';
+        }
+      }
+    };
 
     // ── Delivery ──────────────────────────────────────────────────
     window.updateDelivery = () => {

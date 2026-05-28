@@ -108,10 +108,10 @@ export async function uploadProfileMedia(file, userId, type) {
   const ext  = file.name.split('.').pop();
   const path = `profiles/${userId}-${type}.${ext}`;
   const { error: upErr } = await supabase.storage
-    .from('PRODUCT-IMAGE')
+    .from('product-image')
     .upload(path, file, { upsert: true, contentType: file.type });
   if (upErr) throw upErr;
-  const { data } = supabase.storage.from('PRODUCT-IMAGE').getPublicUrl(path);
+  const { data } = supabase.storage.from('product-image').getPublicUrl(path);
   return data.publicUrl;
 }
 
@@ -222,13 +222,13 @@ export async function uploadProductImage(file, storeId) {
   const fileName = `${storeId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
   const { error } = await supabase.storage
-    .from('PRODUCT-IMAGE')
+    .from('product-image')
     .upload(fileName, file, { upsert: false, contentType: file.type });
 
   if (error) throw error;
 
   const { data } = supabase.storage
-    .from('PRODUCT-IMAGE')
+    .from('product-image')
     .getPublicUrl(fileName);
 
   return data.publicUrl;
@@ -239,7 +239,7 @@ export async function uploadProductImage(file, storeId) {
 // ============================================================
 
 /** Add a new product to a store. */
-export async function addProduct(storeId, name, price, imageUrl, description, category, wholesalePrice = null, images = null, videoUrl = null) {
+export async function addProduct(storeId, name, price, imageUrl, description, category, wholesalePrice = null) {
   const { data, error } = await supabase
     .from('products')
     .insert({
@@ -248,8 +248,6 @@ export async function addProduct(storeId, name, price, imageUrl, description, ca
       price,
       wholesale_price: wholesalePrice,
       image_url:       imageUrl || '',
-      images:          images   || null,
-      video_url:       videoUrl || null,
       description:     description || '',
       category:        category || '',
     })
@@ -506,6 +504,93 @@ export async function replyToReview(reviewId, reply) {
   if (error) throw error;
   return data;
 }
+// ═══════════════════════════════════════════════════════════════
+// PRODUCT MEDIA — 5 images + 1 video support
+// ═══════════════════════════════════════════════════════════════
+
+export async function uploadProductMedia(file, storeId, mediaType = 'image') {
+  const ext = file.name.split('.').pop().toLowerCase();
+  const allowedImages = ['jpg','jpeg','png','webp','gif'];
+  const allowedVideos = ['mp4','mov','avi','webm'];
+
+  if (mediaType === 'image') {
+    if (!allowedImages.includes(ext)) throw new Error('Only JPG, PNG, WEBP, or GIF images are allowed.');
+    if (file.size > 5 * 1024 * 1024) throw new Error('Image must be smaller than 5MB.');
+  } else if (mediaType === 'video') {
+    if (!allowedVideos.includes(ext)) throw new Error('Only MP4, MOV, AVI, or WEBM videos are allowed.');
+    if (file.size > 50 * 1024 * 1024) throw new Error('Video must be smaller than 50MB.');
+  }
+
+  const folder = mediaType === 'image' ? 'images' : 'videos';
+  const fileName = `${storeId}/${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+  const { error } = await supabase.storage
+    .from('PRODUCT-IMAGE')
+    .upload(fileName, file, { upsert: false, contentType: file.type });
+
+  if (error) throw error;
+
+  const { data } = supabase.storage
+    .from('PRODUCT-IMAGE')
+    .getPublicUrl(fileName);
+
+  return data.publicUrl;
+}
+
+export async function addProductMedia(productId, mediaType, mediaUrl, sortOrder = 0) {
+  const { data, error } = await supabase
+    .from('product_media')
+    .insert({
+      product_id: productId,
+      media_type: mediaType,
+      media_url: mediaUrl,
+      sort_order: sortOrder,
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function getProductMedia(productId) {
+  const { data, error } = await supabase
+    .from('product_media')
+    .select('*')
+    .eq('product_id', productId)
+    .order('sort_order', { ascending: true });
+  if (error) throw error;
+  return data || [];
+}
+
+export async function deleteProductMedia(mediaId) {
+  const { error } = await supabase
+    .from('product_media')
+    .delete()
+    .eq('id', mediaId);
+  if (error) throw error;
+  return true;
+}
+
+export async function getProductsWithMedia(storeId) {
+  const { data: products, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('store_id', storeId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+
+  // Fetch media for each product
+  for (const product of products || []) {
+    const media = await getProductMedia(product.id);
+    product.media = media;
+    // Set primary image from media or fallback to image_url
+    const primaryImage = media.find(m => m.media_type === 'image');
+    if (primaryImage) product.image_url = primaryImage.media_url;
+  }
+
+  return products;
+}
+
 
 // ============================================================
 // REALTIME

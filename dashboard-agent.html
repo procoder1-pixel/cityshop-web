@@ -87,64 +87,9 @@
       background: rgba(0,0,0,0.55);
       z-index: 199;
     }
-    .sidebar-top-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 24px;
-    }
-
-    .sidebar-close-btn {
-      display: none;
-      background: var(--glass-bg2);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius-xs);
-      padding: 8px;
-      cursor: pointer;
-      color: var(--text-primary);
-      align-items: center;
-      justify-content: center;
-      -webkit-tap-highlight-color: transparent;
-    }
-
     @media (max-width: 900px) {
       .mobile-menu-btn  { display: grid; place-items: center; }
       .sidebar-overlay.open { display: block; }
-      .sidebar-close-btn { display: flex !important; }
-
-      /* Sidebar drawer */
-      .sidebar {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        height: 100vh !important;
-        height: 100dvh !important;
-        width: 280px !important;
-        max-width: 85vw !important;
-        z-index: 300 !important;
-        transform: translateX(-110%) !important;
-        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        will-change: transform;
-      }
-
-      .sidebar.open {
-        transform: translateX(0) !important;
-      }
-
-      /* Ensure sidebar items are clickable */
-      .sidebar-item {
-        cursor: pointer;
-        -webkit-tap-highlight-color: rgba(239,68,68,0.2);
-        touch-action: manipulation;
-        user-select: none;
-        -webkit-user-select: none;
-      }
-
-      .sidebar-item * {
-        pointer-events: none;
-      }
     }
 
     /* ── In-stock toggle in card ── */
@@ -168,16 +113,11 @@
 
   <!-- ── Sidebar ── -->
   <aside class="sidebar" id="sidebar">
-    <!-- Logo row + close button -->
-    <div class="sidebar-top-row">
+    <div style="margin-bottom:24px;">
       <a class="navbar-brand" href="index.html" style="text-decoration:none;">
         <div class="brand-logo">C</div>
         <span class="brand-name">City<span>Shop</span></span>
       </a>
-      <!-- X only renders on mobile via CSS -->
-      <button class="sidebar-close-btn" onclick="closeSidebar()" aria-label="Close menu">
-        <i data-lucide="x" style="width:18px;height:18px;"></i>
-      </button>
     </div>
 
     <!-- Profile card in sidebar -->
@@ -195,24 +135,24 @@
     </div>
 
     <div class="sidebar-section-label">Store</div>
-    <div class="sidebar-item active" id="navOverview" data-section="overview">
-      <i data-lucide="layout-dashboard" style="width:18px;height:18px;pointer-events:none;"></i> Overview
+    <div class="sidebar-item active" id="navOverview" onclick="showSection('overview')">
+      <i data-lucide="layout-dashboard" style="width:18px;height:18px;"></i> Overview
     </div>
-    <div class="sidebar-item" id="navOrders" data-section="orders">
-      <i data-lucide="shopping-bag" style="width:18px;height:18px;pointer-events:none;"></i> Orders
+    <div class="sidebar-item" id="navOrders" onclick="showSection('orders')">
+      <i data-lucide="shopping-bag" style="width:18px;height:18px;"></i> Orders
       <span id="newOrdersBadge" style="display:none;margin-left:auto;background:var(--red);color:#fff;font-size:0.65rem;font-weight:700;padding:2px 7px;border-radius:999px;"></span>
     </div>
-    <div class="sidebar-item" id="navReviews" data-section="reviews">
-      <i data-lucide="star" style="width:18px;height:18px;pointer-events:none;"></i> Reviews
+    <div class="sidebar-item" id="navReviews" onclick="showSection('reviews')">
+      <i data-lucide="star" style="width:18px;height:18px;"></i> Reviews
     </div>
-    <div class="sidebar-item" id="navProducts" data-section="products">
-      <i data-lucide="package" style="width:18px;height:18px;pointer-events:none;"></i> Products
+    <div class="sidebar-item" id="navProducts" onclick="showSection('products')">
+      <i data-lucide="package" style="width:18px;height:18px;"></i> Products
     </div>
-    <div class="sidebar-item" id="navSettings" data-section="store-settings">
-      <i data-lucide="settings" style="width:18px;height:18px;pointer-events:none;"></i> Store Settings
+    <div class="sidebar-item" id="navSettings" onclick="showSection('store-settings')">
+      <i data-lucide="settings" style="width:18px;height:18px;"></i> Store Settings
     </div>
-    <div class="sidebar-item" id="navProfile" data-section="profile">
-      <i data-lucide="user-circle" style="width:18px;height:18px;pointer-events:none;"></i> My Profile
+    <div class="sidebar-item" id="navProfile" onclick="showSection('profile')">
+      <i data-lucide="user-circle" style="width:18px;height:18px;"></i> My Profile
     </div>
 
     <div class="sidebar-section-label mt-16">Account</div>
@@ -613,22 +553,39 @@
         </div>
       </div>
       <div class="form-group">
-        <label>Product Image</label>
+        <label>Product Images <span style="font-size:0.72rem;color:var(--text-muted);">(up to 5)</span></label>
+        <div id="mediaGallery" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:10px;margin-bottom:12px;">
+          <!-- Image thumbnails will appear here -->
+        </div>
         <div id="imageUploadArea" style="border:2px dashed rgba(255,255,255,0.18);border-radius:var(--radius-sm);padding:20px;text-align:center;cursor:pointer;transition:var(--transition);background:rgba(255,255,255,0.04);"
           onclick="document.getElementById('p_image_file').click()"
           ondragover="event.preventDefault();this.style.borderColor='var(--red)';"
           ondragleave="this.style.borderColor='rgba(255,255,255,0.18)';"
           ondrop="handleImageDrop(event)">
-          <div id="imagePreviewWrap" style="display:none;margin-bottom:10px;">
-            <img id="imagePreview" style="max-height:120px;border-radius:var(--radius-xs);object-fit:cover;max-width:100%;" />
-          </div>
           <div id="imageUploadPrompt">
             <i data-lucide="image-plus" style="width:28px;height:28px;color:var(--text-muted);margin-bottom:8px;"></i>
-            <p style="font-size:0.85rem;color:var(--text-muted);margin:0;">Click or drag &amp; drop an image</p>
-            <p style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">JPG, PNG, WEBP up to 5MB</p>
+            <p style="font-size:0.85rem;color:var(--text-muted);margin:0;">Click or drag &amp; drop images</p>
+            <p style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">JPG, PNG, WEBP up to 5MB each (max 5)</p>
           </div>
-          <input type="file" id="p_image_file" accept="image/*" style="display:none;" onchange="handleImageSelect(event)" />
+          <input type="file" id="p_image_file" accept="image/*" multiple style="display:none;" onchange="handleImageSelect(event)" />
         </div>
+      </div>
+      <div class="form-group">
+        <label>Product Video <span style="font-size:0.72rem;color:var(--text-muted);">(optional, max 50MB)</span></label>
+        <div id="videoPreviewWrap" style="display:none;margin-bottom:10px;">
+          <video id="videoPreview" style="max-height:120px;border-radius:var(--radius-xs);max-width:100%;" controls></video>
+          <button onclick="removeVideo()" style="background:var(--red);color:#fff;border:none;border-radius:var(--radius-xs);padding:4px 10px;font-size:0.75rem;margin-top:5px;cursor:pointer;">Remove Video</button>
+        </div>
+        <div id="videoUploadArea" style="border:2px dashed rgba(255,255,255,0.18);border-radius:var(--radius-sm);padding:20px;text-align:center;cursor:pointer;transition:var(--transition);background:rgba(255,255,255,0.04);"
+          onclick="document.getElementById('p_video_file').click()">
+          <div id="videoUploadPrompt">
+            <i data-lucide="video" style="width:28px;height:28px;color:var(--text-muted);margin-bottom:8px;"></i>
+            <p style="font-size:0.85rem;color:var(--text-muted);margin:0;">Click to add a video</p>
+            <p style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">MP4, MOV, WEBM up to 50MB</p>
+          </div>
+          <input type="file" id="p_video_file" accept="video/*" style="display:none;" onchange="handleVideoSelect(event)" />
+        </div>
+      </div>
         <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
           <div style="flex:1;height:1px;background:rgba(255,255,255,0.10);"></div>
           <span style="font-size:0.75rem;color:var(--text-muted);">or paste URL</span>
@@ -832,21 +789,38 @@
   }
 
   function productCard(p) {
-    const img = p.image_url
-      ? `<img src="${p.image_url}" class="product-card-img"
+    // Check if product has multiple media
+    const hasGallery = p.media && p.media.filter(m => m.media_type === 'image').length > 1;
+    const hasVideo = p.media && p.media.some(m => m.media_type === 'video');
+    const primaryImage = p.media && p.media.find(m => m.media_type === 'image')
+      ? p.media.find(m => m.media_type === 'image').media_url
+      : p.image_url;
+
+    const img = primaryImage
+      ? `<img src="${primaryImage}" class="product-card-img"
            onerror="this.style.display='none';this.nextElementSibling.style.display='grid';" />
          <div class="product-card-img-placeholder" style="display:none;">
            <i data-lucide="image" style="width:36px;height:36px;"></i></div>`
       : `<div class="product-card-img-placeholder">
            <i data-lucide="image" style="width:36px;height:36px;"></i></div>`;
 
+    const galleryBadge = hasGallery
+      ? `<span style="position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.6);color:#fff;font-size:0.65rem;padding:3px 8px;border-radius:999px;display:flex;align-items:center;gap:4px;"><i data-lucide="images" style="width:12px;height:12px;"></i> Gallery</span>`
+      : '';
+
+    const videoBadge = hasVideo
+      ? `<span style="position:absolute;top:8px;right:8px;background:rgba(239,68,68,0.85);color:#fff;font-size:0.65rem;padding:3px 8px;border-radius:999px;display:flex;align-items:center;gap:4px;"><i data-lucide="video" style="width:12px;height:12px;"></i> Video</span>`
+      : '';
+
     const stockBadge = p.in_stock
       ? `<span class="stock-badge badge-green">In Stock</span>`
       : `<span class="stock-badge badge-red">Out of Stock</span>`;
 
     return `
-      <div class="product-card">
+      <div class="product-card" style="position:relative;">
         ${img}
+        ${galleryBadge}
+        ${videoBadge}
         ${stockBadge}
         <div class="card-actions-overlay">
           <button class="card-btn card-btn-edit"
@@ -901,10 +875,10 @@
     editingId = null;
     document.getElementById('modalTitle').textContent = 'Add New Product';
     document.getElementById('btnSaveTxt').textContent = 'Add Product';
-    ['p_name','p_price','p_wholesale','p_image','p_desc'].forEach(id => document.getElementById(id).value = '');
+    ['p_name','p_price','p_wholesale','p_desc'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('p_category').selectedIndex = 0;
     document.getElementById('p_instock').checked = true;
-    resetImageUpload();
+    resetProductMedia();
     clearProductAlert();
     document.getElementById('productModal').classList.add('active');
     lucide.createIcons();
@@ -944,10 +918,134 @@
   // ── Image Upload Handlers ─────────────────────────────────────
   let selectedImageFile = null;
 
+  
+  // ═══════════════════════════════════════════════════════════════
+  // PRODUCT MEDIA — Multiple images + video
+  // ═══════════════════════════════════════════════════════════════
+
+  let selectedImageFiles = [];
+  let selectedVideoFile = null;
+  let uploadedMediaUrls = [];
+
   window.handleImageSelect = (event) => {
-    const file = event.target.files[0];
-    if (file) previewImageFile(file);
+    const files = Array.from(event.target.files);
+    const remainingSlots = 5 - selectedImageFiles.length;
+    const filesToAdd = files.slice(0, remainingSlots);
+
+    filesToAdd.forEach(file => {
+      if (file.size > 5 * 1024 * 1024) {
+        showProductAlert(`"${file.name}" is larger than 5MB.`, 'error');
+        return;
+      }
+      selectedImageFiles.push(file);
+      previewImageFile(file);
+    });
+
+    updateMediaGallery();
   };
+
+  window.handleImageDrop = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const files = Array.from(event.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+    const remainingSlots = 5 - selectedImageFiles.length;
+    const filesToAdd = files.slice(0, remainingSlots);
+
+    filesToAdd.forEach(file => {
+      if (file.size > 5 * 1024 * 1024) {
+        showProductAlert(`"${file.name}" is larger than 5MB.`, 'error');
+        return;
+      }
+      selectedImageFiles.push(file);
+      previewImageFile(file);
+    });
+
+    updateMediaGallery();
+    event.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)';
+  };
+
+  window.handleVideoSelect = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (file.size > 50 * 1024 * 1024) {
+      showProductAlert('Video must be smaller than 50MB.', 'error');
+      return;
+    }
+
+    selectedVideoFile = file;
+
+    // Show video preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const video = document.getElementById('videoPreview');
+      video.src = e.target.result;
+      document.getElementById('videoPreviewWrap').style.display = 'block';
+      document.getElementById('videoUploadPrompt').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  };
+
+  window.removeVideo = () => {
+    selectedVideoFile = null;
+    document.getElementById('videoPreview').src = '';
+    document.getElementById('videoPreviewWrap').style.display = 'none';
+    document.getElementById('videoUploadPrompt').style.display = 'block';
+    document.getElementById('p_video_file').value = '';
+  };
+
+  window.removeImage = (index) => {
+    selectedImageFiles.splice(index, 1);
+    updateMediaGallery();
+  };
+
+  function updateMediaGallery() {
+    const gallery = document.getElementById('mediaGallery');
+    if (!gallery) return;
+
+    gallery.innerHTML = selectedImageFiles.map((file, index) => {
+      const url = URL.createObjectURL(file);
+      return `<div style="position:relative;border-radius:var(--radius-xs);overflow:hidden;aspect-ratio:1;">
+        <img src="${url}" style="width:100%;height:100%;object-fit:cover;" />
+        <button onclick="removeImage(${index})" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.6);color:#fff;border:none;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;">×</button>
+      </div>`;
+    }).join('');
+
+    // Show/hide upload prompt based on count
+    const prompt = document.getElementById('imageUploadPrompt');
+    if (prompt) {
+      prompt.style.display = selectedImageFiles.length >= 5 ? 'none' : 'block';
+    }
+  }
+
+  async function uploadProductMediaFiles(storeId) {
+    const mediaUrls = [];
+
+    // Upload images
+    for (let i = 0; i < selectedImageFiles.length; i++) {
+      const file = selectedImageFiles[i];
+      document.getElementById('uploadProgressText').textContent = `Uploading image ${i + 1} of ${selectedImageFiles.length}…`;
+      document.getElementById('uploadProgressBar').style.width = `${((i + 1) / (selectedImageFiles.length + (selectedVideoFile ? 1 : 0))) * 80}%`;
+
+      const url = await uploadProductImage(file, storeId);
+      mediaUrls.push({ type: 'image', url, sort_order: i });
+    }
+
+    // Upload video if present
+    if (selectedVideoFile) {
+      document.getElementById('uploadProgressText').textContent = 'Uploading video…';
+      document.getElementById('uploadProgressBar').style.width = '90%';
+
+      const url = await uploadProductMedia(selectedVideoFile, storeId, 'video');
+      mediaUrls.push({ type: 'video', url, sort_order: selectedImageFiles.length });
+    }
+
+    document.getElementById('uploadProgressBar').style.width = '100%';
+    document.getElementById('uploadProgressText').textContent = 'Upload complete!';
+
+    return mediaUrls;
+  }
+;
 
   window.handleImageDrop = (event) => {
     event.preventDefault();
@@ -992,14 +1090,13 @@
   window.closeProductModal = () => {
     document.getElementById('productModal').classList.remove('active');
     editingId = null;
-    resetImageUpload();
+    resetProductMedia();
   };
 
   window.submitProduct = async () => {
     const name      = document.getElementById('p_name').value.trim();
     const price     = parseFloat(document.getElementById('p_price').value);
     const wholesale = parseFloat(document.getElementById('p_wholesale').value) || null;
-    let   img       = document.getElementById('p_image').value.trim();
     const desc      = document.getElementById('p_desc').value.trim();
     const cat       = document.getElementById('p_category').value;
     const inStock   = document.getElementById('p_instock').checked;
@@ -1014,22 +1111,38 @@
     txt.textContent = editingId ? 'Saving…' : 'Adding…';
 
     try {
-      if (selectedImageFile) {
+      let primaryImageUrl = '';
+      let mediaUrls = [];
+
+      // Upload media files if any
+      if (selectedImageFiles.length > 0 || selectedVideoFile) {
         document.getElementById('uploadProgress').style.display = 'block';
-        document.getElementById('uploadProgressBar').style.width = '40%';
-        document.getElementById('uploadProgressText').textContent = 'Uploading image…';
-        img = await uploadProductImage(selectedImageFile, currentStore.id);
-        document.getElementById('uploadProgressBar').style.width = '100%';
-        document.getElementById('uploadProgressText').textContent = 'Upload complete!';
+        mediaUrls = await uploadProductMediaFiles(currentStore.id);
+
+        // Set primary image from first uploaded image
+        const firstImage = mediaUrls.find(m => m.type === 'image');
+        if (firstImage) primaryImageUrl = firstImage.url;
       }
 
       if (editingId) {
         await updateProduct(editingId, {
-          name, price, wholesale_price: wholesale, image_url: img, description: desc, category: cat, in_stock: inStock,
+          name, price, wholesale_price: wholesale, image_url: primaryImageUrl, description: desc, category: cat, in_stock: inStock,
         });
+
+        // Add new media records
+        for (const media of mediaUrls) {
+          await addProductMedia(editingId, media.type, media.url, media.sort_order);
+        }
+
         showToast(`"${name}" updated!`, 'success');
       } else {
-        await addProduct(currentStore.id, name, price, img, desc, cat, wholesale);
+        const product = await addProduct(currentStore.id, name, price, primaryImageUrl, desc, cat, wholesale);
+
+        // Add media records for the new product
+        for (const media of mediaUrls) {
+          await addProductMedia(product.id, media.type, media.url, media.sort_order);
+        }
+
         showToast(`"${name}" added!`, 'success');
       }
       closeProductModal();
@@ -1180,39 +1293,17 @@
 
   // ── Section Switcher ───────────────────────────────────────────
   window.showSection = (section) => {
-    console.log('[CityShop] showSection called:', section);
-
-    // Switch sections
-    const sections = ['overview','orders','reviews','products','store-settings','profile'];
-    sections.forEach(s => {
+    ['overview','orders','reviews','products','store-settings','profile'].forEach(s => {
       const key = s.split('-').map((w,i) => i===0 ? w : w[0].toUpperCase()+w.slice(1)).join('');
-      const el = document.getElementById(`section${key[0].toUpperCase()}${key.slice(1)}`);
-      if (el) {
-        el.style.display = s === section ? 'block' : 'none';
-        console.log('[CityShop] Section', s, 'display:', el.style.display);
-      } else {
-        console.warn('[CityShop] Section element not found:', `section${key[0].toUpperCase()}${key.slice(1)}`);
-      }
+      document.getElementById(`section${key[0].toUpperCase()}${key.slice(1)}`).style.display = s === section ? 'block' : 'none';
     });
-
-    // Update active state
     document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
     const map = { overview: 'navOverview', orders: 'navOrders', reviews: 'navReviews', products: 'navProducts', 'store-settings': 'navSettings', profile: 'navProfile' };
-    if (map[section]) {
-      const navEl = document.getElementById(map[section]);
-      if (navEl) navEl.classList.add('active');
-    }
-
-    // Load section data
+    if (map[section]) document.getElementById(map[section]).classList.add('active');
     if (section === 'orders') loadOrders();
     if (section === 'reviews') loadDashReviews();
     if (section === 'profile') initProfileSection();
-
-    // Close sidebar
     closeSidebar();
-
-    // Scroll to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // ── Mobile Sidebar ─────────────────────────────────────────────
@@ -1224,35 +1315,6 @@
     document.getElementById('sidebar').classList.remove('open');
     document.getElementById('sidebarOverlay').classList.remove('open');
   };
-
-  // Event delegation for sidebar navigation (more reliable on mobile)
-  document.addEventListener('DOMContentLoaded', () => {
-    const sidebar = document.getElementById('sidebar');
-    if (sidebar) {
-      sidebar.addEventListener('click', (e) => {
-        const item = e.target.closest('.sidebar-item[data-section]');
-        if (item) {
-          e.preventDefault();
-          e.stopPropagation();
-          const section = item.getAttribute('data-section');
-          console.log('[CityShop] Navigating to:', section);
-          showSection(section);
-        }
-      });
-
-      // Also handle touch events for mobile
-      sidebar.addEventListener('touchend', (e) => {
-        const item = e.target.closest('.sidebar-item[data-section]');
-        if (item) {
-          e.preventDefault();
-          e.stopPropagation();
-          const section = item.getAttribute('data-section');
-          console.log('[CityShop] Touch navigating to:', section);
-          showSection(section);
-        }
-      });
-    }
-  });
 
   // ── Orders ─────────────────────────────────────────────────────
   let allOrders     = [];

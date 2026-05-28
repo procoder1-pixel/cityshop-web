@@ -345,8 +345,9 @@
 
     grid.innerHTML = filtered.map(p => {
       const img = p.image_url
-        ? `<img src="${p.image_url}" class="product-card-img" style="pointer-events:none;"
-             onerror="this.style.display='none';this.nextElementSibling.style.display='grid';" />
+        ? `<img src="${p.image_url}" class="product-card-img" style="pointer-events:none;opacity:0;transition:opacity 0.3s;"
+             onload="this.style.opacity='1'"
+             onerror="this.style.display='none';const ph=this.nextElementSibling;if(ph)ph.style.display='grid';console.error('[CityShop] Store image failed:',this.src);" />
            <div class="product-card-img-placeholder" style="display:none;pointer-events:none;">
              <i data-lucide="package" style="width:36px;height:36px;"></i></div>`
         : `<div class="product-card-img-placeholder" style="pointer-events:none;">
