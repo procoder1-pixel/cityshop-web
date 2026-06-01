@@ -3,105 +3,363 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>City Shop — Store</title>
+  <title>Browse Stores — City Shop Ghana</title>
   <link rel="stylesheet" href="styles.css" />
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
-    /* ── Store hero ── */
-    .store-hero {
-      padding: 60px 64px 48px;
-      max-width: 1280px;
+    /* ── Page layout ── */
+    .discovery-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 0;
+      max-width: 1380px;
       margin: 0 auto;
-      display: flex;
-      align-items: center;
-      gap: 32px;
-      flex-wrap: wrap;
+      padding: 40px 32px 64px;
+      align-items: start;
     }
 
-    .store-avatar {
-      width: 96px; height: 96px;
+    /* ── Sidebar ── */
+    .filter-sidebar {
+      position: sticky;
+      top: 88px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 28px 22px;
+      margin-right: 28px;
+    }
+
+    .filter-sidebar h4 {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.10em;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .filter-divider {
+      height: 1px;
+      background: var(--glass-border);
+      margin: 20px 0;
+    }
+
+    .category-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
       border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: var(--transition);
+      border: 1px solid transparent;
+      background: transparent;
+      width: 100%;
+      text-align: left;
+      font-family: 'Inter', sans-serif;
+    }
+    .category-pill:hover { background: rgba(255,255,255,0.07); color: #fff; }
+    .category-pill.active {
+      background: rgba(239,68,68,0.14);
+      border-color: rgba(239,68,68,0.30);
+      color: #f87171;
+      font-weight: 600;
+    }
+    .category-pill .pill-count {
+      margin-left: auto;
+      font-size: 0.72rem;
+      background: rgba(255,255,255,0.10);
+      border-radius: 999px;
+      padding: 2px 8px;
+      color: var(--text-muted);
+    }
+
+    /* ── Trust badges ── */
+    .trust-filter {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .trust-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: var(--radius-xs);
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: var(--transition);
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: 'Inter', sans-serif;
+      width: 100%;
+      text-align: left;
+    }
+    .trust-option:hover { background: rgba(255,255,255,0.06); color: #fff; }
+    .trust-option.active {
+      background: rgba(34,197,94,0.10);
+      border-color: rgba(34,197,94,0.25);
+      color: #4ade80;
+    }
+
+    /* ── Main content ── */
+    .discovery-main { min-width: 0; }
+
+    .discovery-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 12px 18px;
+      flex: 1;
+      max-width: 420px;
+      transition: var(--transition);
+    }
+    .search-bar:focus-within {
+      border-color: var(--red);
+      background: rgba(239,68,68,0.06);
+      box-shadow: 0 0 0 3px rgba(239,68,68,0.12);
+    }
+    .search-bar input {
+      background: transparent;
+      border: none;
+      color: var(--text-primary);
+      font-size: 0.92rem;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      flex: 1;
+    }
+    .search-bar input::placeholder { color: rgba(255,255,255,0.30); }
+
+    /* ── Store cards ── */
+    .stores-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 22px;
+    }
+
+    .store-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: var(--transition);
+      cursor: pointer;
+      text-decoration: none;
+      display: block;
+    }
+    .store-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(239,68,68,0.35);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.40);
+    }
+
+    .store-card-banner {
+      width: 100%;
+      height: 110px;
+      object-fit: cover;
+      display: block;
+    }
+    .store-card-banner-placeholder {
+      width: 100%;
+      height: 110px;
+      background: linear-gradient(135deg, rgba(239,68,68,0.18), rgba(139,92,246,0.12));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.15);
+    }
+
+    .store-card-body { padding: 18px 18px 14px; }
+
+    .store-card-identity {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .store-card-logo {
+      width: 52px; height: 52px;
+      border-radius: var(--radius-xs);
       background: linear-gradient(135deg, var(--red), var(--red-dark));
       display: grid;
       place-items: center;
-      font-size: 2.4rem;
+      font-size: 1.3rem;
       font-weight: 800;
       color: #fff;
       flex-shrink: 0;
-      box-shadow: 0 8px 28px var(--red-glow);
+      box-shadow: 0 4px 14px var(--red-glow);
+      overflow: hidden;
+      margin-top: -36px;
+      border: 3px solid rgba(15,12,41,0.90);
+    }
+    .store-card-logo img { width:100%; height:100%; object-fit:cover; }
+
+    .store-card-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+      line-height: 1.2;
+    }
+
+    .store-card-desc {
+      font-size: 0.80rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 12px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
       overflow: hidden;
     }
-    .store-avatar img { width:100%; height:100%; object-fit:cover; }
 
-    .store-hero-info  { flex: 1; min-width: 200px; }
-    .store-hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
-
-    /* ── Catalog ── */
-    .catalog-section {
-      padding: 0 64px 64px;
-      max-width: 1280px;
-      margin: 0 auto;
-    }
-
-    /* ── Product detail modal ── */
-    .product-detail-img {
-      width: 100%;
-      aspect-ratio: 16/9;
-      object-fit: cover;
-      border-radius: var(--radius-sm);
-      margin-bottom: 20px;
-    }
-    .product-detail-placeholder {
-      width: 100%;
-      aspect-ratio: 16/9;
-      background: linear-gradient(135deg, rgba(239,68,68,0.15), rgba(139,92,246,0.10));
-      border-radius: var(--radius-sm);
-      display: grid;
-      place-items: center;
-      color: var(--text-muted);
-      margin-bottom: 20px;
-    }
-
-    /* ── Not found ── */
-    .not-found { text-align: center; padding: 120px 20px; }
-
-    /* ── Filter bar ── */
-    .store-filter {
+    .store-card-meta {
       display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 24px;
       align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
     }
-    .store-filter input,
-    .store-filter select {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.16);
+
+    .store-card-stats {
+      display: flex;
+      gap: 14px;
+    }
+
+    .store-stat {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .store-card-badges {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .trust-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 0.68rem;
+      font-weight: 700;
+    }
+    .trust-badge-verified { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.25); }
+    .trust-badge-momo     { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.25); }
+    .trust-badge-telecel  { background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
+    .trust-badge-delivery { background: rgba(139,92,246,0.15); color: #c4b5fd; border: 1px solid rgba(139,92,246,0.25); }
+
+    .store-card-cta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 18px 16px;
+      border-top: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .categories-chips {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+
+    .cat-chip {
+      font-size: 0.68rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(239,68,68,0.12);
+      color: #f87171;
+      border: 1px solid rgba(239,68,68,0.20);
+      font-weight: 600;
+    }
+
+    /* ── Hero bar ── */
+    .discovery-hero {
+      background: linear-gradient(135deg, rgba(239,68,68,0.12), rgba(139,92,246,0.08));
+      border-bottom: 1px solid var(--glass-border);
+      padding: 48px 32px 40px;
+      text-align: center;
+    }
+
+    /* ── Sort bar ── */
+    .sort-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .sort-bar select {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
       border-radius: var(--radius-sm);
-      padding: 12px 18px;
+      padding: 10px 14px;
       color: var(--text-primary);
       font-family: 'Inter', sans-serif;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       outline: none;
-      transition: var(--transition);
+      cursor: pointer;
     }
-    .store-filter input { flex: 1; min-width: 200px; }
-    .store-filter input:focus { border-color: var(--red); background: rgba(239,68,68,0.08); }
-    .store-filter input::placeholder { color: rgba(255,255,255,0.30); }
-    .store-filter select option { background: #1a0a2e; }
+    .sort-bar select option { background: #1a0a2e; }
 
-    @media (max-width: 768px) {
-      .store-hero      { padding: 32px 20px 28px; }
-      .catalog-section { padding: 0 20px 40px; }
+    /* ── Mobile filter toggle ── */
+    .mobile-filter-btn {
+      display: none;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 16px;
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ── Empty ── */
+    .stores-empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 80px 20px;
+    }
+
+    @media (max-width: 960px) {
+      .discovery-layout { grid-template-columns: 1fr; padding: 20px 16px 48px; }
+      .filter-sidebar { position: static; margin-right: 0; margin-bottom: 24px; display: none; }
+      .filter-sidebar.open { display: block; }
+      .mobile-filter-btn { display: flex; }
+      .stores-grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+    }
+
+    @media (max-width: 480px) {
+      .stores-grid { grid-template-columns: 1fr; }
+      .discovery-hero { padding: 32px 16px 28px; }
     }
   </style>
-  <meta id="ogTitle" property="og:title" content="City Shop Ghana" />
-  <meta id="ogDesc" property="og:description" content="Shop from verified sellers across Ghana." />
-  <meta id="ogImage" property="og:image" content="" />
-  <meta id="ogUrl" property="og:url" content="" />
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="City Shop Ghana" />
-  <meta name="twitter:card" content="summary_large_image" />
 </head>
 <body>
 
@@ -120,418 +378,407 @@
   </div>
 </nav>
 
-<!-- ── Store Not Found ── -->
-<div id="notFound" class="not-found hidden">
-  <div style="width:80px;height:80px;border-radius:50%;background:rgba(239,68,68,0.12);display:grid;place-items:center;margin:0 auto 24px;color:var(--red);">
-    <i data-lucide="store-x" style="width:36px;height:36px;"></i>
+<!-- ── Hero Bar ── -->
+<div class="discovery-hero">
+  <div class="hero-eyebrow" style="display:inline-flex;margin-bottom:16px;">
+    <i data-lucide="store" style="width:14px;height:14px;"></i>
+    Ghana's Marketplace
   </div>
-  <h2 class="mb-16">Store Not Found</h2>
-  <p style="max-width:360px;margin:0 auto 28px;">The store you're looking for doesn't exist or the link may be incorrect.</p>
-  <a href="index.html" class="btn btn-primary">← Back to City Shop</a>
+  <h2 style="margin-bottom:10px;">Discover Local Stores</h2>
+  <p style="max-width:460px;margin:0 auto;">Browse verified stores from sellers across Ghana. Real products, real people, order directly on WhatsApp.</p>
+
+  <div style="display:flex;justify-content:center;gap:28px;margin-top:28px;flex-wrap:wrap;">
+    <div>
+      <div style="font-size:1.6rem;font-weight:800;" id="heroStoreCount">—</div>
+      <div class="text-muted" style="font-size:0.80rem;">Active Stores</div>
+    </div>
+    <div>
+      <div style="font-size:1.6rem;font-weight:800;" id="heroProductCount">—</div>
+      <div class="text-muted" style="font-size:0.80rem;">Products Listed</div>
+    </div>
+    <div>
+      <div style="font-size:1.6rem;font-weight:800;" id="heroCategoryCount">—</div>
+      <div class="text-muted" style="font-size:0.80rem;">Categories</div>
+    </div>
+  </div>
 </div>
 
-<!-- ── Store Content ── -->
-<div id="storeContent" class="hidden">
+<!-- ── Discovery Layout ── -->
+<div class="discovery-layout">
 
-  <!-- Hero -->
-  <div class="store-hero">
-    <div class="store-avatar" id="storeAvatar">?</div>
-    <div class="store-hero-info">
-      <div class="flex gap-12 mb-8" style="align-items:center;flex-wrap:wrap;">
-        <h1 id="storeName" style="font-size:clamp(1.6rem,4vw,2.6rem);">Loading…</h1>
-        <span id="verifiedBadge" class="badge badge-green" style="display:none;">
-          <i data-lucide="check-circle" style="width:12px;height:12px;"></i> Verified Store
-        </span>
-      </div>
-      <p id="storeDesc" style="font-size:1rem;max-width:480px;line-height:1.7;"></p>
-      <div id="storeRatingEl" style="display:none;align-items:center;margin-top:6px;font-size:1rem;"></div>
-      <div class="flex gap-20 mt-16" style="flex-wrap:wrap;">
-        <div>
-          <div style="font-size:1.3rem;font-weight:800;" id="heroProductCount">0</div>
-          <div class="text-muted" style="font-size:0.82rem;">Products</div>
-        </div>
-        <div>
-          <div style="font-size:1.3rem;font-weight:800;" id="heroCategoryCount">0</div>
-          <div class="text-muted" style="font-size:0.82rem;">Categories</div>
-        </div>
-      </div>
+  <!-- Filter Sidebar -->
+  <aside class="filter-sidebar" id="filterSidebar">
+
+    <h4><i data-lucide="sliders" style="width:12px;height:12px;display:inline;margin-right:6px;"></i>Filter Stores</h4>
+
+    <!-- Search (mobile only in sidebar) -->
+    <div class="search-bar" style="max-width:100%;margin-bottom:16px;">
+      <i data-lucide="search" style="width:16px;height:16px;color:var(--text-muted);flex-shrink:0;"></i>
+      <input type="text" id="sidebarSearch" placeholder="Search stores…" oninput="syncSearch(this.value)" />
     </div>
-    <div class="store-hero-actions">
-      <button class="btn btn-glass" onclick="shareStore()">
-        <i data-lucide="share-2" style="width:16px;height:16px;"></i> Share Store
-      </button>
-      <button class="btn btn-primary" id="contactBtn">
-        <i data-lucide="message-circle" style="width:16px;height:16px;"></i> Contact on WhatsApp
+
+    <div class="filter-divider"></div>
+    <h4>Category</h4>
+    <div id="categoryFilters" style="display:flex;flex-direction:column;gap:4px;">
+      <button class="category-pill active" onclick="filterByCategory('')" data-cat="">
+        <i data-lucide="layout-grid" style="width:14px;height:14px;"></i>
+        All Categories
+        <span class="pill-count" id="countAll">0</span>
       </button>
     </div>
-  </div>
 
-  <!-- Catalog -->
-  <div class="catalog-section">
-
-    <!-- Filter Bar -->
-    <div class="store-filter mb-24">
-      <input type="text" id="catalogSearch"
-             placeholder="🔍  Search products in this store…"
-             oninput="filterCatalog()" />
-      <select id="catalogCategory" onchange="filterCatalog()">
-        <option value="">All Categories</option>
-      </select>
-      <select id="catalogSort" onchange="filterCatalog()">
-        <option value="newest">Newest First</option>
-        <option value="price-asc">Price: Low → High</option>
-        <option value="price-desc">Price: High → Low</option>
-        <option value="name">Name A–Z</option>
-      </select>
+    <div class="filter-divider"></div>
+    <h4>Trust & Features</h4>
+    <div class="trust-filter">
+      <button class="trust-option" onclick="toggleTrust('verified')" id="trustVerified">
+        <i data-lucide="shield-check" style="width:14px;height:14px;color:#4ade80;"></i>
+        Verified Stores Only
+      </button>
+      <button class="trust-option" onclick="toggleTrust('momo')" id="trustMomo">
+        <span style="font-size:14px;">📱</span> Accepts MoMo
+      </button>
+      <button class="trust-option" onclick="toggleTrust('telecel')" id="trustTelecel">
+        <span style="font-size:14px;">📶</span> Telecel Cash
+      </button>
+      <button class="trust-option" onclick="toggleTrust('delivery')" id="trustDelivery">
+        <i data-lucide="zap" style="width:14px;height:14px;color:#c4b5fd;"></i>
+        Express Delivery
+      </button>
     </div>
 
-    <!-- Results summary -->
-    <div class="flex-between mb-16" id="catalogMeta" style="display:none!important;">
-      <p id="catalogCount" style="font-size:0.88rem;"></p>
+    <div class="filter-divider"></div>
+    <h4>Price Range (GH₵)</h4>
+    <div style="padding:4px 0 8px;">
+      <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:var(--text-muted);margin-bottom:6px;">
+        <span>GH₵ <span id="priceMinLabel">0</span></span>
+        <span>GH₵ <span id="priceMaxLabel">1000</span>+</span>
+      </div>
+      <input type="range" id="priceMin" min="0" max="1000" value="0" step="10"
+        oninput="updatePriceFilter()"
+        style="width:100%;accent-color:var(--red);margin-bottom:6px;" />
+      <input type="range" id="priceMax" min="0" max="1000" value="1000" step="10"
+        oninput="updatePriceFilter()"
+        style="width:100%;accent-color:var(--red);" />
+    </div>
+
+    <div class="filter-divider"></div>
+    <button class="btn btn-glass w-full btn-sm" onclick="clearAllFilters()">
+      <i data-lucide="x" style="width:13px;height:13px;"></i> Clear Filters
+    </button>
+  </aside>
+
+  <!-- Main -->
+  <div class="discovery-main">
+
+    <!-- Top bar -->
+    <div class="discovery-header">
+      <div style="display:flex;align-items:center;gap:12px;flex:1;flex-wrap:wrap;">
+        <button class="mobile-filter-btn" onclick="toggleSidebar()">
+          <i data-lucide="sliders" style="width:15px;height:15px;"></i> Filters
+        </button>
+        <div class="search-bar" style="flex:1;">
+          <i data-lucide="search" style="width:16px;height:16px;color:var(--text-muted);flex-shrink:0;"></i>
+          <input type="text" id="mainSearch" placeholder="Search stores by name or category…" oninput="syncSearch(this.value)" />
+        </div>
+      </div>
+      <div class="sort-bar">
+        <select id="sortSelect" onchange="applyFilters()">
+          <option value="newest">Newest First</option>
+          <option value="most-products">Most Products</option>
+          <option value="name">Name A–Z</option>
+        </select>
+        <span id="resultCount" style="font-size:0.82rem;color:var(--text-muted);white-space:nowrap;"></span>
+      </div>
     </div>
 
     <!-- Grid -->
-    <div class="grid-3" id="catalogGrid">
-      <div style="text-align:center;padding:60px;grid-column:1/-1;">
+    <div class="stores-grid" id="storesGrid">
+      <div style="grid-column:1/-1;text-align:center;padding:60px;">
         <div class="spinner"></div>
-        <p style="margin-top:16px;">Loading catalog…</p>
+        <p style="margin-top:16px;">Loading stores…</p>
       </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- ── Product Detail Modal ── -->
-<div class="modal-overlay" id="detailModal">
-  <div class="modal" style="max-width:580px;">
-    <div class="modal-header">
-      <h3 id="detailName">Product</h3>
-      <button class="btn btn-glass btn-icon" onclick="closeDetail()">
-        <i data-lucide="x" style="width:18px;height:18px;"></i>
-      </button>
-    </div>
-    <div id="detailImg"></div>
-    <div class="flex-between mb-12">
-      <span class="badge badge-red" id="detailCategory"></span>
-      <span style="font-size:1.6rem;font-weight:800;color:var(--red);" id="detailPrice"></span>
-    </div>
-    <p id="detailDesc" style="line-height:1.7;margin-bottom:24px;"></p>
-    <div id="detailStockRow" class="mb-16"></div>
-    <div class="flex gap-12">
-      <button class="btn btn-primary w-full" id="detailWhatsApp">
-        <i data-lucide="message-circle" style="width:18px;height:18px;"></i>
-        Order via WhatsApp
-      </button>
-      <button class="btn btn-glass btn-sm" onclick="shareProduct()" style="flex-shrink:0;" title="Share link">
-        <i data-lucide="share-2" style="width:16px;height:16px;"></i>
-      </button>
     </div>
   </div>
 </div>
 
 <script type="module">
-  // Single JOIN fetch — one network round-trip instead of two
-  import { getStoreWithProducts } from './db.js';
+  import { getAllStores } from './db.js';
 
-  let storeData   = null;
-  let allProducts = [];
-  let filtered    = [];
+  let allStores    = [];
+  let filtered     = [];
+  let activeCategory = '';
+  let activeTrusts   = new Set();
+  let searchQuery    = '';
 
   // ── Boot ─────────────────────────────────────────────────────
   (async () => {
-    const slug = new URLSearchParams(location.search).get('slug');
-    if (!slug) { showNotFound(); return; }
-
     try {
-      const result = await getStoreWithProducts(slug);
-      storeData   = result.store;
-      allProducts = result.products;
-      filtered    = [...allProducts];
-
-      renderStoreHero();
-      buildCategoryFilter();
-      renderCatalog();
-
-      document.getElementById('pageLoader').style.display = 'none';
-      document.getElementById('storeContent').classList.remove('hidden');
-      document.title = `${storeData.name} — City Shop`;
-      document.getElementById('ogTitle')?.setAttribute('content', `${storeData.name} | City Shop Ghana`);
-      document.getElementById('ogDesc')?.setAttribute('content', storeData.description || `Shop from ${storeData.name} on City Shop Ghana.`);
-      document.getElementById('ogImage')?.setAttribute('content', storeData.banner_url || storeData.logo_url || '');
-      document.getElementById('ogUrl')?.setAttribute('content', location.href);
-      lucide.createIcons();
+      allStores = await getAllStores();
+      // Fetch ratings for all stores in parallel
+      await loadStoreRatings();
+      filtered  = [...allStores];
+      buildCategoryFilters();
+      updateHeroStats();
+      applyFilters();
     } catch (e) {
-      console.error('store.html boot error:', e);
-      showNotFound();
+      console.error(e);
+      document.getElementById('storesGrid').innerHTML =
+        `<div class="stores-empty"><p>Failed to load stores. Please refresh.</p></div>`;
+    } finally {
+      document.getElementById('pageLoader').style.display = 'none';
+      lucide.createIcons();
     }
   })();
 
-  // ── Render Store Hero ─────────────────────────────────────────
-  function renderStoreHero() {
-    document.getElementById('storeName').textContent = storeData.name;
-    document.getElementById('storeDesc').textContent = storeData.description || 'Welcome to our store!';
-    document.getElementById('heroProductCount').textContent = allProducts.length;
-    if (storeData.is_verified) document.getElementById('verifiedBadge').style.display = 'inline-flex';
+  // ── Hero stats ────────────────────────────────────────────────
+  function updateHeroStats() {
+    const totalProducts = allStores.reduce((s, st) => s + (st.products?.length || 0), 0);
+    const allCats = new Set(allStores.flatMap(st => (st.products || []).map(p => p.category).filter(Boolean)));
+    document.getElementById('heroStoreCount').textContent   = allStores.length;
+    document.getElementById('heroProductCount').textContent = totalProducts;
+    document.getElementById('heroCategoryCount').textContent = allCats.size;
+  }
 
-    const cats = new Set(allProducts.map(p => p.category).filter(Boolean));
-    document.getElementById('heroCategoryCount').textContent = cats.size;
+  // ── Category filters ──────────────────────────────────────────
+  // ── Store ratings ─────────────────────────────────────────────
+  const SUPA_URL = 'https://pehvrvgptplowukdgone.supabase.co';
+  const SUPA_KEY = 'sb_publishable_9tOFD1hgehzp6woo0w-5-g_CAYZSvtN';
 
-    const avatar = document.getElementById('storeAvatar');
-    if (storeData.logo_url) {
-      avatar.innerHTML = `<img src="${storeData.logo_url}"
-        onerror="this.parentElement.textContent='${storeData.name[0].toUpperCase()}'" />`;
-    } else {
-      avatar.textContent = storeData.name[0].toUpperCase();
-    }
+  async function loadStoreRatings() {
+    try {
+      const ids = allStores.map(s => `"${s.id}"`).join(',');
+      if (!ids) return;
+      const res  = await fetch(
+        `${SUPA_URL}/rest/v1/reviews?store_id=in.(${ids})&select=store_id,rating`,
+        { headers: { apikey: SUPA_KEY } }
+      );
+      const rows = await res.json();
+      if (!Array.isArray(rows)) return;
+      const map = {};
+      rows.forEach(r => {
+        if (!map[r.store_id]) map[r.store_id] = [];
+        map[r.store_id].push(r.rating);
+      });
+      allStores = allStores.map(s => {
+        const ratings = map[s.id] || [];
+        const avg = ratings.length ? ratings.reduce((a,b) => a+b, 0) / ratings.length : 0;
+        return { ...s, _avgRating: avg, _reviewCount: ratings.length };
+      });
+    } catch(e) { console.error('Ratings load failed:', e); }
+  }
 
-    // Contact / WhatsApp button
-    document.getElementById('contactBtn').onclick = () => {
-      const msg = `Hi! I found your store "${storeData.name}" on City Shop. I'd like to inquire about your products.\n🔗 ${location.href}`;
-      const wa  = storeData.whatsapp
-        ? `https://wa.me/${storeData.whatsapp.replace(/[^0-9]/g,'')}?text=${encodeURIComponent(msg)}`
-        : `https://wa.me/?text=${encodeURIComponent(msg)}`;
-      window.open(wa, '_blank');
+  function buildCategoryFilters() {
+    const catMap = {};
+    allStores.forEach(st => {
+      (st.products || []).forEach(p => {
+        if (p.category) catMap[p.category] = (catMap[p.category] || 0) + 1;
+      });
+    });
+
+    document.getElementById('countAll').textContent = allStores.length;
+    const container = document.getElementById('categoryFilters');
+
+    const cats = Object.entries(catMap).sort((a,b) => b[1]-a[1]);
+    const icons = {
+      'Fashion': 'shirt', 'Electronics': 'cpu', 'Food & Drinks': 'utensils',
+      'Health & Beauty': 'heart', 'Home & Garden': 'home', 'Sports': 'dumbbell', 'Other': 'box'
     };
 
-    // Load store reviews
-    loadStoreReviews();
-  }
-
-  async function loadStoreReviews() {
-    try {
-      const { data: reviews } = await fetch(
-        `https://pehvrvgptplowukdgone.supabase.co/rest/v1/reviews?store_id=eq.${storeData.id}&select=rating`,
-        { headers: { apikey: 'sb_publishable_9tOFD1hgehzp6woo0w-5-g_CAYZSvtN' } }
-      ).then(r => r.json().then(data => ({ data })));
-
-      const list = Array.isArray(reviews) ? reviews : [];
-      if (!list.length) return;
-      const avg   = list.reduce((s,r) => s + r.rating, 0) / list.length;
-      const stars = Array.from({length:5}, (_,i) =>
-        `<span style="color:${i < Math.round(avg) ? '#fbbf24' : 'rgba(255,255,255,0.2)'};">★</span>`
-      ).join('');
-      const ratingEl = document.getElementById('storeRatingEl');
-      if (ratingEl) {
-        ratingEl.innerHTML = `${stars} <span style="font-size:0.82rem;color:var(--text-muted);margin-left:6px;">${avg.toFixed(1)} (${list.length} review${list.length !== 1 ? 's' : ''})</span>`;
-        ratingEl.style.display = 'flex';
-      }
-    } catch(e) { console.error(e); }
-  }
-
-  // ── Category filter dropdown ──────────────────────────────────
-  function buildCategoryFilter() {
-    const cats = [...new Set(allProducts.map(p => p.category).filter(Boolean))].sort();
-    const sel  = document.getElementById('catalogCategory');
-    cats.forEach(c => {
-      const o = document.createElement('option');
-      o.value = c; o.textContent = c;
-      sel.appendChild(o);
+    cats.forEach(([cat, count]) => {
+      const btn = document.createElement('button');
+      btn.className = 'category-pill';
+      btn.dataset.cat = cat;
+      btn.onclick = () => filterByCategory(cat);
+      btn.innerHTML = `
+        <i data-lucide="${icons[cat] || 'tag'}" style="width:14px;height:14px;"></i>
+        ${cat}
+        <span class="pill-count">${count}</span>`;
+      container.appendChild(btn);
     });
+    lucide.createIcons();
   }
 
-  // ── Render Catalog ────────────────────────────────────────────
-  function renderCatalog() {
-    const grid = document.getElementById('catalogGrid');
+  // ── Filter by category ────────────────────────────────────────
+  window.filterByCategory = (cat) => {
+    activeCategory = cat;
+    document.querySelectorAll('.category-pill').forEach(b => {
+      b.classList.toggle('active', b.dataset.cat === cat);
+    });
+    applyFilters();
+  };
+
+  // ── Toggle trust filter ───────────────────────────────────────
+  window.toggleTrust = (key) => {
+    if (activeTrusts.has(key)) activeTrusts.delete(key);
+    else activeTrusts.add(key);
+    document.getElementById('trust' + key.charAt(0).toUpperCase() + key.slice(1))
+      .classList.toggle('active', activeTrusts.has(key));
+    applyFilters();
+  };
+
+  // ── Sync both search inputs ───────────────────────────────────
+  window.syncSearch = (val) => {
+    searchQuery = val.toLowerCase();
+    document.getElementById('mainSearch').value    = val;
+    document.getElementById('sidebarSearch').value = val;
+    applyFilters();
+  };
+
+  // ── Apply all filters ─────────────────────────────────────────
+  window.applyFilters = () => {
+    filtered = allStores.filter(st => {
+      // Search
+      if (searchQuery) {
+        const nameMatch = st.name.toLowerCase().includes(searchQuery);
+        const descMatch = (st.description||'').toLowerCase().includes(searchQuery);
+        const catMatch  = (st.products||[]).some(p => (p.category||'').toLowerCase().includes(searchQuery));
+        if (!nameMatch && !descMatch && !catMatch) return false;
+      }
+      // Category
+      if (activeCategory) {
+        const hasCat = (st.products||[]).some(p => p.category === activeCategory);
+        if (!hasCat) return false;
+      }
+      // Trust badges
+      if (activeTrusts.has('verified') && !st.is_verified) return false;
+      // Price range — filter stores that have at least one product in range
+      if (priceMin > 0 || priceMax < 1000) {
+        const inRange = (st.products||[]).some(p => {
+          const price = Number(p.price || 0);
+          return price >= priceMin && (priceMax >= 1000 || price <= priceMax);
+        });
+        if (!inRange) return false;
+      }
+      return true;
+    });
+
+    // Sort
+    const sort = document.getElementById('sortSelect').value;
+    if (sort === 'most-products') filtered.sort((a,b) => (b.products?.length||0) - (a.products?.length||0));
+    if (sort === 'name')          filtered.sort((a,b) => a.name.localeCompare(b.name));
+
+    document.getElementById('resultCount').textContent =
+      `${filtered.length} store${filtered.length !== 1 ? 's' : ''}`;
+
+    renderStores();
+  };
+
+  // ── Render ────────────────────────────────────────────────────
+  function renderStores() {
+    const grid = document.getElementById('storesGrid');
     if (!filtered.length) {
-      grid.innerHTML = `<div style="text-align:center;padding:60px;grid-column:1/-1;">
-        <div style="width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,0.06);display:grid;place-items:center;margin:0 auto 16px;color:var(--text-muted);">
-          <i data-lucide="search-x" style="width:28px;height:28px;"></i></div>
-        <h3>No products found</h3>
-        <p style="margin-top:8px;">Try a different search or category filter</p>
-      </div>`;
+      grid.innerHTML = `
+        <div class="stores-empty">
+          <div style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,0.06);display:grid;place-items:center;margin:0 auto 20px;color:var(--text-muted);">
+            <i data-lucide="store-x" style="width:32px;height:32px;"></i>
+          </div>
+          <h3>No stores found</h3>
+          <p style="margin-top:8px;">Try adjusting your search or filters</p>
+          <button class="btn btn-glass btn-sm" style="margin-top:20px;" onclick="clearAllFilters()">Clear Filters</button>
+        </div>`;
       lucide.createIcons();
       return;
     }
 
-    grid.innerHTML = filtered.map(p => {
-      const img = p.image_url
-        ? `<img src="${p.image_url}" class="product-card-img" style="pointer-events:none;opacity:0;transition:opacity 0.3s;"
-             onload="this.style.opacity='1'"
-             onerror="this.style.display='none';const ph=this.nextElementSibling;if(ph)ph.style.display='grid';console.error('[CityShop] Store image failed:',this.src);" />
-           <div class="product-card-img-placeholder" style="display:none;pointer-events:none;">
-             <i data-lucide="package" style="width:36px;height:36px;"></i></div>`
-        : `<div class="product-card-img-placeholder" style="pointer-events:none;">
-             <i data-lucide="package" style="width:36px;height:36px;"></i></div>`;
+    grid.innerHTML = filtered.map(st => storeCard(st)).join('');
+    lucide.createIcons();
+  }
 
-      const stockBadge = p.in_stock !== false
-        ? `<span style="position:absolute;top:10px;left:10px;pointer-events:none;" class="badge badge-green">In Stock</span>`
-        : `<span style="position:absolute;top:10px;left:10px;pointer-events:none;" class="badge badge-red">Out of Stock</span>`;
+  function storeCard(st) {
+    const productCount = st.products?.length || 0;
+    const cats = [...new Set((st.products||[]).map(p => p.category).filter(Boolean))].slice(0, 3);
+    const storeUrl = `store.html?slug=${encodeURIComponent(st.slug || st.id)}`;
 
-      return `
-        <div class="product-card" data-pid="${p.id}" data-slug="${storeData.slug}" onclick="goToProduct(this)" style="cursor:pointer;">
-          ${img}
-          ${stockBadge}
-          <div class="product-card-body" style="pointer-events:none;">
-            ${p.category ? `<div class="product-card-category">${p.category}</div>` : ''}
-            <div class="product-card-name">${p.name}</div>
-            ${p.description ? `<p style="font-size:0.8rem;margin:6px 0 10px;line-height:1.5;">${p.description.slice(0,80)}${p.description.length>80?'…':''}</p>` : ''}
-            <div class="product-card-price">GH₵ ${Number(p.price).toFixed(2)}</div>
+    const banner = st.banner_url
+      ? `<img src="${st.banner_url}" class="store-card-banner" onerror="this.outerHTML='<div class=store-card-banner-placeholder><i data-lucide=image style=width:28px;height:28px;></i></div>'" />`
+      : `<div class="store-card-banner-placeholder"><i data-lucide="image" style="width:28px;height:28px;"></i></div>`;
+
+    const logo = st.logo_url
+      ? `<img src="${st.logo_url}" onerror="this.outerHTML='${st.name[0].toUpperCase()}'" />`
+      : st.name[0].toUpperCase();
+
+    // Simulate trust badges based on whatsapp/phone presence
+    const badges = [];
+    if (st.is_verified) badges.push(`<span class="trust-badge trust-badge-verified"><i data-lucide="shield-check" style="width:9px;height:9px;"></i> Verified</span>`);
+    if (st.whatsapp) badges.push(`<span class="trust-badge trust-badge-momo">📱 MoMo</span>`);
+    if (st.phone)    badges.push(`<span class="trust-badge trust-badge-delivery"><i data-lucide="zap" style="width:9px;height:9px;"></i> Express</span>`);
+
+    const catChips = cats.map(c => `<span class="cat-chip">${c}</span>`).join('');
+
+    return `
+      <a class="store-card" href="${storeUrl}">
+        ${banner}
+        <div class="store-card-body">
+          <div class="store-card-identity">
+            <div class="store-card-logo">${logo}</div>
+            <div style="flex:1;min-width:0;">
+              <div class="store-card-name">${st.name}</div>
+              <div class="store-card-badges">${badges.join('')}</div>
+            </div>
           </div>
-          <div class="product-card-actions">
-            <button class="btn btn-primary btn-sm w-full"
-              onclick="event.stopPropagation();whatsappOrder('${encodeURIComponent(p.name)}',${p.price})">
-              <i data-lucide="message-circle" style="width:14px;height:14px;"></i> Order Now
-            </button>
+          <p class="store-card-desc">${st.description || 'Quality products from a verified Ghana seller.'}</p>
+          <div class="store-card-meta">
+            <div class="store-card-stats">
+              <span class="store-stat">
+                <i data-lucide="package" style="width:12px;height:12px;color:var(--red);"></i>
+                ${productCount} product${productCount !== 1 ? 's' : ''}
+              </span>
+              ${cats.length ? `<span class="store-stat"><i data-lucide="tag" style="width:12px;height:12px;"></i> ${cats.length} categor${cats.length !== 1 ? 'ies' : 'y'}</span>` : ''}
+            </div>
+            ${st._reviewCount > 0 ? `
+            <div style="display:flex;align-items:center;gap:4px;font-size:0.75rem;">
+              <span style="color:#fbbf24;">${'★'.repeat(Math.round(st._avgRating))}${'☆'.repeat(5-Math.round(st._avgRating))}</span>
+              <span style="color:var(--text-muted);">${st._avgRating.toFixed(1)} (${st._reviewCount})</span>
+            </div>` : ''}
           </div>
-        </div>`;
-    }).join('');
-    lucide.createIcons();
+          ${catChips ? `<div class="categories-chips" style="margin-top:10px;">${catChips}</div>` : ''}
+        </div>
+        <div class="store-card-cta">
+          <span style="font-size:0.82rem;color:var(--text-muted);">Visit Store</span>
+          <span class="btn btn-primary btn-sm" style="pointer-events:none;">
+            <i data-lucide="arrow-right" style="width:14px;height:14px;"></i>
+          </span>
+        </div>
+      </a>`;
   }
 
-  // ── Filter & Sort ─────────────────────────────────────────────
-  window.filterCatalog = () => {
-    const q    = document.getElementById('catalogSearch').value.toLowerCase();
-    const cat  = document.getElementById('catalogCategory').value;
-    const sort = document.getElementById('catalogSort').value;
+  // ── Clear filters ─────────────────────────────────────────────
+  let priceMin = 0;
+  let priceMax = 1000;
 
-    filtered = allProducts.filter(p =>
-      (!q   || p.name.toLowerCase().includes(q) || (p.description||'').toLowerCase().includes(q)) &&
-      (!cat || p.category === cat)
-    );
-
-    if (sort === 'price-asc')  filtered.sort((a,b) => a.price - b.price);
-    if (sort === 'price-desc') filtered.sort((a,b) => b.price - a.price);
-    if (sort === 'name')       filtered.sort((a,b) => a.name.localeCompare(b.name));
-    // 'newest' — default order from DB (already newest first)
-
-    renderCatalog();
+  window.updatePriceFilter = () => {
+    priceMin = parseInt(document.getElementById('priceMin').value);
+    priceMax = parseInt(document.getElementById('priceMax').value);
+    // Ensure min never exceeds max
+    if (priceMin > priceMax) {
+      priceMin = priceMax;
+      document.getElementById('priceMin').value = priceMin;
+    }
+    document.getElementById('priceMinLabel').textContent = priceMin;
+    document.getElementById('priceMaxLabel').textContent = priceMax >= 1000 ? '1000+' : priceMax;
+    applyFilters();
   };
 
-  // ── Product Detail Modal ──────────────────────────────────────
-  window.goToProduct = (el) => {
-    const pid  = el.dataset.pid;
-    const slug = el.dataset.slug;
-    location.href = `product-view.html?product=${pid}&slug=${slug}`;
+  window.clearAllFilters = () => {
+    activeCategory = '';
+    activeTrusts.clear();
+    searchQuery    = '';
+    priceMin = 0; priceMax = 1000;
+    document.getElementById('mainSearch').value    = '';
+    document.getElementById('sidebarSearch').value = '';
+    document.getElementById('sortSelect').value    = 'newest';
+    document.getElementById('priceMin').value = 0;
+    document.getElementById('priceMax').value = 1000;
+    document.getElementById('priceMinLabel').textContent = '0';
+    document.getElementById('priceMaxLabel').textContent = '1000+';
+    document.querySelectorAll('.category-pill').forEach(b => b.classList.toggle('active', b.dataset.cat === ''));
+    document.querySelectorAll('.trust-option').forEach(b => b.classList.remove('active'));
+    applyFilters();
   };
 
-  window.openDetail = (id) => {
-    const p = allProducts.find(x => x.id === id);
-    if (!p) return;
-
-    document.getElementById('detailName').textContent    = p.name;
-    document.getElementById('detailPrice').textContent   = `GH₵ ${Number(p.price).toFixed(2)}`;
-    document.getElementById('detailDesc').textContent    = p.description || 'No description provided.';
-    document.getElementById('detailCategory').textContent = p.category || 'Product';
-
-    const stockEl = document.getElementById('detailStockRow');
-    stockEl.innerHTML = p.in_stock !== false
-      ? `<span class="badge badge-green"><i data-lucide="check-circle" style="width:12px;height:12px;"></i> In Stock</span>`
-      : `<span class="badge badge-red"><i data-lucide="x-circle" style="width:12px;height:12px;"></i> Out of Stock</span>`;
-
-    const imgEl = document.getElementById('detailImg');
-    imgEl.innerHTML = p.image_url
-      ? `<img src="${p.image_url}" class="product-detail-img"
-           onerror="this.outerHTML='<div class=product-detail-placeholder><i data-lucide=image style=width:48px;height:48px;></i></div>'" />`
-      : `<div class="product-detail-placeholder">
-           <i data-lucide="image" style="width:48px;height:48px;"></i></div>`;
-
-    document.getElementById('detailWhatsApp').onclick = () =>
-      whatsappOrder(encodeURIComponent(p.name), p.price);
-
-    document.getElementById('detailModal').classList.add('active');
-    lucide.createIcons();
-  };
-
-  window.closeDetail = () => document.getElementById('detailModal').classList.remove('active');
-
-  // ── WhatsApp Order Message ─────────────────────────────────────
-  window.whatsappOrder = (encodedName, price) => {
-    const name = decodeURIComponent(encodedName);
-    const msg  = [
-      `Hello! I'd like to order from *${storeData?.name}*`,
-      ``,
-      `🛒 *${name}*`,
-      `💰 Price: GH₵ ${Number(price).toFixed(2)}`,
-      ``,
-      `🔗 Store: ${location.href}`,
-      ``,
-      `_Found on City Shop Ghana_`,
-    ].join('\n');
-
-    const wa = storeData?.whatsapp
-      ? `https://wa.me/${storeData.whatsapp.replace(/[^0-9]/g,'')}?text=${encodeURIComponent(msg)}`
-      : `https://wa.me/?text=${encodeURIComponent(msg)}`;
-
-    window.open(wa, '_blank');
-    showToast('Opening WhatsApp…', 'success');
-  };
-
-  // ── Share Buttons ─────────────────────────────────────────────
-  window.shareStore = () => {
-    const url = location.href;
-    const text = `🛍️ Shop at ${storeData.name} on City Shop Ghana!\n\nVerified seller · Pay with MoMo or Card\n\n${url}`;
-    showShareModal(storeData.name, url, text);
-  };
-
-  window.shareProduct = () => {
-    const url = location.href;
-    showToast('Product link copied!', 'success');
-    navigator.clipboard.writeText(url);
-  };
-
-  function showShareModal(name, url, text) {
-    // Remove existing modal
-    document.getElementById('shareModal')?.remove();
-    const m = document.createElement('div');
-    m.id = 'shareModal';
-    m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px;';
-    m.innerHTML = `
-      <div style="background:#1a1730;border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:28px;max-width:420px;width:100%;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-          <h3 style="margin:0;font-size:1.1rem;">Share Store</h3>
-          <button onclick="document.getElementById('shareModal').remove()" style="background:none;border:none;color:rgba(255,255,255,0.5);cursor:pointer;font-size:1.4rem;line-height:1;">×</button>
-        </div>
-        <!-- Store URL -->
-        <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px;margin-bottom:16px;display:flex;align-items:center;gap:10px;">
-          <span style="flex:1;font-size:0.8rem;color:rgba(255,255,255,0.7);word-break:break-all;">${url}</span>
-          <button onclick="navigator.clipboard.writeText('${url}');showToast('Link copied!','success')"
-            style="background:var(--red);border:none;color:#fff;padding:6px 12px;border-radius:8px;font-size:0.78rem;cursor:pointer;white-space:nowrap;flex-shrink:0;">
-            Copy Link
-          </button>
-        </div>
-        <!-- Share platforms -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
-          <button onclick="window.open('https://wa.me/?text='+encodeURIComponent('${text}'),'_blank')"
-            style="background:#25D366;border:none;color:#fff;padding:12px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;">
-            📱 WhatsApp
-          </button>
-          <button onclick="navigator.clipboard.writeText('${text}');showToast('Message copied for TikTok/Instagram!','success')"
-            style="background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);border:none;color:#fff;padding:12px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;">
-            📸 Copy for Ads
-          </button>
-          <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent('${url}'),'_blank')"
-            style="background:#1877f2;border:none;color:#fff;padding:12px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;">
-            📘 Facebook
-          </button>
-          <button onclick="window.open('https://twitter.com/intent/tweet?text='+encodeURIComponent('${text}'),'_blank')"
-            style="background:#000;border:none;color:#fff;padding:12px;border-radius:12px;cursor:pointer;font-weight:600;font-size:0.88rem;">
-            𝕏 Twitter/X
-          </button>
-        </div>
-        <p style="font-size:0.75rem;color:rgba(255,255,255,0.35);text-align:center;margin:0;">
-          💡 Tip: Use "Copy for Ads" to paste in TikTok, Instagram or Facebook bio
-        </p>
-      </div>`;
-    document.body.appendChild(m);
-    m.addEventListener('click', e => { if (e.target === m) m.remove(); });
-  }
-
-  // ── Not Found ─────────────────────────────────────────────────
-  function showNotFound() {
-    document.getElementById('pageLoader').style.display = 'none';
-    document.getElementById('notFound').classList.remove('hidden');
-    lucide.createIcons();
-  }
-
-  // ── Toast ──────────────────────────────────────────────────────
-  window.showToast = (msg, type = 'success') => {
-    const tc = document.getElementById('toastContainer');
-    const t  = document.createElement('div');
-    t.className = `toast toast-${type}`;
-    t.innerHTML = `<i data-lucide="${type==='success'?'check-circle':'alert-circle'}" style="width:18px;height:18px;"></i>${msg}`;
-    tc.appendChild(t);
-    lucide.createIcons();
-    setTimeout(() => t.remove(), 4200);
+  // ── Mobile sidebar ────────────────────────────────────────────
+  window.toggleSidebar = () => {
+    document.getElementById('filterSidebar').classList.toggle('open');
   };
 </script>
 </body>
