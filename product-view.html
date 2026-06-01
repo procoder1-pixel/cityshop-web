@@ -262,7 +262,7 @@
           style="position:absolute;inset:0;display:grid;place-items:center;opacity:1;transition:opacity 0.3s;z-index:2;pointer-events:none;">
           <i data-lucide="package" style="width:60px;height:60px;color:rgba(255,255,255,0.15);"></i>
         </div>
-        <img id="pvImage" src="" alt="" 
+        <img id="pvImage" src="" alt=""
           onload="document.getElementById('pvImgPlaceholder').style.opacity='0';"
           onerror="document.getElementById('pvImgPlaceholder').style.opacity='1';"
           style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;cursor:pointer;"
@@ -742,7 +742,7 @@
       if (pvName) pvName.textContent = product.name;
       if (pvDesc) pvDesc.textContent = product.description || '';
       if (pvCategory) pvCategory.textContent = product.category || '';
-      // Load product media (images + video)
+      // Load product media
       loadProductMedia(product.id);
 
       if (pvImage) { pvImage.src = product.image_url || ''; pvImage.alt = product.name; }
@@ -1245,26 +1245,21 @@
         const pvGallery = document.getElementById('pvGallery');
         const fsImg = document.getElementById('fsImg');
 
-        // Show video toggle if video exists
         if (pvVideoToggle) pvVideoToggle.style.display = video ? 'flex' : 'none';
 
-        // Set main image from first image in media
         if (images.length > 0 && pvImage) {
           pvImage.src = images[0].media_url;
           pvImage.alt = product.name;
           pvImage.style.display = 'block';
         }
 
-        // Set fullscreen image
         if (fsImg && images.length > 0) fsImg.src = images[0].media_url;
 
-        // Setup video
         if (pvVideo) {
           pvVideo.style.display = 'none';
           if (video) pvVideo.src = video.media_url;
         }
 
-        // Render thumbnail gallery
         if (pvGallery && images.length > 1) {
           pvGallery.style.display = 'flex';
           pvGallery.innerHTML = images.map((img, idx) => 

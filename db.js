@@ -505,8 +505,34 @@ export async function replyToReview(reviewId, reply) {
   return data;
 }
 
+// ============================================================
+// REALTIME
+// ============================================================
+
+/**
+ * Subscribe to live product changes for a given store.
+ * @param {string}   storeId  - The store UUID to watch
+ * @param {function} callback - Called with Supabase payload on every change
+ * @returns Supabase channel (call .unsubscribe() on cleanup)
+ */
+export function listenToProducts(storeId, callback) {
+  return supabase
+    .channel(`products:store_${storeId}`)
+    .on(
+      'postgres_changes',
+      {
+        event:  '*',
+        schema: 'public',
+        table:  'products',
+        filter: `store_id=eq.${storeId}`,
+      },
+      callback
+    )
+    .subscribe();
+}
+
 // ═══════════════════════════════════════════════════════════════
-// PRODUCT MEDIA — 5 images + 1 video support
+// PRODUCT MEDIA — 5 images + 1 video
 // ═══════════════════════════════════════════════════════════════
 
 export async function uploadProductMedia(file, storeId, mediaType = 'image') {
@@ -561,31 +587,4 @@ export async function deleteProductMedia(mediaId) {
   const { error } = await supabase.from('product_media').delete().eq('id', mediaId);
   if (error) throw error;
   return true;
-}
-
-
-// ============================================================
-// REALTIME
-// ============================================================
-
-/**
- * Subscribe to live product changes for a given store.
- * @param {string}   storeId  - The store UUID to watch
- * @param {function} callback - Called with Supabase payload on every change
- * @returns Supabase channel (call .unsubscribe() on cleanup)
- */
-export function listenToProducts(storeId, callback) {
-  return supabase
-    .channel(`products:store_${storeId}`)
-    .on(
-      'postgres_changes',
-      {
-        event:  '*',
-        schema: 'public',
-        table:  'products',
-        filter: `store_id=eq.${storeId}`,
-      },
-      callback
-    )
-    .subscribe();
 }

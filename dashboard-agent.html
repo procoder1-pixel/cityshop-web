@@ -942,7 +942,7 @@
     const reader = new FileReader();
     reader.onload = (e) => {
       const video = document.getElementById('videoPreview');
-      if (video) { video.src = e.target.result; }
+      if (video) video.src = e.target.result;
       document.getElementById('videoPreviewWrap').style.display = 'block';
       document.getElementById('videoUploadPrompt').style.display = 'none';
     };
@@ -1060,14 +1060,13 @@
       let primaryImage = '';
       let mediaUrls = [];
 
-      // Upload all media files
+      // Upload media files
       if (selectedImageFiles.length > 0 || selectedVideoFile) {
         document.getElementById('uploadProgress').style.display = 'block';
         mediaUrls = await uploadAllMedia(currentStore.id);
         const firstImage = mediaUrls.find(m => m.type === 'image');
         if (firstImage) primaryImage = firstImage.url;
       } else if (document.getElementById('p_image') && document.getElementById('p_image').value.trim()) {
-        // Fallback to URL input if no files
         primaryImage = document.getElementById('p_image').value.trim();
       }
 
@@ -1075,14 +1074,12 @@
         await updateProduct(editingId, {
           name, price, wholesale_price: wholesale, image_url: primaryImage, description: desc, category: cat, in_stock: inStock,
         });
-        // Add new media records
         for (const m of mediaUrls) {
           await addProductMedia(editingId, m.type, m.url, m.sort_order);
         }
         showToast('"' + name + '" updated!', 'success');
       } else {
         const product = await addProduct(currentStore.id, name, price, primaryImage, desc, cat, wholesale);
-        // Add media records
         for (const m of mediaUrls) {
           await addProductMedia(product.id, m.type, m.url, m.sort_order);
         }
@@ -1236,31 +1233,19 @@
 
   // ── Section Switcher ───────────────────────────────────────────
   window.showSection = (section) => {
-    console.log('[CityShop] Switching to section:', section);
-
-    // Hide all sections first
-    const sections = ['overview','orders','reviews','products','store-settings','profile'];
-    sections.forEach(s => {
+    console.log('[CityShop] Navigating to:', section);
+    ['overview','orders','reviews','products','store-settings','profile'].forEach(s => {
       const key = s.split('-').map((w,i) => i===0 ? w : w[0].toUpperCase()+w.slice(1)).join('');
       const el = document.getElementById(`section${key[0].toUpperCase()}${key.slice(1)}`);
-      if (el) {
-        el.style.display = s === section ? 'block' : 'none';
-        console.log('[CityShop]', `section${key[0].toUpperCase()}${key.slice(1)}`, '->', s === section ? 'block' : 'none');
-      }
+      if (el) el.style.display = s === section ? 'block' : 'none';
     });
-
-    // Update active nav
     document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
-    const navMap = { overview: 'navOverview', orders: 'navOrders', reviews: 'navReviews', products: 'navProducts', 'store-settings': 'navSettings', profile: 'navProfile' };
-    const navEl = document.getElementById(navMap[section]);
+    const map = { overview: 'navOverview', orders: 'navOrders', reviews: 'navReviews', products: 'navProducts', 'store-settings': 'navSettings', profile: 'navProfile' };
+    const navEl = document.getElementById(map[section]);
     if (navEl) navEl.classList.add('active');
-
-    // Load section data
     if (section === 'orders' && typeof loadOrders === 'function') loadOrders();
     if (section === 'reviews' && typeof loadDashReviews === 'function') loadDashReviews();
     if (section === 'profile' && typeof initProfileSection === 'function') initProfileSection();
-
-    // Close sidebar
     closeSidebar();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -1271,10 +1256,10 @@
     document.getElementById('sidebarOverlay').classList.add('open');
   };
   window.closeSidebar = () => {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebarOverlay');
-    if (sidebar) sidebar.classList.remove('open');
-    if (overlay) overlay.classList.remove('open');
+    const sb = document.getElementById('sidebar');
+    const ov = document.getElementById('sidebarOverlay');
+    if (sb) sb.classList.remove('open');
+    if (ov) ov.classList.remove('open');
     document.body.style.overflow = '';
   };
 
